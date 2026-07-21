@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MEP Design Platform — Tools</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Exo+2:ital,wght@0,300;0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+/* ── RESET ── */
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:       #07070b;
+  --surface:  #0f0f16;
+  --surface2: #16161f;
+  --border:   rgba(255,120,40,0.18);
+  --orange:   #ff7828;
+  --orange2:  #ff5500;
+  --orange-glow: rgba(255,120,40,0.12);
+  --text:     #eef0ff;
+  --muted:    #8890aa;
+  --dim:      #44475a;
+  --font-display: 'Rajdhani', sans-serif;
+  --font-body:    'Exo 2', sans-serif;
+  --font-mono:    'Space Mono', monospace;
+}
+html,body{
+  min-height:100vh; background:var(--bg);
+  color:var(--text); font-family:var(--font-body);
+  overflow-x:hidden;
+}
+
+/* ── HEX GRID BACKGROUND ── */
+body::before{
+  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='52' viewBox='0 0 60 52'%3E%3Cpath d='M30 2 L56 17 L56 47 L30 62 L4 47 L4 17 Z' fill='none' stroke='rgba(255,120,40,0.04)' stroke-width='1'/%3E%3C/svg%3E");
+  background-size:60px 52px;
+}
+body::after{
+  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:radial-gradient(ellipse at 60% 10%, rgba(255,80,0,0.07) 0%, transparent 55%),
+             radial-gradient(ellipse at 10% 90%, rgba(255,120,40,0.05) 0%, transparent 50%);
+}
+
+/* ── LAYOUT SHELL ── */
+.shell{
+  position:relative; z-index:1;
+  max-width:1280px; margin:0 auto;
+  padding:0 28px 80px;
+}
+
+/* ── TOPBAR ── */
+.topbar{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:28px 0 36px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:48px;
+}
+.brand{display:flex;align-items:center;gap:14px;}
+.brand-hex svg{width:48px;height:48px;flex-shrink:0;}
+.brand-text .name{
+  font-family:var(--font-display); font-size:1.4rem; font-weight:700;
+  letter-spacing:0.07em; text-transform:uppercase; color:var(--text);
+  line-height:1;
+}
+.brand-text .sub{
+  font-family:var(--font-mono); font-size:0.58rem; letter-spacing:0.18em;
+  color:var(--muted); text-transform:uppercase; margin-top:4px;
+}
+.topbar-right{display:flex;align-items:center;gap:16px;}
+.v2-badge{
+  font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.12em;
+  color:var(--orange); border:1px solid rgba(255,120,40,0.35);
+  background:rgba(255,120,40,0.06); border-radius:6px;
+  padding:5px 10px; text-transform:uppercase;
+}
+.tools-count{
+  font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.1em;
+  color:var(--dim); text-transform:uppercase;
+}
+
+/* ── SEARCH ── */
+.search-bar{
+  display:flex; align-items:center; gap:12px;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:12px; padding:11px 16px;
+  transition:border-color 0.2s;
+  margin-bottom:40px;
+}
+.search-bar:focus-within{border-color:rgba(255,120,40,0.45);}
+.search-bar svg{flex-shrink:0;color:var(--muted);}
+.search-bar input{
+  background:none; border:none; outline:none;
+  color:var(--text); font-family:var(--font-body); font-size:0.92rem;
+  width:100%;
+}
+.search-bar input::placeholder{color:var(--dim);}
+
+/* ── SECTION LABEL ── */
+.section-label{
+  font-family:var(--font-mono); font-size:0.6rem; letter-spacing:0.2em;
+  color:var(--dim); text-transform:uppercase;
+  display:flex; align-items:center; gap:10px; margin-bottom:20px;
+}
+.section-label::after{
+  content:''; flex:1; height:1px; background:var(--border);
+}
+
+/* ── CARDS GRID ── */
+.cards-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(310px, 1fr));
+  gap:18px;
+}
+
+/* ── CARD ── */
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:24px 22px 20px;
+  cursor:pointer;
+  position:relative; overflow:hidden;
+  display:flex; flex-direction:column; gap:14px;
+  transition:transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  text-decoration:none; color:inherit;
+}
+.card::before{
+  content:''; position:absolute;
+  inset:0; border-radius:16px; opacity:0;
+  background:radial-gradient(circle at 50% 0%, rgba(255,120,40,0.09) 0%, transparent 70%);
+  transition:opacity 0.25s;
+}
+.card:hover{
+  transform:translateY(-3px);
+  border-color:rgba(255,120,40,0.42);
+  box-shadow:0 12px 40px rgba(0,0,0,0.5), 0 0 30px rgba(255,120,40,0.07);
+}
+.card:hover::before{opacity:1;}
+.card:active{transform:translateY(-1px);}
+
+/* invisible top stripe accent */
+.card::after{
+  content:''; position:absolute; top:0; left:24px; right:24px;
+  height:2px; border-radius:0 0 3px 3px;
+  background:linear-gradient(90deg, transparent, var(--orange), transparent);
+  opacity:0; transition:opacity 0.2s;
+}
+.card:hover::after{opacity:1;}
+
+/* card header row */
+.card-header{display:flex;align-items:flex-start;gap:14px;}
+.card-icon{
+  width:44px; height:44px; flex-shrink:0;
+  background:var(--surface2);
+  border:1px solid rgba(255,120,40,0.2);
+  border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  color:var(--orange);
+  transition:background 0.2s, border-color 0.2s;
+}
+.card:hover .card-icon{
+  background:rgba(255,120,40,0.1);
+  border-color:rgba(255,120,40,0.4);
+}
+.card-icon svg{width:22px;height:22px;}
+.card-meta{flex:1;min-width:0;}
+.card-name{
+  font-family:var(--font-display); font-size:1.05rem; font-weight:600;
+  letter-spacing:0.02em; line-height:1.25;
+  color:var(--text); margin-bottom:4px;
+}
+.card-cat{
+  font-family:var(--font-mono); font-size:0.55rem; letter-spacing:0.16em;
+  text-transform:uppercase; color:var(--muted);
+}
+
+.card-desc{
+  font-size:0.82rem; color:var(--muted); line-height:1.55;
+  flex:1;
+}
+
+.card-footer{
+  display:flex; align-items:center; justify-content:space-between;
+  padding-top:12px; border-top:1px solid rgba(255,120,40,0.1);
+}
+.card-file{
+  font-family:var(--font-mono); font-size:0.55rem; letter-spacing:0.06em;
+  color:var(--dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  max-width:80%;
+}
+.card-arrow{
+  color:var(--orange); display:flex; align-items:center;
+  opacity:0; transform:translateX(-4px);
+  transition:opacity 0.2s, transform 0.2s;
+}
+.card:hover .card-arrow{opacity:1;transform:translateX(0);}
+
+/* ── EMPTY STATE ── */
+.empty{
+  grid-column:1/-1;
+  text-align:center; padding:60px 20px;
+  font-family:var(--font-mono); font-size:0.8rem;
+  color:var(--dim); letter-spacing:0.1em;
+}
+
+/* ── HIDDEN ── */
+.card.hidden{display:none;}
+
+/* ── FOOTER ── */
+.footer{
+  margin-top:64px; padding-top:24px;
+  border-top:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; flex-wrap:wrap;
+}
+.footer-left{
+  font-family:var(--font-mono); font-size:0.58rem; letter-spacing:0.14em;
+  color:var(--dim); text-transform:uppercase;
+}
+.footer-right{
+  font-family:var(--font-mono); font-size:0.58rem; letter-spacing:0.14em;
+  color:var(--dim); text-transform:uppercase;
+}
+.footer-right a{color:var(--orange); text-decoration:none;}
+.footer-right a:hover{text-decoration:underline;}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(80px);
+  background:var(--surface2); border:1px solid rgba(255,120,40,0.35);
+  border-radius:10px; padding:11px 20px;
+  font-family:var(--font-mono); font-size:0.68rem; letter-spacing:0.06em;
+  color:var(--text); box-shadow:0 8px 32px rgba(0,0,0,0.6);
+  transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
+  opacity:0; z-index:9999; pointer-events:none; white-space:nowrap;
+}
+.toast.show{transform:translateX(-50%) translateY(0); opacity:1;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:640px){
+  .shell{padding:0 16px 60px;}
+  .topbar{padding:20px 0 24px; margin-bottom:28px;}
+  .topbar-right{gap:10px;}
+  .tools-count{display:none;}
+  .cards-grid{grid-template-columns:1fr; gap:14px;}
+  .footer{flex-direction:column;align-items:flex-start;gap:6px;}
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-hex">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="32,4 58,18 58,46 32,60 6,46 6,18"
+            fill="none" stroke="#ff7828" stroke-width="2"/>
+          <polygon points="32,11 52,22 52,42 32,53 12,42 12,22"
+            fill="rgba(255,120,40,0.06)" stroke="rgba(255,170,85,0.4)" stroke-width="1"/>
+          <text x="32" y="29" text-anchor="middle"
+            font-family="Rajdhani,sans-serif" font-size="10" font-weight="700" fill="#ff7828">MEP</text>
+          <text x="32" y="40" text-anchor="middle"
+            font-family="Rajdhani,sans-serif" font-size="5.5" font-weight="600" fill="rgba(255,150,60,0.75)">DESIGN</text>
+          <text x="32" y="48" text-anchor="middle"
+            font-family="Rajdhani,sans-serif" font-size="5.5" font-weight="600" fill="rgba(255,150,60,0.75)">PLATFORM</text>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="name">MEP Design Platform</div>
+        <div class="sub">Engineering Tools Suite</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="tools-count" id="toolsCount">11 Tools</span>
+      <span class="v2-badge">V2.0</span>
+    </div>
+  </header>
+
+  <!-- SEARCH -->
+  <div class="search-bar">
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    <input type="text" id="searchInput" placeholder="Search tools…" autocomplete="off">
+  </div>
+
+  <!-- SECTION -->
+  <div class="section-label">Available Tools</div>
+
+  <!-- CARDS -->
+  <div class="cards-grid" id="cardsGrid">
+
+    <!-- 1 · Bandwidth Calculator -->
+    <div class="card" data-file="Bandwidth Calculator.html" data-name="Bandwidth Calculator">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
+            <path d="M2 20h2v-4H2v4zm4 0h2v-8H6v8zm4 0h2V8h-2v12zm4 0h2v-6h-2v6zm4-12v12h2V8h-2z"/>
+            <path d="M3 6l4-3 4 3 4-3 4 3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="card-meta">
+          <div class="card-name">Bandwidth Calculator</div>
+          <div class="card-cat">Network · Telecom</div>
+        </div>
+      </div>
+      <div class="card-desc">Calculate required bandwidth for data, voice, and video applications across network links.</div>
+      <div class="card-footer">
+        <span class="card-file">Bandwidth Calculator.html</span>
+        <span class="card-arrow">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </div>
+    </div>
+
+    <!-- 2 · Schematic Diagram Drawing Tool -->
+    <div class="card" data-file="fttx-network-design-tool.html" data-name="Schematic Diagram Drawing Tool">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
+            <circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/>
+            <path d="M12 7v4M12 11l-5 6M12 11l5 6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M4 8h3M17 8h3M4 8c0-1.1.9-2 2-2h12a2 2 0 0 1 2 2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="card-meta">
+          <div class="card-name">Schematic Diagram Drawing Tool</div>
+          <div class="card-cat">FTTx · Network</div>
+        </div>
+      </div>
+      <div class="card-desc">Design and draw fiber-to-the-x network schematics and topology diagrams with precision.</div>
+      <div class="card-footer">
+        <span class="card-file">fttx-network-design-tool.html</span>
+        <span class="card-arrow">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </div>
+    </div>
+
+    <!-- 3 · Telecom Room Design -->
+    <div class="card" data-file="Telecom_Room_Rack_Switch_Design_Tool.html" data-name="Telecom Room Design">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
+            <rect x="4" y="3" width="16" height="18" rx="2"/>
+            <path d="M8 7h8M8 11h8M8 15h8M8 19h4" stroke-linecap="round"/>
+            <rect x="6" y="6" width="2" height="2" rx="0.5" fill="currentColor"/>
+            <rect x="6" y="10" width="2" height="2" rx="0.5" fill="currentColor"/>
+            <rect x="6" y="14" width="2" height="2" rx="0.5" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="card-meta">
+          <div class="card-name">Telecom Room Design</div>
+          <div class="card-cat">Rack · Switch · Layout</div>
+        </div>
+      </div>
+      <div class="card-desc">Plan rack, switch, and cable layouts for telecom rooms and network equipment rooms.</div>
+      <div class="card-footer">
+        <span class="card-file">Telecom_Room_Rack_Switch_Design_Tool.html</span>
+        <span class="card-arrow">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </div>
+    </div>
+
+    <!-- 4 · Thermal / Heat Load Calculator -->
+    <div class="card" data-file="Thermal_Heat_Load_Calculator.html" data-name="Thermal Heat Load Calculator">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
+            <path d="M12 3v10" stroke-linecap="round"/>
+            <circle cx="12" cy="17" r="3"/>
+            <path d="M8.5 8.5A5 5 0 0 0 7 13a5 5 0 0 0 10 0 5 5 0 0 0-1.5-3.5" stroke-linecap="round"/>
+            <path d="M15 6h1M15 8.5h1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="card-meta">
+          <div class="card-name">Thermal / Heat Load Calculator</div>
+          <div class="card-cat">HVAC · Cooling</div>
+        </div>
+      </div>
+      <div class="card-desc">Estimate heat dissipation and cooling requirements for server rooms and equipment enclosures.</div>
+      <div class="card-footer">
+        <span class="card-file">Thermal_Heat_Load_Calculator.html</span>
+        <span class="card-arrow">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </div>
+    </div>
+
+    <!-- 5 · Wi-Fi Heatmap Visualizations Tool -->
+    <div class="card" data-file="Wi-Fi Heatmap Visualizations Tool.html" data-name="Wi-Fi Heatmap Visualizations Tool">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
+            <path d="M5 12.55a11 11 0 0 1 14 0" stroke-linecap="round"/>
+            <path d="M1.42 9a16 16 0 0 1 21.16 0" stroke-linecap="round"/>
+            <path d="M8.53 16.11a6 6 0 0 1 6.95 0" stroke-linecap="round"/>
+            <circle cx="12" cy="20" r="1" fill="currentColor" stroke="none"/>
+          </svg>
+        </div>
+        <div class="card-meta">
+          <div class="card-name">Wi-Fi Heatmap Visualizations</div>
+          <div class="card-cat">Wireless · Coverage</div>
+        </div>
+      </div>
+      <div class="card-desc">Visualize wireless signal coverage and generate heatmaps for access point placement planning.</div>
+      <div class="card-footer">
+        <span class="card-file">Wi-Fi Heatmap Visualizations Tool.html</span>
+        <span class="card-arrow">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </div>
+    </div>
+
+    <!-- 6 · Video Installation & Surveillance Tilt Analyzer -->
+    <div class="card" data-file="Video Installation &amp; Surveillance Tilt Analyzer Tool.html" data-name="Video Installation & Surveillance Tilt Analyzer Tool">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
+            <path d="M15 10l4.553-2.07A1 1 0 0 1 21 8.845v6.31a1 1 0 0 1-1.447.915L15 14v-4z" stroke-linejoin="round"/>
+            <rect x="3" y="8" width="12" height="8" rx="2"/>
+            <path d="M7 21l2-4M17 21l-2-4M7 21h10" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="card-meta">
+          <div class="card-name">Video & Surveillance Tilt Analyzer</div>
+          <div class="card-cat">CCTV · Camera Angles</div>
+        </div>
+      </div>
+      <div class="card-desc">Analyze and optimize camera tilt angles, mounting heights, and field of view for surveillance installations.</div>
+      <div class="card-footer">
+        <span class="card-file">Video Installation &amp; Surveillance Tilt Analyzer Tool.html</span>
+        <span class="card-arrow">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </div>
+    </div>
+
+    <!-- 7 · CCTV FOV Drawing Tool -->
+    <div class="card" data-file="CCTV FOV Drawing Tool.html" data-name="CCTV FOV Drawing Tool">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 9V5M12 19v-4M9 12H5M19 12h-4" stroke-linecap="round"/>
+            <path d="M8 5 Q4 12 8 19" stroke-linecap="round" stroke-linejoin="round" fill="rgba(255,120,40,0.1)"/>
+            <path d="M16 5 Q20 12 16 19" stroke-linecap="round" stroke-linejoin="round" fill="rgba(255,120,40,0.1)"/>
+          </svg>
+        </div>
+        <div class="card-meta">
+          <div class="card-name">CCTV FOV Drawing Tool</div>
+          <div class="card-cat">Security · Surveillance</div>
+        </div>
+      </div>
+      <div class="card-desc">Draw and map CCTV camera fields of view on floor plans for complete surveillance coverage design.</div>
+      <div class="card-footer">
+        <span class="card-file">CCTV FOV Drawing Tool.html</span>
+        <span class="card-arrow">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </div>
+    </div>
+
+    <!-- 8 · Control Room Design Tool -->
+    <div class="card" data-file="Control Room Design Tool.html" data-name="Control Room Design Tool">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
+            <rect x="2" y="4" width="9" height="7" rx="1.5"/>
+            <rect x="13" y="4" width="9" height="7" rx="1.5"/>
+            <rect x="2" y="13" width="9" height="7" rx="1.5"/>
+            <rect x="13" y="13" width="9" height="7" rx="1.5"/>
+          </svg>
+        </div>
+        <div class="card-meta">
+          <div class="card-name">Control Room Design Tool</div>
+          <div class="card-cat">AV · Command Centers</div>
+        </div>
+      </div>
+      <div class="card-desc">Design control room layouts including console placement, video wall configuration, and operator stations.</div>
+      <div class="card-footer">
+        <span class="card-file">Control Room Design Tool.html</span>
+        <span class="card-arrow">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </div>
+    </div>
+
+    <!-- 9 · Sound System Design Tool -->
+    <div class="card" data-file="Sound System Design Tool.html" data-name="Sound System Design Tool">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
+            <path d="M11 5L6 9H2v6h4l5 4V5z" stroke-linejoin="round"/>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07" stroke-linecap="round"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="card-meta">
+          <div class="card-name">Sound System Design Tool</div>
+          <div class="card-cat">Audio · Acoustics</div>
+        </div>
+      </div>
+      <div class="card-desc">Plan speaker layouts, calculate coverage zones, and design audio distribution systems for venues.</div>
+      <div class="card-footer">
+        <span class="card-file">Sound System Design Tool.html</span>
+        <span class="card-arrow">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </div>
+    </div>
+
+    <!-- 10 · Screen Size Calculator (Visual Screen Design Tool) -->
+    <div class="card" data-file="Visual Screen Design Tool.html" data-name="Screen Size Calculator Tool">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
+            <rect x="2" y="4" width="20" height="14" rx="2"/>
+            <path d="M8 20h8M12 18v2" stroke-linecap="round"/>
+            <path d="M6 9l3 3-3 3M11 15h6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="card-meta">
+          <div class="card-name">Screen Size Calculator Tool</div>
+          <div class="card-cat">Display · Visual Design</div>
+        </div>
+      </div>
+      <div class="card-desc">Calculate optimal screen sizes, viewing distances, and resolutions for display system installations.</div>
+      <div class="card-footer">
+        <span class="card-file">Visual Screen Design Tool.html</span>
+        <span class="card-arrow">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </div>
+    </div>
+
+    <!-- 11 · Projector Design Tool -->
+    <div class="card" data-file="Projector Design Tool.html" data-name="Projector Design Tool">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
+            <rect x="2" y="9" width="12" height="7" rx="2"/>
+            <circle cx="10" cy="12.5" r="2"/>
+            <path d="M14 10.5l6-4v9l-6-4" stroke-linejoin="round"/>
+            <path d="M5 9V7M7 9V7" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="card-meta">
+          <div class="card-name">Projector Design Tool</div>
+          <div class="card-cat">AV · Projection</div>
+        </div>
+      </div>
+      <div class="card-desc">Design projector installations with throw distance calculations, screen size ratios, and brightness analysis.</div>
+      <div class="card-footer">
+        <span class="card-file">Projector Design Tool.html</span>
+        <span class="card-arrow">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </div>
+    </div>
+
+    <!-- empty state (shown when search has no results) -->
+    <div class="empty hidden" id="emptyState">No tools match your search.</div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-left">MEP Design Platform &nbsp;·&nbsp; Tools Suite V2.0</div>
+    <div class="footer-right">Hosted on <a href="https://github.com" target="_blank">GitHub Pages</a></div>
+  </footer>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────────
+//  ⚙️  CONFIGURE YOUR GITHUB PAGES BASE URL HERE
+//  e.g. 'https://YOUR-USERNAME.github.io/YOUR-REPO/'
+//  Make sure it ends with a trailing slash /
+// ─────────────────────────────────────────────────
+var GITHUB_BASE_URL = 'https://YOUR-USERNAME.github.io/YOUR-REPO/';
+
+(function(){
+  'use strict';
+
+  var cards   = document.querySelectorAll('.card[data-file]');
+  var search  = document.getElementById('searchInput');
+  var empty   = document.getElementById('emptyState');
+  var count   = document.getElementById('toolsCount');
+  var toast   = document.getElementById('toast');
+  var toastTimer = null;
+
+  /* ── OPEN TOOL ── */
+  function openTool(file){
+    var url = GITHUB_BASE_URL + encodeURIComponent(file).replace(/%20/g,'%20');
+    window.open(url, '_blank', 'noopener');
+    showToast('Opening ' + file.replace('.html','') + '…');
+  }
+
+  /* ── CARD CLICK ── */
+  cards.forEach(function(card){
+    card.addEventListener('click', function(){
+      openTool(card.dataset.file);
+    });
+    // also keyboard
+    card.setAttribute('tabindex','0');
+    card.setAttribute('role','button');
+    card.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        openTool(card.dataset.file);
+      }
+    });
+  });
+
+  /* ── SEARCH FILTER ── */
+  search.addEventListener('input', function(){
+    var q = this.value.toLowerCase().trim();
+    var visible = 0;
+    cards.forEach(function(card){
+      var name = (card.dataset.name || '').toLowerCase();
+      var file = (card.dataset.file || '').toLowerCase();
+      var text = card.textContent.toLowerCase();
+      var match = !q || name.includes(q) || file.includes(q) || text.includes(q);
+      card.classList.toggle('hidden', !match);
+      if(match) visible++;
+    });
+    count.textContent = visible + (visible === 1 ? ' Tool' : ' Tools');
+    empty.classList.toggle('hidden', visible > 0);
+  });
+
+  /* ── TOAST ── */
+  function showToast(msg){
+    toast.textContent = msg;
+    toast.classList.add('show');
+    if(toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toast.classList.remove('show'); }, 2400);
+  }
+
+  /* ── WARN IF BASE URL NOT SET ── */
+  if(GITHUB_BASE_URL.includes('YOUR-USERNAME')){
+    showToast('⚠️ Set GITHUB_BASE_URL at the top of the script');
+  }
+
+})();
+</script>
+</body>
+</html>
