@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bandwidth Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --bg:#f0f2f5;--bg2:#ffffff;--bg3:#f5f6fa;--panel:#ffffff;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.13);
+  --accent:#2e7fff;--accent2:#00a887;--accent3:#e05a1e;--accent4:#7c55e8;
+  --text:#0f1423;--text2:#4a5568;--text3:#a0aab8;
+  --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;--display:'Syne',sans-serif;
+  --radius:10px;--radius-lg:16px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-weight:300;line-height:1.6;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(46,127,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(46,127,255,0.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+.page{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:2rem 1.5rem 4rem;}
+header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2rem;gap:1rem;flex-wrap:wrap;}
+.eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--accent);letter-spacing:0.12em;text-transform:uppercase;display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.eyebrow::before{content:'';width:24px;height:1px;background:var(--accent);}
+h1{font-family:var(--display);font-size:clamp(1.6rem,3.5vw,2.6rem);font-weight:700;line-height:1.1;letter-spacing:-0.02em;background:linear-gradient(135deg,var(--text) 0%,var(--text2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.subtitle{font-size:13px;color:var(--text2);margin-top:8px;line-height:1.5}
+.version-badge{font-family:var(--mono);font-size:10px;background:rgba(46,127,255,0.1);border:1px solid rgba(46,127,255,0.2);color:var(--accent);padding:4px 10px;border-radius:20px;display:inline-flex;align-items:center;gap:5px;margin-top:10px;}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;animation:fadeUp 0.4s ease both;box-shadow:0 2px 16px rgba(0,0,0,0.07);}
+.panel-header{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.panel-header-left{display:flex;align-items:center;gap:10px;}
+.panel-header i{font-size:13px;color:var(--accent);}
+.panel-header h3{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--text2);}
+.panel-body{padding:18px;}
+.field{margin-bottom:16px;}
+.field:last-child{margin-bottom:0}
+.field-label{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--text2);margin-bottom:7px;font-family:var(--mono);}
+.field-label span.val{color:var(--text);font-weight:500;background:rgba(46,127,255,0.1);padding:2px 8px;border-radius:4px;font-size:11px;}
+input[type=range]{-webkit-appearance:none;width:100%;height:4px;background:#dde1ea;border-radius:2px;outline:none;cursor:pointer;border:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);border:2px solid var(--bg);cursor:pointer;box-shadow:0 0 0 3px rgba(46,127,255,0.15);transition:box-shadow 0.2s;}
+input[type=range]:hover::-webkit-slider-thumb{box-shadow:0 0 0 5px rgba(46,127,255,0.25);}
+input[type=number],input[type=text]{width:100%;padding:7px 10px;background:#f7f8fc;border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);font-size:12px;font-family:var(--mono);outline:none;transition:border-color 0.2s;}
+input[type=number]:focus,input[type=text]:focus{border-color:rgba(46,127,255,0.4);}
+select{width:100%;padding:7px 10px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);font-size:12px;font-family:var(--mono);outline:none;cursor:pointer;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a95a8' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;transition:border-color 0.2s;}
+select:hover,select:focus{border-color:rgba(46,127,255,0.4);}
+.divider{height:1px;background:var(--border);margin:14px 0;}
+.metric-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px;}
+.metric-card{background:#ffffff;border:1px solid var(--border);box-shadow:0 2px 12px rgba(0,0,0,0.06);border-radius:var(--radius);padding:14px 12px;text-align:center;position:relative;overflow:hidden;}
+.metric-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.metric-card.blue::after{background:var(--accent);}
+.metric-card.teal::after{background:var(--accent2);}
+.metric-card.orange::after{background:var(--accent3);}
+.metric-card.purple::after{background:var(--accent4);}
+.metric-card .mval{font-family:var(--display);font-size:22px;font-weight:700;line-height:1;letter-spacing:-0.02em;}
+.metric-card.blue .mval{color:var(--accent);}
+.metric-card.teal .mval{color:var(--accent2);}
+.metric-card.orange .mval{color:var(--accent3);}
+.metric-card.purple .mval{color:var(--accent4);}
+.metric-card .munit{font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:2px;}
+.metric-card .mlbl{font-size:11px;color:var(--text2);margin-top:4px;}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:10px;font-family:var(--mono);font-weight:500;}
+.badge-ok{background:rgba(0,199,168,0.1);color:var(--accent2);border:1px solid rgba(0,199,168,0.2);}
+.badge-warn{background:rgba(255,107,53,0.1);color:var(--accent3);border:1px solid rgba(255,107,53,0.2);}
+.badge-err{background:rgba(255,70,70,0.1);color:#ff6464;border:1px solid rgba(255,70,70,0.2);}
+.main-grid{display:grid;grid-template-columns:370px 1fr;gap:16px;align-items:start;}
+.right-col{display:flex;flex-direction:column;gap:16px;}
+@media(max-width:900px){.main-grid{grid-template-columns:1fr;}}
+.data-table{width:100%;border-collapse:collapse;font-size:12px;}
+.data-table th{padding:8px 10px;font-size:10px;font-weight:500;color:var(--text3);border-bottom:1px solid var(--border);text-align:left;font-family:var(--mono);letter-spacing:0.05em;text-transform:uppercase;}
+.data-table td{padding:6px 8px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text2);}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table input{background:#f0f2f8;border:1px solid var(--border);border-radius:6px;padding:4px 7px;color:var(--text);font-size:12px;font-family:var(--mono);width:100%;outline:none;}
+.data-table input:focus{border-color:rgba(46,127,255,0.35);}
+.data-table select{background:#f0f2f8;border:1px solid var(--border);border-radius:6px;padding:4px 7px;color:var(--text);font-size:11px;font-family:var(--mono);width:100%;outline:none;padding-right:22px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%238a95a8' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 5px center;-webkit-appearance:none;}
+.td-result{color:var(--accent)!important;font-family:var(--mono);font-weight:500;text-align:right;white-space:nowrap;}
+.btn-add{font-family:var(--mono);font-size:10px;letter-spacing:0.05em;padding:5px 12px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:5px;transition:all 0.2s;}
+.btn-add:hover{border-color:rgba(46,127,255,0.4);color:var(--accent);}
+.btn-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:3px 7px;border-radius:5px;transition:all 0.2s;}
+.btn-del:hover{color:#ff6464;background:rgba(255,70,70,0.08);}
+.preset-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+.preset-pill{font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;transition:all 0.2s;letter-spacing:0.03em;}
+.preset-pill:hover{border-color:rgba(46,127,255,0.4);color:var(--accent);}
+.preset-pill.active{background:rgba(46,127,255,0.1);border-color:rgba(46,127,255,0.35);color:var(--accent);}
+.eq-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;font-family:var(--mono);margin-bottom:5px;}
+.eq-box{background:#f0f4ff;border:1px solid rgba(46,127,255,0.15);border-radius:var(--radius);padding:12px 14px;font-family:var(--mono);font-size:11px;color:var(--accent);line-height:2;margin-bottom:14px;}
+.result-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.result-row:last-child{border-bottom:none;}
+.result-row .rl{color:var(--text2);font-family:var(--mono);}
+.result-row .rv{color:var(--text);font-weight:500;font-family:var(--mono);}
+.result-row .rv-accent{color:var(--accent);font-weight:500;font-family:var(--mono);}
+.step-box{background:#f7f8fc;border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;font-family:var(--mono);font-size:11px;color:var(--text2);line-height:2.4;white-space:pre-wrap;}
+.step-box span{color:var(--text);}
+.step-box .step-num{color:var(--accent3);margin-right:6px;}
+.rec-item{border-left:2px solid rgba(46,127,255,0.4);padding:10px 14px;margin-bottom:10px;border-radius:0 var(--radius) var(--radius) 0;background:#f7f8fc;}
+.rec-item .rec-title{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--text);margin-bottom:3px;}
+.rec-item .rec-body{font-size:11px;color:var(--text2);line-height:1.7;}
+.chart-wrap{position:relative;height:200px;width:100%;}
+.sec-label{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--border);}
+.chart-legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text2);font-family:var(--mono);}
+.legend-dot{width:20px;height:3px;border-radius:2px;}
+footer{margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+footer p{font-family:var(--mono);font-size:10px;color:var(--text3);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+/* live pulse indicator */
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.7)}}
+
+/* ── TOOL HERO HEADER ── */
+.tool-hero{display:flex;align-items:flex-start;gap:20px;margin-bottom:2rem;}
+.tool-icon-wrap{width:72px;height:72px;border-radius:18px;border:1px solid transparent;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 18px rgba(0,0,0,0.10);}
+.tool-hero-text{display:flex;flex-direction:column;gap:2px;}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <div class="tool-hero">
+    <div class="tool-icon-wrap" style="background:rgba(46,127,255,0.12);border-color:#2e7fff33">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22 12H18L15 21L9 3L6 12H2" stroke="#2e7fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="tool-hero-text">
+      <div class="eyebrow">ICT DESIGN TOOLS</div>
+      <h1>Bandwidth Calculator</h1>
+      <p class="subtitle">Multi-system real-time bandwidth analysis</p>
+      <div class="version-badge"><i class="fa fa-circle-check"></i> v3.0 &mdash; Professional Edition</div>
+    </div>
+  </div>
+</header>
+
+<div class="main-grid">
+  <!-- LEFT: parameters -->
+  <div style="display:flex;flex-direction:column;gap:16px;">
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-header-left"><i class="fa fa-sliders"></i><h3>System parameters</h3></div>
+      </div>
+      <div class="panel-body">
+        <div class="eq-label">Formula</div>
+        <div class="eq-box">BW = N &times; R &times; CF &times; OH &times; (1 + S + G)</div>
+
+        <div class="sec-label">Quick presets</div>
+        <div class="preset-row">
+          <button class="preset-pill" id="pre-office"     onclick="bwPreset('office',this)">Office</button>
+          <button class="preset-pill" id="pre-hospital"   onclick="bwPreset('hospital',this)">Hospital</button>
+          <button class="preset-pill" id="pre-industrial" onclick="bwPreset('industrial',this)">Industrial</button>
+          <button class="preset-pill" id="pre-university" onclick="bwPreset('university',this)">University</button>
+          <button class="preset-pill" id="pre-gov"        onclick="bwPreset('gov',this)">Government</button>
+          <button class="preset-pill" id="pre-dc"         onclick="bwPreset('dc',this)">Data Center</button>
+        </div>
+
+        <div class="field">
+          <div class="field-label">Project location</div>
+          <select id="bw-location" onchange="calcBW()">
+            <option value="saudi">Saudi Arabia (SASO / CITC)</option>
+            <option value="egypt">Egypt (NTRA)</option>
+            <option value="gcc">Other GCC</option>
+            <option value="intl" selected>International</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="field-label">Facility type</div>
+          <select id="bw-facility" onchange="calcBW()">
+            <option value="office">Office building</option>
+            <option value="hospital">Healthcare facility</option>
+            <option value="industrial">Industrial complex</option>
+            <option value="edu">Educational institution</option>
+            <option value="retail">Retail / Commercial</option>
+            <option value="gov">Government building</option>
+            <option value="dc">Data center</option>
+          </select>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="field">
+          <div class="field-label">Protocol overhead (OH) <span class="val" id="bw-oh-v">1.25</span></div>
+          <select id="bw-oh" onchange="document.getElementById('bw-oh-v').textContent=this.value;calcBW()">
+            <option value="1.2">1.20 &mdash; Standard TCP/IP</option>
+            <option value="1.25" selected>1.25 &mdash; Recommended</option>
+            <option value="1.3">1.30 &mdash; High overhead</option>
+            <option value="1.35">1.35 &mdash; VPN / Encrypted</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="field-label">Scalability margin (S) <span class="val" id="bw-s-v">25%</span></div>
+          <select id="bw-s" onchange="document.getElementById('bw-s-v').textContent=(parseFloat(this.value)*100)+'%';calcBW()">
+            <option value="0.2">0.20 &mdash; 20% Minimal</option>
+            <option value="0.25" selected>0.25 &mdash; 25% Standard</option>
+            <option value="0.3">0.30 &mdash; 30% Recommended</option>
+            <option value="0.4">0.40 &mdash; 40% Future-proof</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="field-label">Growth margin (G) <span class="val" id="bw-growth-v">30%</span></div>
+          <input type="range" min="0" max="100" value="30" step="1" id="bw-growth"
+            oninput="document.getElementById('bw-growth-v').textContent=this.value+'%';calcBW()">
+        </div>
+        <div class="field">
+          <div class="field-label">Link capacity (Mbps) <span class="val" id="bw-linkcap-v">1000</span></div>
+          <input type="range" min="100" max="100000" value="1000" step="100" id="bw-linkcap"
+            oninput="document.getElementById('bw-linkcap-v').textContent=parseInt(this.value).toLocaleString();calcBW()">
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary results box -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-header-left"><i class="fa fa-sigma"></i><h3>Summary results</h3></div>
+      </div>
+      <div class="panel-body" style="padding:14px 18px">
+        <div class="result-row"><span class="rl">Base traffic</span><span class="rv-accent" id="bw-r-base">—</span></div>
+        <div class="result-row"><span class="rl">After overhead &times;OH</span><span class="rv" id="bw-r-oh">—</span></div>
+        <div class="result-row"><span class="rl">After scalability &times;(1+S)</span><span class="rv" id="bw-r-s">—</span></div>
+        <div class="result-row"><span class="rl">Final design BW</span><span class="rv-accent" id="bw-r-growth">—</span></div>
+        <div class="result-row"><span class="rl">Downlink (80%)</span><span class="rv" id="bw-r-down">—</span></div>
+        <div class="result-row"><span class="rl">Uplink (20%)</span><span class="rv" id="bw-r-up">—</span></div>
+        <div class="result-row"><span class="rl">Recommended backbone</span><span class="rv-accent" id="bw-r-bb">—</span></div>
+        <div class="result-row"><span class="rl">Link utilisation</span><span id="bw-r-util">—</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: table + charts -->
+  <div class="right-col">
+
+    <div class="metric-strip">
+      <div class="metric-card blue"><div class="mval" id="bw-m1">—</div><div class="munit">Mbps</div><div class="mlbl">Raw bandwidth</div></div>
+      <div class="metric-card teal"><div class="mval" id="bw-m2">—</div><div class="munit">Mbps</div><div class="mlbl">Design bandwidth</div></div>
+      <div class="metric-card orange"><div class="mval" id="bw-m3">—</div><div class="munit">Mbps</div><div class="mlbl">Downlink 80%</div></div>
+      <div class="metric-card purple"><div class="mval" id="bw-m4">—</div><div class="munit">Mbps</div><div class="mlbl">Uplink 20%</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-header-left"><i class="fa fa-table-list"></i><h3>Multi-system device table</h3></div>
+        <button class="btn-add" onclick="bwAddRow()"><i class="fa fa-plus"></i> Add system</button>
+      </div>
+      <div class="panel-body" style="padding:0">
+        <div style="overflow-x:auto;padding:0 18px">
+          <table class="data-table">
+            <thead><tr>
+              <th style="width:22%">System / device</th>
+              <th style="width:9%">Qty (N)</th>
+              <th style="width:14%">Rate/device (R) Mbps</th>
+              <th style="width:11%">Concurrency (CF)</th>
+              <th style="width:13%">Category</th>
+              <th style="width:14%">Bandwidth</th>
+              <th style="width:9%">% share</th>
+              <th style="width:6%"></th>
+            </tr></thead>
+            <tbody id="bw-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Breakdown bar chart -->
+    <div class="panel">
+      <div class="panel-header"><div class="panel-header-left"><i class="fa fa-chart-bar"></i><h3>Bandwidth breakdown by system</h3></div></div>
+      <div class="panel-body">
+        <div class="chart-wrap" style="height:220px"><canvas id="bw-chart"></canvas></div>
+        <div class="chart-legend" id="bw-legend"></div>
+      </div>
+    </div>
+
+    <!-- Utilisation gauge chart -->
+    <div class="panel">
+      <div class="panel-header"><div class="panel-header-left"><i class="fa fa-gauge-high"></i><h3>Link utilisation</h3></div></div>
+      <div class="panel-body">
+        <div class="chart-wrap" style="height:180px"><canvas id="bw-util-chart"></canvas></div>
+        <div id="bw-util-note" style="font-family:var(--mono);font-size:11px;color:var(--text2);text-align:center;margin-top:8px;"></div>
+      </div>
+    </div>
+
+    <!-- Step-by-step -->
+    <div class="panel" id="bw-steps-panel">
+      <div class="panel-header"><div class="panel-header-left"><i class="fa fa-list-ol"></i><h3>Step-by-step calculation</h3></div></div>
+      <div class="panel-body"><div id="bw-steps-box" class="step-box"></div></div>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="panel" id="bw-rec-panel">
+      <div class="panel-header"><div class="panel-header-left"><i class="fa fa-lightbulb"></i><h3>Infrastructure recommendations</h3></div></div>
+      <div class="panel-body" id="bw-rec-body"></div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <p><i class="fa fa-shield-halved"></i> Enterprise Bandwidth Calculator</p>
+  <p>Enterprise Bandwidth Calculator v3.0</p>
+</footer>
+</div>
+
+<script>
+const COLORS=['#2e7fff','#00c7a8','#ff6b35','#a78bfa','#38bdf8','#f59e0b','#34d399','#f87171','#818cf8','#fb923c','#4ade80','#e879f9'];
+
+let bwDevices=[
+  {name:'PC users',     qty:200,bw:5,  c:0.5,cat:'Data'},
+  {name:'IP phones',    qty:150,bw:0.1,c:0.2,cat:'VoIP'},
+  {name:'CCTV cameras', qty:80, bw:4,  c:0.8,cat:'Video'},
+  {name:'Wi-Fi users',  qty:300,bw:3,  c:0.4,cat:'Wi-Fi'},
+  {name:'Video conf.',  qty:20, bw:8,  c:0.6,cat:'Video'},
+];
+
+let bwChart=null, bwUtilChart=null;
+function debounce(fn,ms){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};}
+const deferCharts=debounce(drawBWCharts,80);
+
+const BW_PRESETS={
+  office:    {rows:[{name:'PC users',qty:500,bw:2,c:0.4,cat:'Data'},{name:'IP phones',qty:400,bw:0.1,c:0.2,cat:'VoIP'},{name:'Wi-Fi users',qty:600,bw:3,c:0.4,cat:'Wi-Fi'},{name:'CCTV cameras',qty:50,bw:4,c:0.8,cat:'Video'},{name:'Printers/NAS',qty:30,bw:0.5,c:0.1,cat:'Other'}],oh:'1.25',s:'0.25',g:30,cap:1000},
+  hospital:  {rows:[{name:'Clinical PCs',qty:300,bw:3,c:0.6,cat:'Data'},{name:'PACS/Imaging',qty:20,bw:50,c:0.5,cat:'Video'},{name:'IP phones',qty:500,bw:0.1,c:0.3,cat:'VoIP'},{name:'CCTV',qty:120,bw:4,c:0.9,cat:'Video'},{name:'Nurse call',qty:100,bw:0.2,c:0.5,cat:'Other'}],oh:'1.3',s:'0.3',g:40,cap:10000},
+  industrial:{rows:[{name:'SCADA terminals',qty:200,bw:1.5,c:0.7,cat:'SCADA'},{name:'IP cameras',qty:60,bw:4,c:1.0,cat:'Video'},{name:'Wireless APs',qty:30,bw:20,c:0.5,cat:'Wi-Fi'},{name:'PLC/HMI',qty:80,bw:0.5,c:0.6,cat:'SCADA'}],oh:'1.25',s:'0.4',g:30,cap:1000},
+  university:{rows:[{name:'Student PCs',qty:1000,bw:2,c:0.5,cat:'Data'},{name:'Wi-Fi users',qty:2000,bw:3,c:0.4,cat:'Wi-Fi'},{name:'Lecture AV',qty:50,bw:8,c:0.3,cat:'Video'},{name:'IP phones',qty:200,bw:0.1,c:0.2,cat:'VoIP'},{name:'Library servers',qty:10,bw:100,c:0.2,cat:'Data'}],oh:'1.25',s:'0.3',g:30,cap:10000},
+  gov:       {rows:[{name:'Staff PCs',qty:400,bw:2,c:0.4,cat:'Data'},{name:'CCTV',qty:200,bw:4,c:0.9,cat:'Video'},{name:'VoIP phones',qty:400,bw:0.1,c:0.25,cat:'VoIP'},{name:'Video conf.',qty:10,bw:8,c:0.4,cat:'Video'},{name:'Secure WAN',qty:50,bw:5,c:0.5,cat:'Other'}],oh:'1.35',s:'0.3',g:35,cap:10000},
+  dc:        {rows:[{name:'Server links',qty:100,bw:10000,c:0.7,cat:'Data'},{name:'Storage fabric',qty:20,bw:40000,c:0.5,cat:'Data'},{name:'Management',qty:10,bw:1000,c:0.3,cat:'Other'},{name:'Backup traffic',qty:20,bw:5000,c:0.4,cat:'Data'}],oh:'1.2',s:'0.4',g:50,cap:100000},
+};
+
+function bwPreset(k,btn){
+  document.querySelectorAll('.preset-pill').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  const p=BW_PRESETS[k];
+  bwDevices=p.rows.map(r=>({...r}));
+  document.getElementById('bw-oh').value=p.oh;
+  document.getElementById('bw-oh-v').textContent=p.oh;
+  document.getElementById('bw-s').value=p.s;
+  document.getElementById('bw-s-v').textContent=(parseFloat(p.s)*100)+'%';
+  document.getElementById('bw-growth').value=p.g;
+  document.getElementById('bw-growth-v').textContent=p.g+'%';
+  document.getElementById('bw-linkcap').value=p.cap;
+  document.getElementById('bw-linkcap-v').textContent=p.cap.toLocaleString();
+  bwRender();
+}
+
+function bwRender(){
+  const tb=document.getElementById('bw-tbody');
+  const cats=['Data','VoIP','Video','Wi-Fi','CCTV','SCADA','Other'];
+  let total=0; bwDevices.forEach(d=>total+=d.qty*d.bw*d.c);
+  tb.innerHTML='';
+  bwDevices.forEach((d,i)=>{
+    const res=d.qty*d.bw*d.c;
+    const pct=total>0?Math.round(res/total*100):0;
+    const catOpts=cats.map(c=>`<option${c===d.cat?' selected':''}>${c}</option>`).join('');
+    const tr=document.createElement('tr');
+    tr.dataset.idx=i;
+    tr.innerHTML=`
+      <td><input type="text"   class="bw-name" value="${d.name}"></td>
+      <td><input type="number" class="bw-qty"  value="${d.qty}"  min="0" step="1"></td>
+      <td><input type="number" class="bw-bw"   value="${d.bw}"   min="0" step="0.1"></td>
+      <td><input type="number" class="bw-c"    value="${d.c}"    min="0" max="1" step="0.05"></td>
+      <td><select class="bw-cat">${catOpts}</select></td>
+      <td class="td-result bw-res">${res>=1000?(res/1000).toFixed(2)+' G':res.toFixed(2)+' M'}bps</td>
+      <td class="td-result bw-pct" style="color:var(--text3)">${pct}%</td>
+      <td><button class="btn-del bw-del" title="Remove"><i class="fa fa-trash-can"></i></button></td>`;
+    tb.appendChild(tr);
+  });
+  calcBW();
+}
+
+function bwAddRow(){
+  bwDevices.push({name:'New system',qty:10,bw:2,c:0.5,cat:'Data'});
+  bwRender();
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const bwTb=document.getElementById('bw-tbody');
+  bwTb.addEventListener('input',e=>{
+    const tr=e.target.closest('tr'); if(!tr) return;
+    const i=parseInt(tr.dataset.idx); if(isNaN(i)) return;
+    const d=bwDevices[i];
+    if(e.target.classList.contains('bw-name')) d.name=e.target.value;
+    if(e.target.classList.contains('bw-qty'))  d.qty=parseFloat(e.target.value)||0;
+    if(e.target.classList.contains('bw-bw'))   d.bw=parseFloat(e.target.value)||0;
+    if(e.target.classList.contains('bw-c'))    d.c=parseFloat(e.target.value)||0;
+    /* update row cells live */
+    let total=0; bwDevices.forEach(x=>total+=x.qty*x.bw*x.c);
+    const res=d.qty*d.bw*d.c;
+    const resCell=tr.querySelector('.bw-res');
+    const pctCell=tr.querySelector('.bw-pct');
+    if(resCell) resCell.textContent=(res>=1000?(res/1000).toFixed(2)+' G':res.toFixed(2)+' M')+'bps';
+    if(pctCell) pctCell.textContent=total>0?Math.round(res/total*100)+'%':'—';
+    calcBW();
+  });
+  bwTb.addEventListener('change',e=>{
+    const tr=e.target.closest('tr'); if(!tr) return;
+    const i=parseInt(tr.dataset.idx); if(isNaN(i)) return;
+    if(e.target.classList.contains('bw-cat')) bwDevices[i].cat=e.target.value;
+    calcBW();
+  });
+  bwTb.addEventListener('click',e=>{
+    if(e.target.closest('.bw-del')){
+      bwDevices.splice(parseInt(e.target.closest('tr').dataset.idx),1);
+      bwRender();
+    }
+  });
+});
+
+function calcBW(){
+  let base=0; bwDevices.forEach(d=>base+=d.qty*d.bw*d.c);
+  const oh=parseFloat(document.getElementById('bw-oh').value);
+  const s=parseFloat(document.getElementById('bw-s').value);
+  const g=parseInt(document.getElementById('bw-growth').value);
+  const cap=parseInt(document.getElementById('bw-linkcap').value);
+  const afterOH=base*oh;
+  const afterS=afterOH*(1+s);
+  const final=afterS*(1+g/100);
+  const down=final*0.8, up=final*0.2;
+
+  function fmt(v){return v>=1000?(v/1000).toFixed(1)+'G':v.toFixed(1);}
+  document.getElementById('bw-m1').textContent=fmt(base);
+  document.getElementById('bw-m2').textContent=fmt(final);
+  document.getElementById('bw-m3').textContent=fmt(down);
+  document.getElementById('bw-m4').textContent=fmt(up);
+  document.getElementById('bw-r-base').textContent=base.toFixed(2)+' Mbps';
+  document.getElementById('bw-r-oh').textContent=afterOH.toFixed(2)+' Mbps';
+  document.getElementById('bw-r-s').textContent=afterS.toFixed(2)+' Mbps';
+  document.getElementById('bw-r-growth').textContent=final.toFixed(2)+' Mbps';
+  document.getElementById('bw-r-down').textContent=down.toFixed(2)+' Mbps';
+  document.getElementById('bw-r-up').textContent=up.toFixed(2)+' Mbps';
+
+  let bb='';
+  if(final<100) bb='100 Mbps';
+  else if(final<1000) bb='1 Gbps';
+  else if(final<10000) bb='10 Gbps';
+  else if(final<40000) bb='40 Gbps';
+  else bb='100 Gbps';
+  document.getElementById('bw-r-bb').textContent=bb+' backbone';
+
+  const utilPct=cap>0?Math.round((final/cap)*100):0;
+  const ub=utilPct<60?'badge-ok':utilPct<80?'badge-warn':'badge-err';
+  document.getElementById('bw-r-util').innerHTML='<span class="badge '+ub+'">'+utilPct+'% utilised</span>';
+
+  /* update % share column live */
+  const rows=document.querySelectorAll('#bw-tbody tr');
+  rows.forEach(tr=>{
+    const i=parseInt(tr.dataset.idx);
+    const d=bwDevices[i];
+    if(!d) return;
+    const res=d.qty*d.bw*d.c;
+    const pc=tr.querySelector('.bw-pct');
+    if(pc) pc.textContent=base>0?Math.round(res/base*100)+'%':'—';
+  });
+
+  /* steps */
+  let steps='<span class="step-num">01</span>Base = \u03a3(N\u00d7R\u00d7CF) = <span>'+base.toFixed(2)+' Mbps</span>\n';
+  steps+='<span class="step-num">02</span>Protocol overhead (\u00d7'+oh+') \u2192 <span>'+afterOH.toFixed(2)+' Mbps</span>\n';
+  steps+='<span class="step-num">03</span>Scalability (+'+Math.round(s*100)+'%) \u2192 <span>'+afterS.toFixed(2)+' Mbps</span>\n';
+  steps+='<span class="step-num">04</span>Growth margin (+'+g+'%) \u2192 <span>'+final.toFixed(2)+' Mbps</span>\n';
+  steps+='<span class="step-num">05</span>Downlink 80% / Uplink 20% \u2192 <span>'+down.toFixed(1)+' / '+up.toFixed(1)+' Mbps</span>\n';
+  steps+='<span class="step-num">06</span>Link cap '+cap.toLocaleString()+' Mbps \u2192 utilisation <span>'+utilPct+'%</span>';
+  document.getElementById('bw-steps-box').innerHTML=steps;
+
+  /* recommendations */
+  let cable='',fiber='',sw='';
+  if(final<=1000){cable='Cat6A UTP (500\u202fMHz, 10GBASE-T capable)';fiber='OM3/OM4 Multimode Fiber (850\u202fnm)';sw='Gigabit switches + 10G uplinks';}
+  else if(final<=10000){cable='Cat6A STP (shielded, industrial grade)';fiber='OM4 Multimode + OS2 Single-mode backbone';sw='10G switches + 40G backbone';}
+  else{cable='Fiber-only infrastructure recommended';fiber='OS2 Single-mode (9/125\u202f\u03bcm) MPO connectors';sw='25/40G switches + 100G backbone';}
+  const locVal=document.getElementById('bw-location').value;
+  let std='IEC 11801-1:2017, TIA-568.0-D, ITU-T G.1010';
+  if(locVal==='saudi') std='SASO ICS 33.040.20, CITC Technical Standards, IEC 11801-1:2017';
+  else if(locVal==='egypt') std='NTRA Technical Standards, Egyptian Telecom Code, IEC 11801-1:2017';
+  else if(locVal==='gcc') std='GCC Standards, IEC 11801-1:2017, TIA-568.0-D';
+  document.getElementById('bw-rec-body').innerHTML=
+    '<div class="rec-item"><div class="rec-title">Horizontal cabling</div><div class="rec-body">'+cable+'<br><small style="color:var(--text3)">Panduit TX6A\u2122, CommScope SYSTIMAX Cat6A</small></div></div>'+
+    '<div class="rec-item"><div class="rec-title">Backbone / fiber</div><div class="rec-body">'+fiber+'<br><small style="color:var(--text3)">Corning OptiTap\u00ae, CommScope LazrSPEED\u00ae</small></div></div>'+
+    '<div class="rec-item"><div class="rec-title">Network equipment</div><div class="rec-body">'+sw+'<br><small style="color:var(--text3)">Cisco Catalyst 9000, Juniper EX Series</small></div></div>'+
+    '<div class="rec-item"><div class="rec-title">QoS (IEEE 802.1p)</div><div class="rec-body">Voice P6, Video P5, Data P3, Best-effort P0</div></div>'+
+    '<div class="rec-item"><div class="rec-title">Standards</div><div class="rec-body">'+std+'</div></div>';
+
+  deferCharts();
+}
+
+function drawBWCharts(){
+  const labels=bwDevices.map(d=>d.name);
+  const data=bwDevices.map(d=>parseFloat((d.qty*d.bw*d.c).toFixed(2)));
+  const colors=bwDevices.map((_,i)=>COLORS[i%COLORS.length]);
+  const total=data.reduce((a,b)=>a+b,0)||1;
+
+  /* bar chart */
+  const ctx1=document.getElementById('bw-chart').getContext('2d');
+  if(bwChart) bwChart.destroy();
+  bwChart=new Chart(ctx1,{
+    type:'bar',
+    data:{labels,datasets:[{label:'Mbps',data,backgroundColor:colors.map(c=>c+'99'),borderColor:colors,borderWidth:1,borderRadius:5}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.raw.toLocaleString()+' Mbps ('+Math.round(c.raw/total*100)+'%)'}}},
+      scales:{
+        x:{ticks:{color:'#8a95a8',font:{size:10,family:'DM Mono'}},grid:{color:'rgba(0,0,0,0.07)'}},
+        y:{ticks:{color:'#8a95a8',font:{size:10,family:'DM Mono'}},grid:{display:false}}
+      }}
+  });
+  document.getElementById('bw-legend').innerHTML=labels.map((l,i)=>
+    '<div class="legend-item"><div class="legend-dot" style="background:'+colors[i]+'"></div>'+l+
+    ' <span style="color:var(--text);margin-left:3px">'+Math.round(data[i]/total*100)+'%</span>'+
+    ' <span style="color:var(--text3);margin-left:3px">'+data[i].toLocaleString()+'\u202fMbps</span></div>').join('');
+
+  /* utilisation doughnut */
+  const cap=parseInt(document.getElementById('bw-linkcap').value)||1000;
+  let base=0; bwDevices.forEach(d=>base+=d.qty*d.bw*d.c);
+  const oh=parseFloat(document.getElementById('bw-oh').value);
+  const s=parseFloat(document.getElementById('bw-s').value);
+  const g=parseInt(document.getElementById('bw-growth').value);
+  const final=base*oh*(1+s)*(1+g/100);
+  const used=Math.min(final,cap);
+  const free=Math.max(cap-final,0);
+  const over=Math.max(final-cap,0);
+  const utilPct=Math.round((final/cap)*100);
+  const utilColor=utilPct<60?'#00c7a8':utilPct<80?'#ff6b35':'#ff4646';
+
+  const ctx2=document.getElementById('bw-util-chart').getContext('2d');
+  if(bwUtilChart) bwUtilChart.destroy();
+  bwUtilChart=new Chart(ctx2,{
+    type:'doughnut',
+    data:{
+      labels:over>0?['Used','Over capacity']:['Used','Available'],
+      datasets:[{
+        data:over>0?[used,over]:[used,free],
+        backgroundColor:over>0?[utilColor+'cc','#ff464644']:[utilColor+'cc','rgba(255,255,255,0.05)'],
+        borderColor:over>0?[utilColor,'#ff4646']:[ utilColor,'rgba(255,255,255,0.08)'],
+        borderWidth:1
+      }]
+    },
+    options:{responsive:true,maintainAspectRatio:false,cutout:'72%',
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.raw.toLocaleString()+' Mbps'}}}}
+  });
+  const ctx2canvas=document.getElementById('bw-util-chart');
+  document.getElementById('bw-util-note').innerHTML=
+    '<span style="color:'+utilColor+';font-size:22px;font-weight:700">'+utilPct+'%</span>'+
+    ' <span style="color:var(--text2)">utilised &mdash; '+cap.toLocaleString()+'\u202fMbps link &mdash; '+
+    (over>0?'<span style="color:#ff4646">'+over.toFixed(0)+'\u202fMbps over capacity</span>':'<span style="color:var(--accent2)">'+free.toFixed(0)+'\u202fMbps headroom</span>')+
+    '</span>';
+}
+
+bwRender();
+</script>
+</body>
+</html>

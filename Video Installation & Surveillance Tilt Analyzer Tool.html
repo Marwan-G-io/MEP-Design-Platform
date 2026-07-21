@@ -1,0 +1,2015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security Tools — Video Installation & Surveillance Tilt Analyzer</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f0f2f5;--bg2:#e8eaed;--bg3:#dde1e7;--card:#ffffff;--border:#cbd0d8;--red:#d42a4e;--red2:#e05520;--amber:#c47d00;--cyan:#007aad;--green:#008f5f;--purple:#7c3aed;--text:#1e2530;--dim:#6b7280;--hi:#0a0e17;--grid:rgba(0,0,0,0.04)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;min-height:100vh;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;display:flex;flex-direction:column;position:relative}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:32px 32px;pointer-events:none;z-index:0}
+.app-header{display:flex;align-items:center;gap:14px;padding:11px 18px;border-bottom:1px solid var(--border);position:relative;z-index:10;flex-shrink:0}
+.logo{width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,#fff0f2,#fde8ec);border:1.5px solid rgba(212,42,78,0.35);display:flex;align-items:center;justify-content:center;box-shadow:0 0 16px rgba(212,42,78,0.12);flex-shrink:0}
+.logo svg{width:22px;height:22px}
+.header-text h1{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--hi);line-height:1}
+.header-text p{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+.header-text p span{color:var(--red);font-weight:700}
+.back-btn{margin-left:auto;display:flex;align-items:center;gap:6px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--dim);border:1px solid var(--border);background:var(--bg3);border-radius:7px;padding:5px 12px;cursor:pointer;transition:all .2s}
+.back-btn:hover{color:var(--text);border-color:var(--red)}
+.back-btn svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.breadcrumb{padding:5px 18px;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;flex-shrink:0;z-index:10;position:relative}
+.breadcrumb span{color:var(--red)}
+.tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;z-index:10;position:relative;background:var(--bg)}
+.tab{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:8px 18px;cursor:pointer;color:var(--dim);border-bottom:2px solid transparent;transition:all .2s;display:flex;align-items:center;gap:7px}
+.tab:hover{color:var(--text);background:rgba(255,255,255,0.02)}
+.tab.active{color:var(--red);border-bottom-color:var(--red);background:rgba(212,42,78,0.06)}
+.tab svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.main{display:flex;flex-direction:column;flex:1;min-height:0;position:relative;z-index:1;overflow:hidden}
+.tab-panel{display:none;flex:1;min-height:0;overflow:hidden}
+.tab-panel.active{display:flex;flex-direction:row}
+.controls{border-right:1px solid var(--border);padding:12px 13px 20px;display:flex;flex-direction:column;gap:11px;overflow-y:auto;width:330px;flex-shrink:0}
+.controls::-webkit-scrollbar{width:3px}
+.controls::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.sec{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;color:var(--red);text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.sec::before{content:'';width:3px;height:12px;background:var(--red);border-radius:2px;flex-shrink:0}
+.sec::after{content:'';flex:1;height:1px;background:var(--border)}
+.input-group{display:flex;flex-direction:column;gap:9px}
+.field{display:grid;grid-template-columns:1fr auto;align-items:center;gap:6px;row-gap:3px}
+.field label{font-size:11px;color:var(--dim);grid-column:1/-1;display:flex;align-items:center;gap:6px;font-weight:500}
+.field label strong{color:var(--text);font-weight:600}
+.sym{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--amber);background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.25);border-radius:4px;padding:1px 5px}
+input[type=range]{-webkit-appearance:none;width:100%;height:2px;border-radius:2px;background:var(--border);outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:var(--red);border:2px solid var(--bg);box-shadow:0 0 7px rgba(212,42,78,0.4);transition:transform .15s}
+input[type=range]::-webkit-slider-thumb:active{transform:scale(1.3)}
+input[type=range].cg::-webkit-slider-thumb{background:var(--green);box-shadow:0 0 7px rgba(0,143,95,0.4)}
+input[type=range].ca::-webkit-slider-thumb{background:var(--amber);box-shadow:0 0 7px rgba(196,125,0,0.4)}
+input[type=range].cc::-webkit-slider-thumb{background:var(--cyan);box-shadow:0 0 7px rgba(0,122,173,0.4)}
+input[type=range]:disabled{opacity:0.35;cursor:not-allowed}
+.val-box{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--hi);background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;min-width:58px;text-align:right;white-space:nowrap}
+/* toggle switch */
+.toggle-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.toggle-label{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;color:var(--text)}
+.toggle-switch{position:relative;width:36px;height:18px;flex-shrink:0}
+.toggle-switch input{opacity:0;width:0;height:0;position:absolute}
+.toggle-slider{position:absolute;inset:0;background:var(--border);border-radius:18px;cursor:pointer;transition:.2s}
+.toggle-slider::before{content:'';position:absolute;height:12px;width:12px;left:3px;top:3px;background:var(--dim);border-radius:50%;transition:.2s}
+.toggle-switch input:checked+.toggle-slider{background:var(--red)}
+.toggle-switch input:checked+.toggle-slider::before{transform:translateX(18px);background:white}
+.mode-badge{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;padding:2px 7px;border-radius:3px;font-weight:700}
+.mode-badge.fixed{background:rgba(0,122,173,.1);color:var(--cyan);border:1px solid rgba(0,122,173,.3)}
+.mode-badge.auto{background:rgba(0,143,95,.08);color:var(--green);border:1px solid rgba(0,143,95,.3)}
+/* fov-out alert */
+.fov-alert{display:none;align-items:center;gap:7px;background:rgba(212,42,78,.08);border:1px solid rgba(212,42,78,.35);border-radius:6px;padding:7px 10px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--red);font-weight:700;letter-spacing:1px}
+.fov-alert.show{display:flex}
+.fov-alert svg{width:14px;height:14px;stroke:var(--red);fill:none;stroke-width:2;flex-shrink:0}
+.results{display:flex;flex-direction:column;gap:7px}
+.rc{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:9px 11px;position:relative;overflow:hidden;transition:border-color .2s}
+.rc:hover{border-color:rgba(240,58,95,0.25)}
+.rc::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;border-radius:2px 0 0 2px;background:var(--rc-accent, var(--dim))}
+.rc.red::before{background:var(--red)} .rc.cyan::before{background:var(--cyan)} .rc.green::before{background:var(--green)} .rc.amber::before{background:var(--amber)} .rc.purple::before{background:var(--purple)} .rc.orange::before{background:var(--red2)}
+.rl{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:1px}
+.rt{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;margin-bottom:1px}
+.rc.red .rt{color:var(--red)} .rc.cyan .rt{color:var(--cyan)} .rc.green .rt{color:var(--green)} .rc.amber .rt{color:var(--amber)} .rc.purple .rt{color:var(--purple)} .rc.orange .rt{color:var(--red2)}
+.rv{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;color:var(--hi);line-height:1;margin:3px 0 1px}
+.rf{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);margin-top:1px}
+.rr{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--green);margin-top:2px}
+.sira-wrap{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:9px 11px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.sira-note{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);margin-bottom:6px;line-height:1.5}
+.sira-note strong{color:var(--red)}
+.sira-table{width:100%;border-collapse:collapse}
+.sira-table th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);padding:3px 5px;border-bottom:1px solid var(--border);text-align:left}
+.sira-table td{padding:4px 5px;border-bottom:1px solid rgba(46,41,37,0.6);font-family:'Share Tech Mono',monospace;font-size:10px}
+.sira-table tr:last-child td{border-bottom:none}
+.sira-table td:first-child{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;color:var(--text)}
+.badge{display:inline-flex;align-items:center;gap:4px;font-family:'Share Tech Mono',monospace;font-size:9px;padding:2px 6px;border-radius:3px;font-weight:700;letter-spacing:1px}
+.badge.ok{background:rgba(0,143,95,.08);color:var(--green);border:1px solid rgba(0,143,95,.3)}
+.badge.fail{background:rgba(212,42,78,.08);color:var(--red);border:1px solid rgba(212,42,78,.3)}
+.dot2{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.dot2.ok{background:var(--green);box-shadow:0 0 4px rgba(0,143,95,0.5)}
+.dot2.fail{background:var(--red);box-shadow:0 0 4px rgba(212,42,78,0.5)}
+.blind-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.bval{background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.2);border-radius:6px;padding:6px 8px}
+.bval .bl{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:2px}
+.bval .bv{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--purple)}
+.bval .bs{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);margin-top:1px}
+.diagram-panel{display:flex;flex-direction:column;padding:10px 12px 7px;gap:8px;min-width:0;position:relative;flex:1;overflow:hidden}
+.dp-title{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--dim);flex-shrink:0}
+.dp-title span{color:var(--red)}
+.diagram-svg{width:100%;flex:1;min-height:0;display:block}
+.legend{display:flex;gap:10px;flex-wrap:wrap;flex-shrink:0}
+.li{display:flex;align-items:center;gap:5px;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:1px}
+.ll{width:16px;height:2px;border-radius:1px;opacity:0.85}
+.h-diagrams{display:flex;flex-direction:column;gap:0;flex:1;min-height:0;overflow:hidden}
+.h-top{flex:3;min-height:0;border-bottom:1px solid var(--border);padding:8px 12px;display:flex;flex-direction:column;gap:5px;overflow:hidden}
+.h-bot{flex:1;min-height:0;padding:8px 12px;display:flex;flex-direction:column;gap:5px;overflow:hidden}
+.statusbar{flex-shrink:0;border-top:1px solid var(--border);padding:5px 16px;display:flex;align-items:center;gap:9px;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:1px;position:relative;z-index:10;flex-wrap:wrap}
+.statusbar .dot{width:6px;height:6px;border-radius:50%;background:var(--amber);box-shadow:0 0 5px rgba(196,125,0,0.5);animation:pulse 2s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.statusbar strong{font-weight:700}
+@media(max-width:780px){html,body{height:auto;overflow:auto}.tab-panel.active{flex-direction:column}.controls{width:100%;border-right:none;border-bottom:1px solid var(--border)}}
+
+/* ── LIGHT MODE OVERRIDES ── */
+body{box-shadow:none}
+.app-header{background:var(--bg);border-bottom-color:#d1d5db}
+.breadcrumb{background:var(--bg)}
+.tabs{background:var(--bg2)}
+.controls{background:var(--bg)}
+.rc{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
+.sira-wrap{box-shadow:0 1px 4px rgba(0,0,0,0.07)}
+.val-box{background:var(--bg2);border-color:#d1d5db;color:var(--hi)}
+.statusbar{background:var(--bg2)}
+input[type=range]{background:#d1d5db}
+.toggle-slider{background:#cbd0d8}
+.toggle-slider::before{background:#9ca3af}
+.sec::before{background:var(--red)}
+
+/* ══ 3D VIEW PANEL (scoped) ══ */
+#panel_3d{--td-bg:#f0f2f7;--td-bg2:#fff;--td-panel:#fff;--td-ac:#c8192e;--td-ac2:#e8294c;--td-ac-dim:rgba(200,25,46,.09);--td-tx:#1a1a2e;--td-tx2:#4a5070;--td-tx3:#8890a8;--td-bd:rgba(200,25,46,.18);--td-bd2:rgba(200,25,46,.3);--td-bd3:rgba(0,0,0,.09);--td-head:'Barlow Condensed',sans-serif;--td-sans:'Barlow',sans-serif;--td-mono:'DM Mono',monospace;--td-r:10px;--td-rl:14px}
+#panel_3d *,#panel_3d *::before,#panel_3d *::after{box-sizing:border-box;margin:0;padding:0}
+#panel_3d.tab-panel.active{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+#panel_3d .td-main-row{display:flex;flex:1;min-height:0;overflow:hidden}
+/* Controls Panel */
+#panel_3d .ctrl{width:310px;flex-shrink:0;border-right:1px solid var(--td-bd3);background:var(--td-bg2);overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+#panel_3d .ctrl::-webkit-scrollbar{width:3px}
+#panel_3d .ctrl::-webkit-scrollbar-thumb{background:rgba(200,25,46,.3);border-radius:2px}
+#panel_3d .sec{font-family:var(--td-head);font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--td-tx3);margin-bottom:6px;display:flex;align-items:center;gap:8px}
+#panel_3d .sec::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--td-bd2),transparent)}
+#panel_3d .field{margin-bottom:10px}
+#panel_3d input[type=checkbox]:checked + #g-tiltmode-slider{background:var(--td-ac)}
+#panel_3d input[type=checkbox]:checked + #g-tiltmode-slider::before{transform:translateX(18px)}
+#panel_3d #g-tiltmode-slider::before{content:'';position:absolute;height:12px;width:12px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+#panel_3d .field:last-child{margin-bottom:0}
+#panel_3d .fl{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:var(--td-tx2);margin-bottom:4px;font-family:var(--td-mono);letter-spacing:.04em}
+#panel_3d .fl .fv{color:var(--td-ac);font-weight:600;background:rgba(232,41,76,.1);padding:1px 6px;border-radius:4px;font-size:10px;border:1px solid rgba(232,41,76,.18)}
+#panel_3d input[type=range]{-webkit-appearance:none;width:100%;height:3px;background:#e8eaf0;border-radius:2px;outline:none;cursor:pointer}
+#panel_3d input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:var(--td-ac);border:2px solid #fff;cursor:pointer;box-shadow:0 0 0 3px rgba(232,41,76,.2),0 0 8px rgba(232,41,76,.4)}
+#panel_3d select{width:100%;padding:5px 8px;background:var(--td-bg2);border:1px solid var(--td-bd3);border-radius:var(--td-r);color:var(--td-tx);font-size:10px;font-family:var(--td-mono);outline:none;cursor:pointer}
+/* View Presets */
+#panel_3d .vp-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+#panel_3d .vp-btn{padding:5px 6px;background:var(--td-bg);border:1px solid var(--td-bd3);border-radius:6px;font-family:var(--td-head);font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--td-tx2);cursor:pointer;text-align:center;transition:all .15s}
+#panel_3d .vp-btn:hover,#panel_3d .vp-btn.on{border-color:var(--td-ac);color:var(--td-ac);background:var(--td-ac-dim);box-shadow:0 0 8px rgba(232,41,76,.15)}
+/* Canvas Area */
+#panel_3d .canvas-area{flex:1;position:relative;overflow:hidden;background:#12141c;min-width:0;min-height:0}
+#panel_3d canvas{min-width:0;min-height:0}
+#panel_3d #v3d{display:block;width:100%;height:100%;cursor:grab}
+#panel_3d #v3d:active{cursor:grabbing}
+/* Info Overlay (AXIS style) */
+#panel_3d .info-ov{position:absolute;bottom:16px;left:16px;background:rgba(12,14,22,.88);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 16px;font-family:var(--td-mono);font-size:11px;color:rgba(255,255,255,.85);line-height:1.9;pointer-events:none;min-width:260px}
+#panel_3d .info-ov .il{color:rgba(255,255,255,.5)}
+#panel_3d .info-ov .iv{color:#fff;font-weight:600}
+#panel_3d .info-ov .iv.acc{color:var(--td-ac2)}
+/* Branding */
+#panel_3d .brand-ov{position:absolute;top:14px;right:14px;display:flex;align-items:center;gap:8px;pointer-events:none}
+#panel_3d .brand-ov .logo-sm{width:32px;height:32px;border-radius:8px;background:rgba(232,41,76,.2);border:1px solid rgba(232,41,76,.5);display:flex;align-items:center;justify-content:center}
+#panel_3d .brand-ov .brand-txt{font-family:var(--td-head);font-size:14px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.7)}
+#panel_3d .brand-ov .brand-txt span{color:var(--td-ac2)}
+/* Axis indicator */
+#panel_3d .axis-ind{position:absolute;bottom:16px;right:16px;width:60px;height:60px;pointer-events:none}
+/* Status bar */
+#panel_3d .stbar{flex-shrink:0;border-top:1px solid var(--td-bd3);padding:5px 16px;display:flex;align-items:center;gap:10px;font-size:9px;color:var(--td-tx3);letter-spacing:.06em;text-transform:uppercase;font-family:var(--td-head);font-weight:600;background:var(--td-bg2)}
+#panel_3d .sdot{width:6px;height:6px;border-radius:50%;background:var(--td-ac);animation:pulse3d 2s infinite;flex-shrink:0;box-shadow:0 0 6px var(--td-ac)}
+@keyframes pulse3d{0%,100%{opacity:1}50%{opacity:.4}}
+/* DORI legend */
+#panel_3d .dori-legend{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
+#panel_3d .dori-legend-bar{position:absolute;top:8px;left:8px;right:8px;display:flex;gap:14px;flex-wrap:wrap;padding:5px 10px;background:rgba(255,255,255,.88);border:1px solid var(--td-bd3);border-radius:8px;font-family:var(--td-mono);font-size:10px;color:var(--td-tx2);z-index:5;backdrop-filter:blur(4px)}
+#panel_3d .dl-item{display:flex;align-items:center;gap:4px;white-space:nowrap}
+#panel_3d .dl-dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex-shrink:0}
+#panel_3d .dori-chip{display:flex;align-items:center;gap:3px;font-size:9px;color:rgba(255,255,255,.6);font-family:var(--td-mono)}
+#panel_3d .dori-dot{width:6px;height:6px;border-radius:50%}
+/* Tooltip */
+#panel_3d .hint{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(12,14,22,.75);color:rgba(255,255,255,.6);font-family:var(--td-mono);font-size:10px;padding:5px 14px;border-radius:20px;pointer-events:none;letter-spacing:.05em;transition:opacity .5s}
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="logo">
+    <svg viewBox="0 0 26 26" fill="none">
+      <path d="M13 2L3 7v6c0 5.25 4.25 10.15 10 11.35C18.75 23.15 23 18.25 23 13V7L13 2z" stroke="#f03a5f" stroke-width="1.5" stroke-linejoin="round"/>
+      <circle cx="13" cy="13" r="3.5" stroke="#f03a5f" stroke-width="1.5"/>
+      <circle cx="13" cy="13" r="6.5" stroke="#f03a5f" stroke-width="1" stroke-dasharray="2 2"/>
+    </svg>
+  </div>
+  <div class="header-text">
+    <h1>Security Tools</h1>
+    <p><span>VIDEO INSTALLATION</span> &amp; SURVEILLANCE TILT ANALYZER</p>
+  </div>
+  <button class="back-btn">
+    <svg viewBox="0 0 16 16"><polyline points="10 4 6 8 10 12"/></svg>
+    ICT Design Tools
+  </button>
+</div>
+<div class="breadcrumb">Security Tools <span>/</span> CCTV Design <span>/</span> Video Installation &amp; Surveillance Tilt Analyzer</div>
+
+<div class="tabs">
+  <div class="tab active" id="tab_vert" onclick="switchTab('vert')">
+    <svg viewBox="0 0 16 16"><line x1="8" y1="2" x2="8" y2="14"/><polyline points="4 10 8 14 12 10"/></svg>Vertical Plane
+  </div>
+  <div class="tab" id="tab_horiz" onclick="switchTab('horiz')">
+    <svg viewBox="0 0 16 16"><line x1="2" y1="8" x2="14" y2="8"/><polyline points="10 4 14 8 10 12"/></svg>Horizontal Plane
+  </div>
+  <div class="tab" id="tab_3d" onclick="switchTab('3d')">
+    <svg viewBox="0 0 16 16"><path d="M8 1l6 3.2v7.6L8 15l-6-3.2V4.2L8 1z"/><path d="M2 4.2l6 3.2 6-3.2M8 7.4V15"/></svg>3D View
+  </div>
+</div>
+
+<div class="main">
+
+<!-- ══ VERTICAL TAB ══ -->
+<div class="tab-panel active" id="panel_vert" style="display:flex">
+  <div class="controls">
+
+    <div>
+      <div class="sec">Installation</div>
+      <div class="input-group">
+        <div class="field">
+          <label><span class="sym">H_cam</span> <strong>Camera Height</strong></label>
+          <input type="range" id="v_Hcam" min="1.5" max="12" step="0.1" value="4.0" class="ca">
+          <span class="val-box" id="vv_Hcam">4.00 m</span>
+        </div>
+        <div class="field">
+          <label><span class="sym">h_t</span> <strong>Target Height</strong></label>
+          <input type="range" id="v_ht" min="0.5" max="3.0" step="0.05" value="1.6">
+          <span class="val-box" id="vv_ht">1.60 m</span>
+        </div>
+        <div class="field">
+          <label><span class="sym">D</span> <strong>Horizontal Distance</strong></label>
+          <input type="range" id="v_D" min="0.5" max="50" step="0.5" value="4.0" class="cg">
+          <span class="val-box" id="vv_D">4.00 m</span>
+        </div>
+        <!-- TILT MODE TOGGLE -->
+        <div style="border-top:1px solid var(--border);padding-top:9px;margin-top:2px">
+          <div class="toggle-row">
+            <label class="toggle-switch">
+              <input type="checkbox" id="tilt_fixed" onchange="drawVert()">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label">Camera Tilt Angle</span>
+            <span class="mode-badge" id="tilt_mode_badge">AUTO</span>
+          </div>
+          <div class="field" id="tilt_fixed_field" style="opacity:.35;pointer-events:none">
+            <label><span class="sym">θ_fix</span> <strong>Fixed Tilt Angle</strong></label>
+            <input type="range" id="v_theta_fix" min="0" max="85" step="0.5" value="30" class="cc" disabled>
+            <span class="val-box" id="vv_theta_fix">30.0°</span>
+          </div>
+          <div id="fov_alert" class="fov-alert" style="margin-top:6px">
+            <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><line x1="8" y1="5" x2="8" y2="8"/><line x1="8" y1="11" x2="8" y2="11.5" stroke-width="2.5"/></svg>
+            ✗ OUT OF FOV
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec">Lens</div>
+      <div class="input-group">
+        <div class="field">
+          <label><span class="sym">VFOV</span> <strong>Vertical Field of View</strong></label>
+          <input type="range" id="v_vfov" min="5" max="90" step="0.5" value="28" class="ca">
+          <span class="val-box" id="vv_vfov">28.0°</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec">Computed Angles</div>
+      <div class="results">
+        <div class="rc red">
+          <div class="rl">α — Vertical Angle</div>
+          <div class="rt">Target LOS → Upper FOV Boundary</div>
+          <div class="rv" id="r_alpha">—</div>
+          <div class="rf" id="f_alpha"></div>
+          <div class="rr" id="r_alpha_range"></div>
+        </div>
+        <div class="rc" id="r_dori_card" style="border-left-color:#9333ea">
+          <div class="rl">DORI Zone (by α)</div>
+          <div class="rt">Standard distance-resolution zone</div>
+          <div class="rv" id="r_dori_zone" style="font-size:20px">—</div>
+        </div>
+        <div class="rc cyan">
+          <div class="rl">θ — Tilt Angle</div>
+          <div class="rt">Camera Horiz Axis → Camera LOS</div>
+          <div class="rv" id="r_theta">—</div>
+          <div class="rf" id="f_theta"></div>
+          <div class="rr" id="r_theta_range"></div>
+        </div>
+        <div class="rc green">
+          <div class="rl">Lower FOV Ground Distance</div>
+          <div class="rt">Where Lower FOV Ray Strikes Ground</div>
+          <div class="rv" id="r_ground">—</div>
+          <div class="rf" id="f_ground"></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec">SIRA v4.0 DORI — α</div>
+      <div class="sira-wrap">
+        <div class="sira-note">Compliance checked against <strong>α (vertical angle)</strong></div>
+        <table class="sira-table">
+          <thead><tr><th>Level</th><th>Max α</th><th>PPM</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Inspection</td>    <td>10°</td><td>1000</td><td><span class="badge" id="s_insp">—</span></td></tr>
+            <tr><td>Identification</td><td>20°</td><td>300</td> <td><span class="badge" id="s_iden">—</span></td></tr>
+            <tr><td>Recognition</td>   <td>45°</td><td>125</td> <td><span class="badge" id="s_recog">—</span></td></tr>
+            <tr><td>Observation</td>   <td>45°</td><td>63.5</td><td><span class="badge" id="s_obs">—</span></td></tr>
+            <tr><td>Detection</td>     <td>75°</td><td>30</td>  <td><span class="badge" id="s_det">—</span></td></tr>
+            <tr><td>Monitoring</td>    <td>90°</td><td>12.5</td><td><span class="badge" id="s_mon">—</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec">Blind Area</div>
+      <div class="rc purple" style="padding:9px 11px">
+        <div class="rl">Dead zone — ground below lower FOV ray</div>
+        <div class="blind-grid">
+          <div class="bval"><div class="bl">Blind Length</div><div class="bv" id="b_len">—</div><div class="bs">wall→lower FOV hit</div></div>
+          <div class="bval"><div class="bl">FOV Ground Hit</div><div class="bv" id="b_hit">—</div><div class="bs">from camera base</div></div>
+          <div class="bval" style="grid-column:1/-1;background:rgba(124,58,237,.04)"><div class="bl">Formula</div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text);margin-top:2px;line-height:1.7" id="b_formula">—</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end controls -->
+
+  <div class="diagram-panel">
+    <div class="dp-title">// <span>Vertical</span> Plane — Side View</div>
+    <svg id="svg_vert" class="diagram-svg" viewBox="0 0 620 420" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrV" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+      <line x1="30" y1="368" x2="605" y2="368" stroke="#cbd0d8" stroke-width="1.5" stroke-dasharray="8 5"/>
+      <text x="34" y="383" font-family="Share Tech Mono,monospace" font-size="10" fill="#6b7280">ground</text>
+      <rect x="80" y="38" width="10" height="330" rx="2" fill="#f8f9fa" stroke="#cbd0d8" stroke-width="1"/>
+      <text id="lbl_vcam" x="0" y="0" font-family="Share Tech Mono,monospace" font-size="10" fill="#6b7280">camera</text>
+      <g id="dyn_vert"></g>
+    </svg>
+    <div class="legend">
+      <div class="li"><div class="ll" style="background:#00d4ff"></div>camera LOS (θ)</div>
+      <div class="li"><div class="ll" style="background:#f03a5f"></div>target LOS</div>
+      <div class="li"><div class="ll" style="background:#00e5a0"></div>FOV</div>
+      <div class="li"><div class="ll" style="background:#b06aff"></div>blind area</div>
+      <div class="li"><div class="ll" style="background:#f5a623"></div>dimensions</div>
+    </div>
+    <div class="legend" style="margin-top:-4px">
+      <div class="li"><div class="ll" style="background:#06b6d4"></div>Monitor</div>
+      <div class="li"><div class="ll" style="background:#16a34a"></div>Detect</div>
+      <div class="li"><div class="ll" style="background:#ea580c"></div>Observe</div>
+      <div class="li"><div class="ll" style="background:#2563eb"></div>Recognise</div>
+      <div class="li"><div class="ll" style="background:#dc2626"></div>Identify</div>
+      <div class="li"><div class="ll" style="background:#9333ea"></div>Strong ID</div>
+    </div>
+  </div>
+</div><!-- end vertical panel -->
+
+<!-- ══ HORIZONTAL TAB ══ -->
+<div class="tab-panel" id="panel_horiz" style="display:none">
+  <div class="controls">
+
+    <div>
+      <div class="sec">Camera Position</div>
+      <div class="input-group">
+        <div class="field">
+          <label><span class="sym">D_x</span> <strong>Distance (forward)</strong></label>
+          <input type="range" id="h_Dx" min="1" max="30" step="0.5" value="8" class="cg">
+          <span class="val-box" id="hv_Dx">8.0 m</span>
+        </div>
+        <div class="field">
+          <label><span class="sym">D_y</span> <strong>Lateral Offset (target)</strong></label>
+          <input type="range" id="h_Dy" min="-10" max="10" step="0.25" value="0" class="cc">
+          <span class="val-box" id="hv_Dy">0.0 m</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec">Lens</div>
+      <div class="input-group">
+        <div class="field">
+          <label><span class="sym">HFOV</span> <strong>Horizontal Field of View</strong></label>
+          <input type="range" id="h_hfov" min="5" max="170" step="0.5" value="48" class="ca">
+          <span class="val-box" id="hv_hfov">48.0°</span>
+        </div>
+        <div class="field">
+          <label><span class="sym">PAN</span> <strong>Camera Pan Angle</strong></label>
+          <input type="range" id="h_pan" min="-60" max="60" step="1" value="0" class="cc">
+          <span class="val-box" id="hv_pan">0°</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec">Diagram View</div>
+      <div class="input-group">
+        <div class="field">
+          <label><span class="sym">ZOOM</span> <strong>View Scale (zoom out to see more space)</strong></label>
+          <input type="range" id="h_zoom" min="0.3" max="2" step="0.05" value="1" class="ca">
+          <span class="val-box" id="hv_zoom">100%</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec">Computed — Horizontal</div>
+      <div class="results">
+        <div class="rc cyan">
+          <div class="rl">β — Angle to Target</div>
+          <div class="rt">Camera Fwd Axis → Target Direction</div>
+          <div class="rv" id="r_beta">—</div>
+          <div class="rf" id="f_beta"></div>
+        </div>
+        <div class="rc orange">
+          <div class="rl">φ — Offset from Camera LOS</div>
+          <div class="rt">Target offset from pan direction</div>
+          <div class="rv" id="r_phi">—</div>
+          <div class="rf" id="f_phi"></div>
+          <div class="rr" id="r_phi_status"></div>
+        </div>
+        <div class="rc green">
+          <div class="rl">FOV Width at Target Distance</div>
+          <div class="rt">Horizontal coverage at D_x</div>
+          <div class="rv" id="r_fov_width">—</div>
+          <div class="rf" id="f_fov_width"></div>
+        </div>
+        <div class="rc amber">
+          <div class="rl">Slant Distance to Target</div>
+          <div class="rt">Camera → Target (diagonal)</div>
+          <div class="rv" id="r_slant">—</div>
+          <div class="rf" id="f_slant"></div>
+        </div>
+        <div class="rc" id="r_dori_h_card" style="border-left-color:#9333ea">
+          <div class="rl">DORI Zone (by slant distance)</div>
+          <div class="rt">Standard distance-resolution zone</div>
+          <div class="rv" id="r_dori_h_zone" style="font-size:20px">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIRA COMPLIANCE vs β -->
+    <div>
+      <div class="sec">SIRA v4.0 DORI — β</div>
+      <div class="sira-wrap">
+        <div class="sira-note">Compliance checked against <strong>β (horizontal angle to target)</strong></div>
+        <table class="sira-table">
+          <thead><tr><th>Level</th><th>Max β</th><th>PPM</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Inspection</td>    <td>10°</td> <td>1000</td><td><span class="badge" id="h_insp">—</span></td></tr>
+            <tr><td>Identification</td><td>45°</td> <td>300</td> <td><span class="badge" id="h_iden">—</span></td></tr>
+            <tr><td>Recognition</td>   <td>Any</td> <td>125</td> <td><span class="badge ok" id="h_recog">—</span></td></tr>
+            <tr><td>Observation</td>   <td>Any</td> <td>63.5</td><td><span class="badge ok" id="h_obs">—</span></td></tr>
+            <tr><td>Detection</td>     <td>Any</td> <td>30</td>  <td><span class="badge ok" id="h_det">—</span></td></tr>
+            <tr><td>Monitoring</td>    <td>Any</td> <td>12.5</td><td><span class="badge ok" id="h_mon">—</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec">FOV Coverage</div>
+      <div class="rc amber" style="padding:9px 11px">
+        <div class="sira-note">Coverage at target plane (D_x)</div>
+        <div class="blind-grid">
+          <div class="bval" style="background:rgba(0,122,173,.06);border-color:rgba(0,122,173,.25)">
+            <div class="bl" style="color:var(--cyan)">Left Edge</div>
+            <div class="bv" style="color:var(--cyan);font-size:19px" id="h_left_edge">—</div>
+            <div class="bs">lateral</div>
+          </div>
+          <div class="bval" style="background:rgba(0,122,173,.06);border-color:rgba(0,122,173,.25)">
+            <div class="bl" style="color:var(--cyan)">Right Edge</div>
+            <div class="bv" style="color:var(--cyan);font-size:19px" id="h_right_edge">—</div>
+            <div class="bs">lateral</div>
+          </div>
+          <div class="bval" style="grid-column:1/-1;background:rgba(0,122,173,.04);border-color:rgba(0,122,173,.2)">
+            <div class="bl">FOV at D_x</div>
+            <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text);margin-top:2px;line-height:1.7" id="h_coverage">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end controls -->
+
+  <div class="h-diagrams" style="flex:1;min-width:0;width:100%">
+    <div class="h-top">
+      <div class="dp-title">// <span>Top-Down</span> View — Horizontal Plane</div>
+      <svg id="svg_horiz" class="diagram-svg" viewBox="0 0 620 250" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrH" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+        <g id="dyn_horiz"></g>
+      </svg>
+      <div class="legend">
+        <div class="li"><div class="ll" style="background:#00d4ff"></div>camera LOS (pan)</div>
+        <div class="li"><div class="ll" style="background:#f03a5f"></div>target direction (β)</div>
+        <div class="li"><div class="ll" style="background:#00e5a0"></div>HFOV</div>
+        <div class="li"><div class="ll" style="background:#f5a623"></div>dimensions</div>
+      </div>
+      <div class="legend" style="margin-top:-4px">
+        <div class="li"><div class="ll" style="background:#06b6d4"></div>Monitor</div>
+        <div class="li"><div class="ll" style="background:#16a34a"></div>Detect</div>
+        <div class="li"><div class="ll" style="background:#ea580c"></div>Observe</div>
+        <div class="li"><div class="ll" style="background:#2563eb"></div>Recognise</div>
+        <div class="li"><div class="ll" style="background:#dc2626"></div>Identify</div>
+        <div class="li"><div class="ll" style="background:#9333ea"></div>Strong ID</div>
+      </div>
+    </div><!-- end h-top -->
+    <div class="h-bot">
+      <div class="dp-title">// <span>FOV</span> Coverage Bar</div>
+      <svg id="svg_coverage" class="diagram-svg" viewBox="0 0 620 110" xmlns="http://www.w3.org/2000/svg">
+        <g id="dyn_coverage"></g>
+      </svg>
+    </div><!-- end h-bot -->
+  </div><!-- end h-diagrams -->
+</div><!-- end horizontal panel -->
+
+<!-- ══ 3D VIEW TAB ══ -->
+<div class="tab-panel" id="panel_3d" style="display:none">
+
+  <div class="td-main-row">
+  <div class="ctrl">
+    <div>
+      <div class="sec">Camera Settings</div>
+      <div class="field"><div class="fl">Resolution<span class="fv" id="gv-res">1920×1080</span></div>
+        <select id="g-res" onchange="recalc()"><option value="352x240">352×240 CIF</option><option value="704x480">704×480 4CIF</option><option value="1280x720">1280×720 HD</option><option value="1920x1080" selected>1920×1080 FHD</option><option value="2560x1440">2560×1440 4MP</option><option value="3840x2160">3840×2160 4K</option></select></div>
+      <div class="field"><div class="fl">Sensor Size<span class="fv" id="gv-sensor">1/3″</span></div>
+        <select id="g-sensor" onchange="recalc()"><option value="1/4">1/4″</option><option value="1/3" selected>1/3″</option><option value="1/2.5">1/2.5″</option><option value="1/2">1/2″</option><option value="2/3">2/3″</option><option value="1">1″</option></select></div>
+      <div class="field"><div class="fl">Focal Length<span class="fv" id="gv-fl">4.0 mm</span></div><input type="range" id="g-fl" min="1.5" max="50" step="0.5" value="4" oninput="recalc()"></div>
+      <div class="field"><div class="fl">Target Distance<span class="fv" id="gv-dt">7.0 m</span></div><input type="range" id="g-dt" min="1" max="80" step="0.5" value="7" oninput="recalc()"></div>
+      <div class="field"><div class="fl">Mount Height<span class="fv" id="gv-mh">3.0 m</span></div><input type="range" id="g-mh" min="1" max="20" step="0.1" value="3" oninput="recalc()"></div>
+
+      <div class="field" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0 2px">
+        <div style="font-family:var(--td-head);font-size:12px;font-weight:700;letter-spacing:.02em;color:var(--td-tx)">Tilt Mode</div>
+        <label style="position:relative;width:36px;height:18px;flex-shrink:0;display:inline-block">
+          <input type="checkbox" id="g-tiltmode" onchange="recalc()" style="opacity:0;width:0;height:0">
+          <span id="g-tiltmode-slider" style="position:absolute;inset:0;background:var(--td-bd3);border-radius:18px;cursor:pointer;transition:.2s"></span>
+        </label>
+        <span class="fv" id="gv-tiltmode" style="min-width:42px;text-align:right">AUTO</span>
+      </div>
+      <div class="field"><div class="fl">Tilt Angle<span class="fv" id="gv-tlt">14°</span></div><input type="range" id="g-tlt" min="0" max="70" step="1" value="14" oninput="recalc()"></div>
+      <div class="field"><div class="fl">Target Height<span class="fv" id="gv-th">1.7 m</span></div><input type="range" id="g-th" min="0.5" max="2.2" step="0.1" value="1.7" oninput="recalc()"></div>
+    </div>
+
+    <div>
+      <div class="sec">Horizontal Position</div>
+      <div class="field"><div class="fl">Lateral Offset (target)<span class="fv" id="gv-dy">0.0 m</span></div><input type="range" id="g-dy" min="-10" max="10" step="0.25" value="0" oninput="recalc()"></div>
+      <div class="field"><div class="fl">Camera Pan Angle<span class="fv" id="gv-pan">0°</span></div><input type="range" id="g-pan" min="-60" max="60" step="1" value="0" oninput="recalc()"></div>
+    </div>
+
+    <div>
+      <div class="sec">View Controls</div>
+      <div class="vp-grid">
+        <button class="vp-btn on" onclick="setView('34',event)">3/4 View</button>
+        <button class="vp-btn" onclick="setView('front',event)">Front</button>
+        <button class="vp-btn" onclick="setView('side',event)">Side</button>
+        <button class="vp-btn" onclick="setView('top',event)">Top Down</button>
+        <button class="vp-btn" onclick="setView('behind',event)">Behind</button>
+        <button class="vp-btn" onclick="setView('low',event)">Low Angle</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec">Display Options</div>
+      <div class="field"><div class="fl">FOV Max Range<span class="fv" id="gv-fmax">2× Target</span></div>
+        <select id="g-fmax" onchange="recalc()"><option value="1">1× Target</option><option value="1.5">1.5× Target</option><option value="2" selected>2× Target</option><option value="3">3× Target</option><option value="full">Full Ground Hit</option></select></div>
+      <div class="field"><div class="fl">Show DORI Zones<span class="fv" id="gv-dori">ON</span></div>
+        <select id="g-dori" onchange="recalc()"><option value="1" selected>ON</option><option value="0">OFF</option></select></div>
+      <div class="field"><div class="fl">Show Frustum Edges<span class="fv" id="gv-edges">ON</span></div>
+        <select id="g-edges" onchange="recalc()"><option value="1" selected>ON</option><option value="0">OFF</option></select></div>
+      <div class="field"><div class="fl">Show Grid<span class="fv" id="gv-grid">ON</span></div>
+        <select id="g-grid" onchange="recalc()"><option value="1" selected>ON</option><option value="0">OFF</option></select></div>
+    </div>
+
+    <div>
+      <div class="sec">Computed</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+        <div style="background:#f5f7fc;border:1px solid var(--bd3);border-radius:8px;padding:7px;text-align:center">
+          <div style="font-family:var(--head);font-size:18px;font-weight:800;color:var(--ac)" id="cv-hfov">—</div>
+          <div style="font-family:var(--mono);font-size:8px;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em">H-FOV</div></div>
+        <div style="background:#f5f7fc;border:1px solid var(--bd3);border-radius:8px;padding:7px;text-align:center">
+          <div style="font-family:var(--head);font-size:18px;font-weight:800;color:#2563eb" id="cv-vfov">—</div>
+          <div style="font-family:var(--mono);font-size:8px;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em">V-FOV</div></div>
+        <div style="background:#f5f7fc;border:1px solid var(--bd3);border-radius:8px;padding:7px;text-align:center">
+          <div style="font-family:var(--head);font-size:18px;font-weight:800;color:#d97706" id="cv-blind">—</div>
+          <div style="font-family:var(--mono);font-size:8px;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em">Blind Spot</div></div>
+        <div style="background:#f5f7fc;border:1px solid var(--bd3);border-radius:8px;padding:7px;text-align:center">
+          <div style="font-family:var(--head);font-size:18px;font-weight:800;color:#16a34a" id="cv-ppm">—</div>
+          <div style="font-family:var(--mono);font-size:8px;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em">PPM</div></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec">SIRA DORI Compliance</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:6px">
+        <div style="background:#f5f7fc;border:1px solid var(--bd3);border-radius:8px;padding:7px;text-align:center">
+          <div style="font-family:var(--head);font-size:16px;font-weight:800;color:var(--ac)" id="cv-alpha">—</div>
+          <div style="font-family:var(--mono);font-size:8px;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em">α Vertical</div></div>
+        <div style="background:#f5f7fc;border:1px solid var(--bd3);border-radius:8px;padding:7px;text-align:center">
+          <div style="font-family:var(--head);font-size:16px;font-weight:800;color:#2563eb" id="cv-beta">—</div>
+          <div style="font-family:var(--mono);font-size:8px;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em">β Horizontal</div></div>
+      </div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--tx3);text-align:center;margin-bottom:5px" id="cv-dori-level">DORI LEVEL: —</div>
+      <table style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:9.5px">
+        <thead><tr style="border-bottom:1px solid var(--bd3)">
+          <th style="text-align:left;padding:3px 4px;color:var(--tx3);font-weight:600">Level</th>
+          <th style="text-align:center;padding:3px 4px;color:var(--tx3);font-weight:600">α</th>
+          <th style="text-align:center;padding:3px 4px;color:var(--tx3);font-weight:600">β</th>
+        </tr></thead>
+        <tbody id="sira3d-tbody"></tbody>
+      </table>
+      <div id="fov3d-alert" style="display:none;margin-top:6px;align-items:center;gap:6px;background:rgba(200,25,46,.08);border:1px solid rgba(200,25,46,.3);border-radius:6px;padding:6px 8px;font-family:var(--mono);font-size:9.5px;color:var(--ac);font-weight:700">
+        ✗ TARGET OUT OF FOV
+      </div>
+    </div>
+
+    <div style="font-family:var(--mono);font-size:9px;color:var(--tx3);line-height:1.7;padding:6px 8px;background:#f5f7fc;border-radius:8px;border:1px solid var(--bd3)">
+      <i class="fa-solid fa-computer-mouse" style="color:var(--ac)"></i> <strong>Drag</strong> to rotate &nbsp;
+      <i class="fa-solid fa-arrows-up-down" style="color:var(--ac)"></i> <strong>Scroll</strong> to zoom
+    </div>
+  </div>
+
+  <div class="canvas-area">
+    <canvas id="v3d"></canvas>
+
+    <div class="dori-legend-bar" id="dori-legend-bar">
+      <span class="dl-item"><span class="dl-dot" style="background:#06b6d4"></span>Monitor</span>
+      <span class="dl-item"><span class="dl-dot" style="background:#16a34a"></span>Detect</span>
+      <span class="dl-item"><span class="dl-dot" style="background:#ea580c"></span>Observe</span>
+      <span class="dl-item"><span class="dl-dot" style="background:#2563eb"></span>Recognise</span>
+      <span class="dl-item"><span class="dl-dot" style="background:#dc2626"></span>Identify</span>
+      <span class="dl-item"><span class="dl-dot" style="background:#9333ea"></span>Strong ID</span>
+    </div>
+
+    <div class="hint" id="hint">Drag to rotate scene &middot; Scroll to zoom</div>
+
+    <div class="brand-ov">
+      <div class="logo-sm"><svg width="18" height="18" viewBox="0 0 32 32" fill="none"><path d="M16 2L4 8v7c0 7 5.5 13.5 12 15.3C22.5 28.5 28 22 28 15V8L16 2z" fill="rgba(232,41,76,.3)" stroke="#e8294c" stroke-width="2"/><circle cx="16" cy="15" r="3.5" fill="#e8294c"/></svg></div>
+      <div class="brand-txt">CCTV <span>Pro</span></div>
+    </div>
+
+    <div class="info-ov" id="info-ov">
+      <div><span class="il">Blind spot: </span><span class="iv" id="io-blind">—</span></div>
+      <div><span class="il">Width at target: </span><span class="iv" id="io-width">—</span></div>
+      <div><span class="il">Tilt angle (θ): </span><span class="iv" id="io-tilt">—</span></div>
+      <div><span class="il">Distance to target: </span><span class="iv" id="io-dist">—</span></div>
+      <div><span class="il">Pixel density: </span><span class="iv acc" id="io-ppm">—</span></div>
+      <div><span class="il">Horizontal field of view: </span><span class="iv" id="io-hfov">—</span></div>
+      <div><span class="il">Vertical field of view: </span><span class="iv" id="io-vfov">—</span></div>
+      <div style="border-top:1px dashed var(--td-bd3);margin:4px 0;padding-top:4px"><span class="il">α vertical angle: </span><span class="iv" id="io-alpha">—</span></div>
+      <div><span class="il">β horizontal angle: </span><span class="iv" id="io-beta">—</span></div>
+      <div><span class="il">DORI zone: </span><span class="iv acc" id="io-dori">—</span></div>
+      <div id="io-fovstatus" style="margin-top:3px;font-weight:700"></div>
+    </div>
+
+    <canvas class="axis-ind" id="axis-ind" width="60" height="60"></canvas>
+  </div>
+  </div><!-- end td-main-row -->
+
+<div class="stbar">
+  <div class="sdot"></div><span>3D VIEW</span>
+  <span style="color:var(--td-bd2)">|</span>
+  <span>HFOV:<strong id="sb-h" style="color:var(--td-ac)">—</strong></span>
+  <span style="color:var(--td-bd2)">|</span>
+  <span>VFOV:<strong id="sb-v" style="color:#2563eb">—</strong></span>
+  <span style="color:var(--td-bd2)">|</span>
+  <span>BLIND:<strong id="sb-b" style="color:#d97706">—</strong></span>
+  <span style="color:var(--td-bd2)">|</span>
+  <span>PPM:<strong id="sb-p" style="color:#16a34a">—</strong></span>
+  <span style="color:var(--td-bd2)">|</span>
+  <span>VIEW:<strong id="sb-view" style="color:var(--td-tx)">3/4</strong></span>
+</div>
+</div><!-- end 3d panel -->
+
+</div><!-- end main -->
+
+<div class="statusbar">
+  <div class="dot"></div>
+  <span>LIVE</span>
+  <span style="color:#d1d5db">|</span>
+  <span>α=<strong id="sb_alpha" style="color:var(--red)">—</strong></span>
+  <span style="color:#d1d5db">|</span>
+  <span>θ=<strong id="sb_theta" style="color:var(--cyan)">—</strong></span>
+  <span style="color:#d1d5db">|</span>
+  <span>DORI:<strong id="sb_dori" style="color:var(--red)">—</strong></span>
+  <span style="color:#d1d5db">|</span>
+  <span>BLIND:<strong id="sb_blind" style="color:var(--purple)">—</strong></span>
+  <span style="color:#d1d5db">|</span>
+  <span>β=<strong id="sb_beta" style="color:var(--cyan)">—</strong></span>
+  <span style="color:#d1d5db">|</span>
+  <span>HFOV-W:<strong id="sb_width" style="color:var(--green)">—</strong></span>
+  <span id="sb_fov_warn" style="display:none;color:var(--red);font-weight:700">| ✗ OUT OF FOV</span>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const rad=d=>d*Math.PI/180, deg=r=>r*180/Math.PI;
+const f1=n=>isFinite(n)?n.toFixed(1):'∞';
+const f2=n=>isFinite(n)?n.toFixed(2):'∞';
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const NS='http://www.w3.org/2000/svg';
+function el(tag,a,p){const e=document.createElementNS(NS,tag);for(const[k,v]of Object.entries(a))e.setAttribute(k,v);if(p)p.appendChild(e);return e}
+function ln(x1,y1,x2,y2,a,p){return el('line',{x1,y1,x2,y2,...a},p)}
+function tx(x,y,s,a,p){const t=el('text',{x,y,...a},p);t.textContent=s;return t}
+function arcPath(cx,cy,r,a1,a2,col,p,w){
+  const s=rad(a1),e=rad(a2);
+  const large=Math.abs(a2-a1)>180?1:0;
+  return el('path',{d:`M${cx+r*Math.cos(s)},${cy+r*Math.sin(s)} A${r},${r} 0 ${large} 1 ${cx+r*Math.cos(e)},${cy+r*Math.sin(e)}`,fill:'none',stroke:col,'stroke-width':w||'2'},p)
+}
+function setBadge(id,ok,failTxt){
+  const b=$(id);b.className='badge '+(ok?'ok':'fail');
+  b.innerHTML=`<span class="dot2 ${ok?'ok':'fail'}"></span>${ok?'✓ PASS':failTxt}`;
+}
+function clearG(id){const g=$(id);while(g.firstChild)g.removeChild(g.firstChild)}
+
+const SIRA_V=[{id:'s_insp',maxT:10},{id:'s_iden',maxT:20},{id:'s_recog',maxT:45},{id:'s_obs',maxT:45},{id:'s_det',maxT:75},{id:'s_mon',maxT:90}];
+// Standard DORI zones (pixel-density based, EN 62676-4), FAR→NEAR. Colors match reference legend.
+const DORI_VH=[
+  {name:'Monitor',   ppm:12.5, color:'#06b6d4'},
+  {name:'Detect',    ppm:25,   color:'#16a34a'},
+  {name:'Observe',   ppm:62.5, color:'#ea580c'},
+  {name:'Recognise', ppm:125,  color:'#2563eb'},
+  {name:'Identify',  ppm:250,  color:'#dc2626'},
+  {name:'Strong ID', ppm:1000, color:'#9333ea'},
+];
+const DORI_VH_NEAR_FIRST=[...DORI_VH].reverse();
+function doriZoneForPPM_VH(ppmVal){
+  for(const d of DORI_VH_NEAR_FIRST){ if(ppmVal>=d.ppm) return d; }
+  return {name:'Below Monitor',color:'#64748b'};
+}
+const SIRA_H=[{id:'h_insp',maxT:10},{id:'h_iden',maxT:45},{id:'h_recog',maxT:999},{id:'h_obs',maxT:999},{id:'h_det',maxT:999},{id:'h_mon',maxT:999}];
+function doriLevel(a){if(a<=10)return 'INSPECTION';if(a<=20)return 'IDENTIFICATION';if(a<=45)return 'RECOGNITION';if(a<=75)return 'DETECTION';return 'MONITORING'}
+
+// Maps an α (or β) angle to the standard DORI zone name + color used in the reference legend.
+// Smaller angle = farther distance = lower-resolution zone (Monitor); larger angle = closer = Strong ID.
+function doriZoneByAngle(a){
+  if(a>45) return {name:'Strong ID', color:'#9333ea'};
+  if(a>20) return {name:'Identify',  color:'#dc2626'};
+  if(a>10) return {name:'Recognise', color:'#2563eb'};
+  if(a>5)  return {name:'Observe',   color:'#ea580c'};
+  if(a>2)  return {name:'Detect',    color:'#16a34a'};
+  return            {name:'Monitor',   color:'#06b6d4'};
+}
+// Ordered FAR→NEAR by angle threshold, for drawing concentric ground bands
+const DORI_ANGLE_BANDS=[
+  {name:'Monitor',   maxA:2,  color:'#06b6d4'},
+  {name:'Detect',    maxA:5,  color:'#16a34a'},
+  {name:'Observe',   maxA:10, color:'#ea580c'},
+  {name:'Recognise', maxA:20, color:'#2563eb'},
+  {name:'Identify',  maxA:45, color:'#dc2626'},
+  {name:'Strong ID', maxA:999,color:'#9333ea'},
+];
+
+function switchTab(t){
+  ['vert','horiz','3d'].forEach(id=>{
+    $('tab_'+id).classList.toggle('active',id===t);
+    const panel=$('panel_'+id);
+    panel.classList.toggle('active',id===t);
+    panel.style.display=(id===t)?'flex':'none';
+  });
+  if(t==='vert') drawVert();
+  else if(t==='horiz') drawHoriz();
+  else if(t==='3d'){
+    // canvas had display:none on load, so it needs a resize/recalc once visible
+    requestAnimationFrame(()=>{ if(window.resize3d) window.resize3d(); });
+  }
+}
+
+// ══ VERTICAL ══
+function drawVert(){
+  const Hcam=parseFloat($('v_Hcam').value);
+  const ht=parseFloat($('v_ht').value);
+  const D=parseFloat($('v_D').value);
+  const vfov=parseFloat($('v_vfov').value);
+  const isFixed=$('tilt_fixed').checked;
+  const thetaFix=parseFloat($('v_theta_fix').value);
+
+  $('vv_Hcam').textContent=f2(Hcam)+' m';
+  $('vv_ht').textContent=f2(ht)+' m';
+  $('vv_D').textContent=f2(D)+' m';
+  $('vv_vfov').textContent=f1(vfov)+'°';
+  $('vv_theta_fix').textContent=f1(thetaFix)+'°';
+
+  // Toggle mode UI
+  const badge=$('tilt_mode_badge');
+  const fixField=$('tilt_fixed_field');
+  const fixSlider=$('v_theta_fix');
+  if(isFixed){
+    badge.textContent='FIXED'; badge.className='mode-badge fixed';
+    fixField.style.opacity='1'; fixField.style.pointerEvents='auto';
+    fixSlider.disabled=false;
+  } else {
+    badge.textContent='AUTO'; badge.className='mode-badge auto';
+    fixField.style.opacity='0.35'; fixField.style.pointerEvents='none';
+    fixSlider.disabled=true;
+  }
+
+  // AUTO mode: α computed from geometry, θ = α + VFOV/2
+  // FIXED mode: θ = thetaFix (user set), check if target is in FOV
+  let alpha_deg, theta_deg, inFOV_vert=true;
+
+  if(!isFixed){
+    // Auto: upper FOV ray passes through target top
+    alpha_deg = deg(Math.atan2(Hcam-ht, D));
+    theta_deg = alpha_deg + vfov/2;
+    inFOV_vert = true;
+  } else {
+    // Fixed: camera tilted at thetaFix
+    theta_deg = thetaFix;
+    // Upper FOV ray is at (theta - VFOV/2) below horizontal
+    const upperAng = theta_deg - vfov/2;
+    // Where does upper FOV ray hit height h_t?
+    // camY - x*tan(upperAng) = ht => x = (Hcam-ht)/tan(upperAng)
+    const upperAng_rad = rad(upperAng);
+    const D_upper_hit = upperAng > 0 ? (Hcam-ht)/Math.tan(upperAng_rad) : Infinity;
+    // Target is in FOV if D <= D_upper_hit (target top is below or on upper FOV ray)
+    // and target top is above lower FOV ray at distance D
+    const lowerAng = theta_deg + vfov/2;
+    const lowerAng_rad = rad(lowerAng);
+    const h_at_D_upper = Hcam - D*Math.tan(upperAng_rad); // height of upper FOV ray at D
+    const h_at_D_lower = Hcam - D*Math.tan(lowerAng_rad); // height of lower FOV at D
+    inFOV_vert = (ht <= h_at_D_upper) && (ht >= Math.max(0, h_at_D_lower));
+    // α = angle between horizontal target LOS and upper FOV ray
+    // upper FOV ray is at (theta-VFOV/2) below horizontal from camera
+    // target LOS is horizontal at h_t → from camera, ray to target top at angle atan2(Hcam-ht,D)
+    alpha_deg = upperAng; // In fixed mode, α is the upper FOV angle below horizontal
+  }
+
+  const theta_rad=rad(theta_deg);
+  const alpha_rad=rad(alpha_deg);
+  const lower_deg=theta_deg+vfov/2;
+  const lower_rad=rad(lower_deg);
+  const D_lower=lower_deg<89.9?Hcam/Math.tan(lower_rad):0;
+
+  // FOV alert
+  const alert=$('fov_alert');
+  if(isFixed && !inFOV_vert){ alert.classList.add('show'); $('sb_fov_warn').style.display='inline'; }
+  else { alert.classList.remove('show'); $('sb_fov_warn').style.display='none'; }
+
+  // α = angle between the upper FOV line and the line from camera to TARGET TOP
+  // Both lines originate at the camera pivot.
+  // upper FOV line angle below horizontal = theta_deg - VFOV/2  (always)
+  // line-to-target-top angle below horizontal = arctan((Hcam-ht)/D)  (always)
+  // α = |line-to-target-top angle| - |upper FOV angle|
+  //   = arctan((Hcam-ht)/D) - (theta_deg - VFOV/2)
+  // Positive: target top is BELOW upper FOV ray (inside FOV)
+  // Zero:     target top is exactly ON upper FOV ray (AUTO mode)
+  // Negative: target top is ABOVE upper FOV ray (outside FOV — impossible geometry, clamp to 0)
+  // α = arctan((H_cam - h_t) / D) — ALWAYS, both AUTO and FIXED mode
+  // The angle the line from camera pivot to target top makes with horizontal
+  // Completely independent of θ, VFOV, or mode
+  alpha_deg = deg(Math.atan2(Hcam - ht, D));
+
+  // upper FOV ray angle below horizontal (for drawing only, not α)
+  const upperFOV_ang = theta_deg - vfov/2;
+  const upperFOV_rad = rad(upperFOV_ang);
+  const toTarget_ang = alpha_deg;
+  const toTarget_rad = rad(alpha_deg);
+
+  $('r_alpha').textContent=f1(alpha_deg)+'°';
+  $('r_theta').textContent=f1(theta_deg)+'°';
+  $('f_alpha').textContent=`arctan((${f2(Hcam)}−${f2(ht)})/${f2(D)}) = ${f1(alpha_deg)}°`;
+  $('r_alpha_range').textContent='● DORI: '+doriLevel(alpha_deg);
+  const dz=doriZoneByAngle(alpha_deg);
+  $('r_dori_zone').innerHTML=`<span style="color:${dz.color}">● ${dz.name}</span>`;
+  $('r_dori_card').style.setProperty('--rc-accent', dz.color);
+  $('f_theta').textContent=isFixed?`Fixed by user = ${f1(theta_deg)}°`:`${f1(alpha_deg)}°+${f1(vfov/2)}° (VFOV/2)`;
+  $('r_theta_range').textContent='● Tilt level: '+doriLevel(theta_deg);
+  SIRA_V.forEach(s=>setBadge(s.id,alpha_deg<=s.maxT,`✗>  ${s.maxT}°`));
+
+  const gnd=isFinite(D_lower)&&D_lower>0?f1(D_lower)+' m':'∞';
+  $('r_ground').textContent=gnd;
+  $('f_ground').textContent=`H_cam/tan(θ+VFOV/2) = ${f2(Hcam)}/tan(${f1(lower_deg)}°)`;
+  SIRA_V.forEach(s=>setBadge(s.id,alpha_deg<=s.maxT,`✗>  ${s.maxT}°`));
+  const blind=D_lower;
+  $('b_len').textContent=isFinite(blind)&&blind>0?f1(blind)+' m':'—';
+  $('b_hit').textContent=isFinite(D_lower)&&D_lower>0?f1(D_lower)+' m':'∞';
+  $('b_formula').innerHTML=`Blind=H_cam/tan(θ+VFOV)<br>=${f2(Hcam)}/tan(${f1(lower_deg)}°)<br>=<strong style="color:var(--purple)">${f1(blind)} m</strong>`;
+  $('sb_alpha').textContent=f1(alpha_deg)+'°';
+  $('sb_theta').textContent=f1(theta_deg)+'°';
+  $('sb_dori').textContent=doriLevel(alpha_deg);
+  $('sb_blind').textContent=isFinite(blind)&&blind>0?f1(blind)+' m':'∞';
+
+  // ── DRAW ──
+  const GY=368,CX=90,MAXX=600;
+  const maxD=Math.max(D,isFinite(D_lower)&&D_lower>0?Math.min(D_lower,D*3.5):D*1.5,3);
+  const sc=(MAXX-CX)/(maxD*1.18);
+  const camY=GY-Hcam*sc;
+  const tgtX=CX+D*sc;
+  const tgtTopY=GY-ht*sc;
+  const lGX=clamp(CX+D_lower*sc,CX,MAXX);
+
+  clearG('dyn_vert'); const dyn=$('dyn_vert');
+
+  // Blind area
+  const bw=Math.max(0,lGX-CX);
+  el('rect',{x:CX,y:GY-3,width:bw,height:11,fill:'#7c3aed','fill-opacity':'0.18',rx:'2'},dyn);
+  for(let hx=CX+10;hx<lGX;hx+=10) ln(hx,GY-3,hx-8,GY+8,{stroke:'#7c3aed','stroke-width':'0.6','stroke-opacity':'0.35'},dyn);
+  if(bw>22) tx(CX+bw/2,GY+22,`blind ${f1(blind)}m`,{'font-family':'Share Tech Mono,monospace','font-size':'9','fill':'#b06aff','text-anchor':'middle'},dyn);
+  ln(CX,GY-7,CX,GY+13,{stroke:'#7c3aed','stroke-width':'1.2','stroke-dasharray':'3 2'},dyn);
+  if(isFinite(D_lower)&&D_lower>0) ln(lGX,GY-7,lGX,GY+13,{stroke:'#7c3aed','stroke-width':'1.2','stroke-dasharray':'3 2'},dyn);
+
+  // FOV fill
+  const ufxEnd=clamp(tgtX+(MAXX-tgtX)*0.7,tgtX,MAXX);
+  const ufyEnd=camY+(ufxEnd-CX)*Math.tan(upperFOV_rad);
+  el('polygon',{points:`${CX},${camY} ${ufxEnd},${clamp(ufyEnd,camY,GY)} ${lGX},${GY}`,fill:'#008f5f','fill-opacity':'0.10'},dyn);
+
+  // ── DORI zone bands — colored ground strips where the camera-to-target-top angle
+  // crosses each standard DORI threshold. Drawn FAR→NEAR (smallest angle first) so
+  // nearer/smaller bands paint on top. Bounded to the FOV cone's footprint on the ground.
+  const dy_groundNear=CX, dy_groundFar=lGX>CX?lGX:MAXX;
+  let dy_prevX=dy_groundFar;
+  for(let i=0;i<DORI_ANGLE_BANDS.length;i++){
+    const band=DORI_ANGLE_BANDS[i];
+    // distance where α == band.maxA  →  D = (Hcam-ht)/tan(angle)
+    const angRad=rad(Math.min(89.9,band.maxA));
+    const bandNearD=(Hcam-ht)>0&&band.maxA<999 ? (Hcam-ht)/Math.tan(angRad) : 0;
+    const bandNearX=clamp(CX+bandNearD*sc, CX, dy_groundFar);
+    if(dy_prevX>bandNearX){
+      el('rect',{x:bandNearX,y:GY-2,width:dy_prevX-bandNearX,height:6,fill:band.color,'fill-opacity':'0.55',rx:'1'},dyn);
+    }
+    dy_prevX=bandNearX;
+    if(bandNearX<=CX+0.5)break;
+  }
+
+  // Upper FOV ray
+  ln(CX,camY,ufxEnd,clamp(ufyEnd,camY,GY),{stroke:'#00e5a0','stroke-width':'1.8','marker-end':'url(#arrV)'},dyn);
+  // label midpoint along upper ray
+  const umx=CX+(ufxEnd-CX)*0.45, umy=camY+(clamp(ufyEnd,camY,GY)-camY)*0.45-10;
+  tx(umx,umy,'upper FOV',{'font-family':'Share Tech Mono,monospace','font-size':'9','fill':'#00e5a0','text-anchor':'middle','transform':`rotate(${f1(upperFOV_ang)},${umx},${umy+9})`},dyn);
+
+  // Lower FOV ray
+  ln(CX,camY,lGX,GY,{stroke:'#00e5a0','stroke-width':'1.8','marker-end':'url(#arrV)'},dyn);
+  const lmx=CX+(lGX-CX)*0.45, lmy=camY+(GY-camY)*0.45+12;
+  tx(lmx,lmy,'lower FOV',{'font-family':'Share Tech Mono,monospace','font-size':'9','fill':'#00e5a0','text-anchor':'middle'},dyn);
+
+  // Camera LOS — FIX: use theta_rad correctly, extend to edge of SVG
+  // LOS direction: (cos(theta_rad), sin(theta_rad)) from camera pivot
+  // Find where it exits SVG (hits MAXX or GY)
+  let losEndX, losEndY;
+  if(theta_deg>0.1){
+    const tToRight=(MAXX-CX)/Math.cos(theta_rad);
+    const tToGround=theta_deg<90?(GY-camY)/Math.sin(theta_rad):Infinity;
+    const tEnd=Math.min(tToRight,tToGround)*0.88;
+    losEndX=clamp(CX+tEnd*Math.cos(theta_rad),CX,MAXX);
+    losEndY=clamp(camY+tEnd*Math.sin(theta_rad),camY,GY);
+  } else {
+    losEndX=MAXX*0.85; losEndY=camY;
+  }
+  ln(CX,camY,losEndX,losEndY,{stroke:'#00d4ff','stroke-width':'2.2','stroke-dasharray':'10 5','marker-end':'url(#arrV)'},dyn);
+  const mlx=CX+(losEndX-CX)*0.46, mly=camY+(losEndY-camY)*0.46-10;
+  tx(mlx,mly,`camera LOS  θ=${f1(theta_deg)}°`,{'font-family':'Share Tech Mono,monospace','font-size':'10','fill':'#00d4ff','transform':`rotate(${f1(theta_deg)},${mlx},${mly+9})`,'text-anchor':'middle'},dyn);
+
+  // Horizontal axis
+  ln(CX,camY,Math.min(CX+200,MAXX),camY,{stroke:'#cbd0d8','stroke-width':'1','stroke-dasharray':'7 5'},dyn);
+  tx(Math.min(CX+204,MAXX-10),camY-4,'horizontal axis',{'font-family':'Share Tech Mono,monospace','font-size':'9','fill':'#6b7280'},dyn);
+
+  // Target LOS (horizontal at h_t)
+  ln(CX,tgtTopY,tgtX,tgtTopY,{stroke:'#f03a5f','stroke-width':'2','marker-end':'url(#arrV)'},dyn);
+  tx(CX+(tgtX-CX)*0.44,tgtTopY-8,`target LOS  h_t=${f2(ht)}m`,{'font-family':'Share Tech Mono,monospace','font-size':'9','fill':'#f03a5f','text-anchor':'middle'},dyn);
+
+  // Target person
+  const tCol=(!isFixed||inFOV_vert)?'#00e5a0':'#f03a5f';
+  const hr=6;
+  el('circle',{cx:tgtX,cy:tgtTopY+hr,r:hr,fill:'none',stroke:tCol,'stroke-width':'1.5'},dyn);
+  const tTop=tgtTopY+hr*2,tMid=tTop+(GY-tTop)*0.42;
+  ln(tgtX,tTop,tgtX,tMid,{stroke:tCol,'stroke-width':'1.5','stroke-opacity':'0.6'},dyn);
+  ln(tgtX,tTop+(tMid-tTop)*0.28,tgtX-9,tMid-4,{stroke:tCol,'stroke-width':'1.5','stroke-opacity':'0.6'},dyn);
+  ln(tgtX,tTop+(tMid-tTop)*0.28,tgtX+9,tMid-4,{stroke:tCol,'stroke-width':'1.5','stroke-opacity':'0.6'},dyn);
+  ln(tgtX,tMid,tgtX-6,GY,{stroke:tCol,'stroke-width':'1.5','stroke-opacity':'0.6'},dyn);
+  ln(tgtX,tMid,tgtX+6,GY,{stroke:tCol,'stroke-width':'1.5','stroke-opacity':'0.6'},dyn);
+  el('circle',{cx:tgtX,cy:tgtTopY,r:5,fill:tCol},dyn);
+  tx(tgtX+9,tgtTopY-7,'top of target',{'font-family':'Share Tech Mono,monospace','font-size':'9','fill':tCol},dyn);
+  if(isFixed&&!inFOV_vert){
+    tx(tgtX,tgtTopY-20,'✗ OUT OF FOV',{'font-family':'Share Tech Mono,monospace','font-size':'10','fill':'#f03a5f','text-anchor':'middle','font-weight':'700'},dyn);
+  }
+
+  // Lower FOV ground dot
+  if(isFinite(D_lower)&&D_lower>0){
+    el('circle',{cx:lGX,cy:GY,r:4,fill:'#b06aff'},dyn);
+    tx(lGX,GY-12,f1(D_lower)+'m',{'font-family':'Share Tech Mono,monospace','font-size':'9','fill':'#b06aff','text-anchor':'middle'},dyn);
+  }
+
+  // Camera body — drawn as a rotated rectangle anchored to wall
+  // The body is always drawn on the wall face (left side of pivot).
+  // We use a transform-rotate approach so it never disappears.
+  const cth=Math.cos(theta_rad),sth=Math.sin(theta_rad),px=-sth,py=cth,hw=7;
+  // Camera group: rotated by theta_deg around pivot (CX, camY)
+  const camG=el('g',{'transform':`rotate(${f1(theta_deg)},${CX},${camY})`},dyn);
+  // Body: extends 36px LEFT of pivot (backward), 7px tall half-height
+  el('rect',{x:CX-36,y:camY-hw,width:36,height:hw*2,rx:'3',
+    fill:'#ffffff',stroke:'#374151','stroke-width':'1.6'},camG);
+  // Lens cone: extends 15px RIGHT of pivot
+  el('polygon',{points:`${CX},${camY-9} ${CX+15},${camY-5} ${CX+15},${camY+5} ${CX},${camY+9}`,
+    fill:'#ffffff',stroke:'#374151','stroke-width':'1.4','stroke-linejoin':'round'},camG);
+  // Lens circle
+  el('circle',{cx:CX+15,cy:camY,r:4,fill:'none',stroke:'#374151','stroke-width':'1.2'},camG);
+  // Pivot dot (drawn outside group so it stays on top)
+  el('circle',{cx:CX,cy:camY,r:4,fill:'#1e2530',stroke:'#374151','stroke-width':'1.2'},dyn);
+
+  // Arcs
+  // θ: from horizontal to camera LOS
+  if(theta_deg>1){
+    arcPath(CX,camY,62,0,theta_deg,'#00d4ff',dyn);
+    const am=rad(theta_deg/2);
+    tx(CX+78*Math.cos(am),camY+78*Math.sin(am),`θ=${f1(theta_deg)}°`,{'font-family':'Share Tech Mono,monospace','font-size':'10','fill':'#00d4ff'},dyn);
+  }
+  // α: from horizontal to line-from-camera-to-target-top
+  // α = arctan((Hcam-ht)/D) — always measured from horizontal
+  if(alpha_deg>0.3){
+    arcPath(CX,camY,90,0,alpha_deg,'#f03a5f',dyn);
+    const am2=rad(alpha_deg/2);
+    tx(CX+106*Math.cos(am2),camY+106*Math.sin(am2)-4,`α=${f1(alpha_deg)}°`,{'font-family':'Share Tech Mono,monospace','font-size':'10','fill':'#f03a5f'},dyn);
+  }
+  // Draw explicit ray from camera to target top — solid red dashed line
+  // Extends from pivot to target top dot
+  ln(CX,camY,tgtX,tgtTopY,{stroke:'#f03a5f','stroke-width':'1.4','stroke-dasharray':'6 4','stroke-opacity':'0.7'},dyn);
+
+  // Dimensions
+  const dx1=CX-34;
+  ln(dx1,camY,dx1,GY,{stroke:'#f5a623','stroke-width':'1'},dyn);
+  ln(dx1-5,camY,dx1+5,camY,{stroke:'#f5a623','stroke-width':'1'},dyn);
+  ln(dx1-5,GY,dx1+5,GY,{stroke:'#f5a623','stroke-width':'1'},dyn);
+  tx(dx1-7,(camY+GY)/2,`${f2(Hcam)}m`,{'font-family':'Share Tech Mono,monospace','font-size':'9','fill':'#f5a623','text-anchor':'end'},dyn);
+  const dx2=Math.min(tgtX+30,MAXX-22);
+  ln(dx2,tgtTopY,dx2,GY,{stroke:'#f5a623','stroke-width':'1'},dyn);
+  ln(dx2-4,tgtTopY,dx2+4,tgtTopY,{stroke:'#f5a623','stroke-width':'1'},dyn);
+  ln(dx2-4,GY,dx2+4,GY,{stroke:'#f5a623','stroke-width':'1'},dyn);
+  tx(dx2+6,(tgtTopY+GY)/2+4,`${f2(ht)}m`,{'font-family':'Share Tech Mono,monospace','font-size':'9','fill':'#f5a623'},dyn);
+  const dy1=GY+33;
+  ln(CX,dy1,tgtX,dy1,{stroke:'#f5a623','stroke-width':'1'},dyn);
+  ln(CX,dy1-5,CX,dy1+5,{stroke:'#f5a623','stroke-width':'1'},dyn);
+  ln(tgtX,dy1-5,tgtX,dy1+5,{stroke:'#f5a623','stroke-width':'1'},dyn);
+  tx((CX+tgtX)/2,dy1+12,`D=${f2(D)}m`,{'font-family':'Share Tech Mono,monospace','font-size':'10','fill':'#f5a623','text-anchor':'middle'},dyn);
+  $('lbl_vcam').setAttribute('x',CX-50);
+  $('lbl_vcam').setAttribute('y',camY-10);
+}
+
+// ══ HORIZONTAL ══
+function drawHoriz(){
+  const Dx=parseFloat($('h_Dx').value);
+  const Dy=parseFloat($('h_Dy').value);
+  const hfov=parseFloat($('h_hfov').value);
+  const pan=parseFloat($('h_pan').value);
+  const viewZoom=parseFloat($('h_zoom').value);
+  $('hv_Dx').textContent=f1(Dx)+' m';
+  $('hv_Dy').textContent=f1(Dy)+' m';
+  $('hv_hfov').textContent=f1(hfov)+'°';
+  $('hv_pan').textContent=(pan>0?'+':'')+pan+'°';
+  $('hv_zoom').textContent=Math.round(viewZoom*100)+'%';
+
+  const beta_deg=deg(Math.atan2(Dy,Dx));
+  const beta_abs=Math.abs(beta_deg);
+  const phi_deg=beta_deg-pan;
+  const inFOV=Math.abs(phi_deg)<=hfov/2;
+  const fov_width=2*Dx*Math.tan(rad(hfov/2));
+  const slant=Math.sqrt(Dx*Dx+Dy*Dy);
+  const los_lateral=Dx*Math.tan(rad(pan));
+  const tgt_lateral=Dy; // lateral position of target at D_x
+  const leftEdge=los_lateral-fov_width/2;
+  const rightEdge=los_lateral+fov_width/2;
+
+  $('r_beta').textContent=f1(beta_deg)+'°';
+  $('f_beta').textContent=`arctan(${f1(Dy)}/${f1(Dx)}) = ${f1(beta_deg)}°`;
+  $('r_phi').textContent=f1(Math.abs(phi_deg))+'°';
+  $('f_phi').textContent=`β−pan = ${f1(beta_deg)}°−${pan}° = ${f1(phi_deg)}°`;
+  $('r_phi_status').textContent=inFOV?`● IN FOV (HFOV/2=${f1(hfov/2)}°)`:`● OUT of FOV by ${f1(Math.abs(phi_deg)-hfov/2)}°`;
+  $('r_fov_width').textContent=f1(fov_width)+' m';
+  $('f_fov_width').textContent=`2×${f1(Dx)}×tan(${f1(hfov/2)}°)`;
+  $('r_slant').textContent=f1(slant)+' m';
+  $('f_slant').textContent=`√(${f1(Dx)}²+${f1(Dy)}²)`;
+  // True DORI zone by slant distance, using reference 1920px sensor width
+  const refRW_h=1920;
+  const ppmAtSlant=slant>0.01?refRW_h/slant/(2*Math.tan(rad(hfov/2))):Infinity;
+  const dzH=doriZoneForPPM_VH(ppmAtSlant);
+  $('r_dori_h_zone').innerHTML=`<span style="color:${dzH.color}">● ${dzH.name}</span>`;
+  $('r_dori_h_card').style.setProperty('--rc-accent', dzH.color);
+  $('h_left_edge').textContent=f1(leftEdge)+' m';
+  $('h_right_edge').textContent=f1(rightEdge)+' m';
+  $('h_coverage').innerHTML=`LOS lateral at D_x: ${f1(los_lateral)}m<br>FOV: ${f1(leftEdge)}m → ${f1(rightEdge)}m`;
+  $('sb_beta').textContent=f1(beta_deg)+'°';
+  $('sb_width').textContent=f1(fov_width)+' m';
+
+  // SIRA badges vs β (absolute angle)
+  SIRA_H.forEach(s=>{
+    if(s.maxT>=999){ const b=$(s.id);b.className='badge ok';b.innerHTML='<span class="dot2 ok"></span>✓ ANY'; }
+    else setBadge(s.id,beta_abs<=s.maxT,`✗ > ${s.maxT}°`);
+  });
+
+  // ── TOP-DOWN DIAGRAM ──
+  // Camera at left-center, forward = rightward (+X), lateral = Y (positive = downward in SVG)
+  clearG('dyn_horiz'); const dH=$('dyn_horiz');
+  const CX2=80, CY2=125, MAXX2=590, MAXY2=245, MINY2=5;
+  // Scale: fit Dx into available width, AND fit max(|Dy|, FOV half-width at Dx) into available height,
+  // so the target and full FOV cone always stay visible regardless of lateral offset or pan.
+  const availW=MAXX2-CX2; // 510px
+  const availH=(MAXY2-MINY2)/2; // 120px each side
+  const fovHalfWidthAtDx=Dx*Math.tan(rad(hfov/2)); // FOV cone half-width at the target's distance
+  const losLatAtDx=Dx*Math.tan(rad(pan));          // how far the LOS itself drifts laterally by Dx
+  const maxLateralExtent=Math.max(Math.abs(Dy), fovHalfWidthAtDx+Math.abs(losLatAtDx), 1);
+  const scX=Math.min(availW/(Dx*1.25), availH/(maxLateralExtent*1.15), 28)*viewZoom;
+  const scY=scX; // uniform scale
+  // Helper: SVG coords from real-world (x=forward, y=lateral)
+  const svgP=(wx,wy)=>[CX2+wx*scX, CY2+wy*scY];
+
+  // FOV rays — camera forward axis is 0°, pan rotates LOS
+  // fovL = left boundary angle (pan - hfov/2), fovR = right boundary angle (pan + hfov/2)
+  // In SVG: angle measured clockwise from +X axis
+  const panR2=rad(pan);
+  const fovLang=rad(pan-hfov/2), fovRang=rad(pan+hfov/2);
+  // Ray length in real-world to fill SVG
+  const rayLen=availW/scX*0.92;
+  // Clip ray endpoints to SVG bounds
+  function clipRay(angle){
+    const dx2=Math.cos(angle), dy2=Math.sin(angle);
+    let t=rayLen;
+    if(dx2>0) t=Math.min(t,(MAXX2-CX2)/(dx2*scX));
+    if(dy2>0) t=Math.min(t,(MAXY2-CY2)/(dy2*scY));
+    if(dy2<0) t=Math.min(t,(CY2-MINY2)/(-dy2*scY));
+    return svgP(t*dx2, t*dy2);
+  }
+  const [fovLx,fovLy]=clipRay(fovLang);
+  const [fovRx,fovRy]=clipRay(fovRang);
+  const [losEx,losEy]=clipRay(panR2);
+
+  // FOV fill polygon
+  el('polygon',{points:`${CX2},${CY2} ${fovLx},${fovLy} ${fovRx},${fovRy}`,fill:'#008f5f','fill-opacity':'0.10'},dH);
+
+  // ── DORI zone arcs — concentric distance bands within the FOV wedge, matching the
+  // standard DORI PPM thresholds at a reference 1920px sensor width.
+  // Correct formula: ppm = refRW / (2 × distance × tan(HFOV/2))  →  distance = refRW / (2 × ppm × tan(HFOV/2))
+  // (must include the HFOV term — distance scales with field width, not sensor width alone)
+  const refRW=1920;
+  const tanHalfHfov=Math.tan(rad(hfov/2));
+  const doriDistFor=ppmVal=>tanHalfHfov>0.001 ? refRW/(2*ppmVal*tanHalfHfov) : Infinity;
+  let dh_prevR=Math.min(rayLen, doriDistFor(DORI_VH[0].ppm));
+  for(let i=0;i<DORI_VH.length;i++){
+    const band=DORI_VH[i];
+    const farR=i===0?Math.min(rayLen,doriDistFor(band.ppm)):dh_prevR;
+    const nearR=i+1<DORI_VH.length?Math.max(0.2,doriDistFor(DORI_VH[i+1].ppm)):0.2;
+    if(farR<=nearR){dh_prevR=nearR;continue;}
+    // Build a wedge ring (annulus sector) between nearR and farR, bounded by fovLang..fovRang
+    const steps=24;
+    const pts=[];
+    for(let s=0;s<=steps;s++){ const a=fovLang+(fovRang-fovLang)*(s/steps); pts.push(svgP(farR*Math.cos(a),farR*Math.sin(a))); }
+    for(let s=steps;s>=0;s--){ const a=fovLang+(fovRang-fovLang)*(s/steps); pts.push(svgP(nearR*Math.cos(a),nearR*Math.sin(a))); }
+    const ptStr=pts.map(p=>p.join(',')).join(' ');
+    el('polygon',{points:ptStr,fill:band.color,'fill-opacity':'0.16'},dH);
+    dh_prevR=nearR;
+  }
+
+  // FOV boundary rays
+  ln(CX2,CY2,fovLx,fovLy,{stroke:'#00e5a0','stroke-width':'1.8','marker-end':'url(#arrH)'},dH);
+  ln(CX2,CY2,fovRx,fovRy,{stroke:'#00e5a0','stroke-width':'1.8','marker-end':'url(#arrH)'},dH);
+
+  // FOV width line at target Dx
+  const [tSVGx,tSVGy_fwd]=svgP(Dx,0);
+  const fovHalfW_svg=Dx*Math.tan(rad(hfov/2))*scY;
+  const losLat_svg=Dx*Math.tan(panR2)*scY;
+  const fovTopY=CY2+losLat_svg-fovHalfW_svg;
+  const fovBotY=CY2+losLat_svg+fovHalfW_svg;
+  ln(tSVGx,clamp(fovTopY,MINY2,MAXY2),tSVGx,clamp(fovBotY,MINY2,MAXY2),
+    {stroke:'#00e5a0','stroke-width':'1','stroke-dasharray':'5 3'},dH);
+  tx(tSVGx+4,CY2+losLat_svg,`${f1(fov_width)}m`,
+    {'font-family':'Share Tech Mono,monospace','font-size':'9','fill':'#00e5a0'},dH);
+
+  // Reference axes
+  ln(CX2,MINY2+2,CX2,MAXY2-2,{stroke:'#cbd0d8','stroke-width':'1','stroke-dasharray':'5 4'},dH); // lateral
+  ln(CX2,CY2,MAXX2,CY2,{stroke:'#cbd0d8','stroke-width':'1','stroke-dasharray':'7 5'},dH);        // forward
+  tx(MAXX2-4,CY2-5,'forward',{'font-family':'Share Tech Mono,monospace','font-size':'9','fill':'#9ca3af','text-anchor':'end'},dH);
+  tx(CX2+4,MINY2+12,'lateral',{'font-family':'Share Tech Mono,monospace','font-size':'9','fill':'#9ca3af'},dH);
+
+  // Camera LOS (pan direction)
+  ln(CX2,CY2,losEx,losEy,{stroke:'#00d4ff','stroke-width':'2.2','stroke-dasharray':'10 5','marker-end':'url(#arrH)'},dH);
+  const [lmsx,lmsy]=svgP(Dx*0.4*Math.cos(panR2),Dx*0.4*Math.sin(panR2));
+  tx(lmsx,lmsy-10,`LOS ${pan>=0?'+':''}${pan}°`,
+    {'font-family':'Share Tech Mono,monospace','font-size':'10','fill':'#00d4ff',
+     'transform':`rotate(${f1(pan)},${lmsx},${lmsy})`,'text-anchor':'middle'},dH);
+
+  // Target ray (camera to target)
+  const [tgtEndX2,tgtEndY2]=svgP(Dx,Dy);
+  ln(CX2,CY2,tgtEndX2,tgtEndY2,{stroke:'#f03a5f','stroke-width':'2','stroke-dasharray':'6 3','marker-end':'url(#arrH)'},dH);
+
+  // Target dot (green=in FOV, red=out)
+  const tCol=inFOV?'#00e5a0':'#f03a5f';
+  el('circle',{cx:tgtEndX2,cy:tgtEndY2,r:10,fill:'none',stroke:'#9ca3af','stroke-width':'1'},dH);
+  el('circle',{cx:tgtEndX2,cy:tgtEndY2,r:6,fill:tCol,'fill-opacity':'0.25',stroke:tCol,'stroke-width':'1.5'},dH);
+  el('circle',{cx:tgtEndX2,cy:tgtEndY2,r:3,fill:tCol},dH);
+  tx(tgtEndX2+12,tgtEndY2+4,`(${f1(Dx)}, ${f1(Dy)})m`,
+    {'font-family':'Share Tech Mono,monospace','font-size':'9','fill':tCol},dH);
+  if(!inFOV) tx(tgtEndX2,tgtEndY2-18,'✗ OUT OF FOV',
+    {'font-family':'Share Tech Mono,monospace','font-size':'10','fill':'#f03a5f','text-anchor':'middle','font-weight':'700'},dH);
+
+  // β arc (horizontal angle to target)
+  if(Math.abs(beta_deg)>0.5){
+    arcPath(CX2,CY2,52,0,beta_deg,'#f03a5f',dH);
+    const abm=rad(beta_deg/2);
+    tx(CX2+70*Math.cos(abm),CY2+70*Math.sin(abm),`β=${f1(beta_deg)}°`,
+      {'font-family':'Share Tech Mono,monospace','font-size':'10','fill':'#f03a5f'},dH);
+  }
+  // φ arc (offset between camera LOS and target direction)
+  if(Math.abs(phi_deg)>0.5){
+    arcPath(CX2,CY2,36,pan,beta_deg,'#ff6b35',dH);
+    const phm=rad((pan+beta_deg)/2);
+    tx(CX2+50*Math.cos(phm),CY2+50*Math.sin(phm),`φ=${f1(phi_deg)}°`,
+      {'font-family':'Share Tech Mono,monospace','font-size':'9','fill':'#ff6b35'},dH);
+  }
+
+  // Dx dimension arrow
+  const dimDy=clamp(CY2+losLat_svg+fovHalfW_svg+22,CY2+20,MAXY2-10);
+  ln(CX2,dimDy,tSVGx,dimDy,{stroke:'#f5a623','stroke-width':'1'},dH);
+  ln(CX2,dimDy-5,CX2,dimDy+5,{stroke:'#f5a623','stroke-width':'1'},dH);
+  ln(tSVGx,dimDy-5,tSVGx,dimDy+5,{stroke:'#f5a623','stroke-width':'1'},dH);
+  tx((CX2+tSVGx)/2,dimDy+13,`D_x = ${f1(Dx)} m`,
+    {'font-family':'Share Tech Mono,monospace','font-size':'10','fill':'#f5a623','text-anchor':'middle'},dH);
+  // Dy dimension arrow (only if non-zero)
+  if(Math.abs(Dy)>0.1){
+    const [,tSVGy2]=svgP(Dx,Dy);
+    ln(tSVGx+20,CY2,tSVGx+20,tSVGy2,{stroke:'#f5a623','stroke-width':'1'},dH);
+    ln(tSVGx+15,CY2,tSVGx+25,CY2,{stroke:'#f5a623','stroke-width':'1'},dH);
+    ln(tSVGx+15,tSVGy2,tSVGx+25,tSVGy2,{stroke:'#f5a623','stroke-width':'1'},dH);
+    tx(tSVGx+30,(CY2+tSVGy2)/2,`${Dy>0?'+':''}${f1(Dy)} m`,
+      {'font-family':'Share Tech Mono,monospace','font-size':'9','fill':'#f5a623'},dH);
+  }
+
+  // Camera body (top-down view)
+  el('rect',{x:CX2-12,y:CY2-7,width:24,height:14,rx:'3',
+    fill:'#ffffff',stroke:'#374151','stroke-width':'1.5',
+    'transform':`rotate(${f1(pan)},${CX2},${CY2})`},dH);
+  el('polygon',{points:`${CX2+12},${CY2-4} ${CX2+20},${CY2} ${CX2+12},${CY2+4}`,
+    fill:'none',stroke:'#374151','stroke-width':'1.3',
+    'transform':`rotate(${f1(pan)},${CX2},${CY2})`},dH);
+  el('circle',{cx:CX2,cy:CY2,r:4,fill:'#1e2530',stroke:'#374151','stroke-width':'1.2'},dH);
+
+  // IN/OUT label top-right
+  tx(MAXX2-4,18,inFOV?'✓ IN FOV':'✗ OUT OF FOV',
+    {'font-family':'Share Tech Mono,monospace','font-size':'11',
+     'fill':inFOV?'#00e5a0':'#f03a5f','text-anchor':'end','font-weight':'700'},dH);
+
+  // Slant distance label on the target ray
+  const [smx2,smy2]=svgP(Dx/2,Dy/2);
+  tx(smx2-6,smy2-8,`${f1(slant)} m`,
+    {'font-family':'Share Tech Mono,monospace','font-size':'9','fill':tCol,'text-anchor':'middle'},dH);
+  // φ arc
+  if(Math.abs(phi_deg)>0.5){
+    arcPath(CX2,CY2,36,pan,beta_deg,'#ff6b35',dH);
+    const phm=rad((pan+beta_deg)/2);
+    tx(CX2+50*Math.cos(phm),CY2+50*Math.sin(phm),`φ=${f1(phi_deg)}°`,{'font-family':'Share Tech Mono,monospace','font-size':'9','fill':'#ff6b35'},dH);
+  }
+
+
+
+  // ── COVERAGE BAR ──
+    clearG('dyn_coverage'); const dC=$('dyn_coverage');
+  const barL=55,barR=565,barY=55,barH=16;
+  const span=Math.max(fov_width*1.5,Math.abs(tgt_lateral-los_lateral)*2.2+fov_width,2);
+  const toS=x=>barL+(x-los_lateral+span/2)/span*(barR-barL);
+  el('rect',{x:toS(leftEdge),y:barY-barH/2,width:Math.max(0,toS(rightEdge)-toS(leftEdge)),height:barH,fill:'#008f5f','fill-opacity':'0.12',rx:'4'},dC);
+  el('rect',{x:toS(leftEdge),y:barY-barH/2,width:Math.max(0,toS(rightEdge)-toS(leftEdge)),height:barH,fill:'none',stroke:'#00e5a0','stroke-width':'1.5',rx:'4'},dC);
+  ln(toS(los_lateral),barY-11,toS(los_lateral),barY+11,{stroke:'#00d4ff','stroke-width':'1.5','stroke-dasharray':'4 3'},dC);
+  tx(toS(los_lateral),barY-15,'LOS',{'font-family':'Share Tech Mono,monospace','font-size':'9','fill':'#00d4ff','text-anchor':'middle'},dC);
+  const tgtBX=clamp(toS(tgt_lateral),barL-15,barR+15);
+  el('circle',{cx:tgtBX,cy:barY,r:6,fill:inFOV?'#00e5a0':'#f03a5f','fill-opacity':'0.3',stroke:inFOV?'#00e5a0':'#f03a5f','stroke-width':'1.5'},dC);
+  el('circle',{cx:tgtBX,cy:barY,r:2.5,fill:inFOV?'#00e5a0':'#f03a5f'},dC);
+  tx(tgtBX,barY+20,'TGT',{'font-family':'Share Tech Mono,monospace','font-size':'9','fill':inFOV?'#00e5a0':'#f03a5f','text-anchor':'middle'},dC);
+  [-1,-0.5,0,0.5,1].forEach(f=>{
+    const sx=toS(los_lateral+f*fov_width/2);
+    ln(sx,barY+barH/2,sx,barY+barH/2+5,{stroke:'#9ca3af','stroke-width':'1'},dC);
+    tx(sx,barY+barH/2+14,f1(los_lateral+f*fov_width/2)+'m',{'font-family':'Share Tech Mono,monospace','font-size':'8','fill':'#6b7280','text-anchor':'middle'},dC);
+  });
+  tx(barL,barY-24,`Horizontal FOV coverage at D_x=${f1(Dx)}m  |  Width=${f1(fov_width)}m`,{'font-family':'Share Tech Mono,monospace','font-size':'9','fill':'#6b6560'},dC);
+}
+
+['v_Hcam','v_ht','v_D','v_vfov','v_theta_fix'].forEach(id=>$(id).addEventListener('input',drawVert));
+['h_Dx','h_Dy','h_hfov','h_pan','h_zoom'].forEach(id=>$(id).addEventListener('input',drawHoriz));
+drawVert();
+drawHoriz();
+
+
+
+/* ══ 3D VIEW PANEL JS (scoped IIFE) ══ */
+(function(){
+
+/* ═══════════════════════════════════════
+   CONSTANTS
+════════════════════════════════════════ */
+const $=id=>document.getElementById(id);
+const rad=d=>d*Math.PI/180, deg=r=>r*180/Math.PI;
+const f1=n=>isFinite(n)?n.toFixed(1):'∞';
+const f0=n=>isFinite(n)?n.toFixed(0):'∞';
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const NS='http://www.w3.org/2000/svg';
+
+const SENSORS={'1/4':[3.2,2.4],'1/3':[4.8,3.6],'1/2.5':[5.8,4.3],'1/2':[6.4,4.8],'2/3':[8.8,6.6],'1':[12.8,9.6]};
+const RES_MAP={'352x240':[352,240],'704x480':[704,480],'1280x720':[1280,720],'1920x1080':[1920,1080],'2560x1440':[2560,1440],'3840x2160':[3840,2160]};
+// Standard DORI zones, ordered FAR→NEAR (lowest PPM requirement first).
+// Colors match the reference legend: Monitor=cyan, Detect=green, Observe=orange,
+// Recognise=blue, Identify=red, Strong ID=purple.
+const DORI=[
+  {name:'Monitor',   ppm:12.5, color:'#06b6d4'},
+  {name:'Detect',    ppm:25,   color:'#16a34a'},
+  {name:'Observe',   ppm:62.5, color:'#ea580c'},
+  {name:'Recognise', ppm:125,  color:'#2563eb'},
+  {name:'Identify',  ppm:250,  color:'#dc2626'},
+  {name:'Strong ID', ppm:1000, color:'#9333ea'},
+];
+// Same list, ordered NEAR→FAR (highest PPM first) — convenient for "which zone am I in" lookups
+const DORI_NEAR_FIRST=[...DORI].reverse();
+function doriZoneForPPM(ppmVal){
+  // Returns the zone whose ppm requirement is the highest one ppmVal still satisfies
+  for(const d of DORI_NEAR_FIRST){ if(ppmVal>=d.ppm) return d; }
+  return {name:'Below Monitor',color:'#64748b'};
+}
+
+/* ═══════════════════════════════════════
+   STATE
+════════════════════════════════════════ */
+let camH=3, targetD=7, tilt=14, targetH=1.7, fl=4, res='1920x1080', sensor='1/3';
+let hfov=0, vfov=0, blindD=0, maxFOVD=0, ppm=0, sceneW=0;
+let targetDy=0, panAngle=0, alphaAngle=0, betaAngle=0, phiAngle=0, inFOV3d=true, tiltAutoMode=true;
+
+// View state
+let viewAz=-0.55, viewEl=0.48, viewDist=22;
+let targetAz=-0.55, targetEl=0.48, targetDist=22;
+let isDragging=false, lastMX=0, lastMY=0;
+let showDORI=true, showEdges=true, showGrid=true;
+
+// Canvas
+const canvas=$('v3d'), ctx=canvas.getContext('2d');
+let W=0, H=0;
+
+/* ═══════════════════════════════════════
+   3D PROJECTION
+════════════════════════════════════════ */
+let _panActive=false; // when true, project() rotates incoming points by panAngle around camera base
+function project(px,py,pz){
+  if(_panActive && Math.abs(panAngle)>0.05){
+    const a=rad(panAngle), ca=Math.cos(a), sa=Math.sin(a);
+    const rx=px*ca+pz*sa, rz=-px*sa+pz*ca;
+    px=rx; pz=rz;
+  }
+  const cx=0, cy=camH*0.25, cz=targetD*0.4;
+  let x=px-cx, y=py-cy, z=pz-cz;
+  const ca=Math.cos(viewAz),sa=Math.sin(viewAz);
+  let x2=x*ca+z*sa, z2=-x*sa+z*ca, y2=y;
+  const ce=Math.cos(viewEl),se=Math.sin(viewEl);
+  let y3=y2*ce-z2*se, z3=y2*se+z2*ce, x3=x2;
+  z3+=viewDist;
+  if(z3<0.3)return null;
+  const f=W*0.85;
+  const s=f/z3;
+  return{x:W/2+x3*s, y:H/2-y3*s, z:z3, s:s};
+}
+function withPan(fn){ _panActive=true; fn(); _panActive=false; }
+
+function projectPoly(pts){
+  return pts.map(p=>project(p[0],p[1],p[2]));
+}
+
+/* ═══════════════════════════════════════
+   DRAWING HELPERS
+════════════════════════════════════════ */
+function drawPoly(pts,fill,stroke,lw){
+  const pp=projectPoly(pts).filter(p=>p!==null);
+  if(pp.length<3)return;
+  ctx.beginPath();ctx.moveTo(pp[0].x,pp[0].y);
+  for(let i=1;i<pp.length;i++)ctx.lineTo(pp[i].x,pp[i].y);
+  ctx.closePath();
+  if(fill){ctx.fillStyle=fill;ctx.fill();}
+  if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw||1;ctx.stroke();}
+}
+
+function drawLine3(a,b,color,lw,dash){
+  const p1=project(a[0],a[1],a[2]), p2=project(b[0],b[1],b[2]);
+  if(!p1||!p2)return;
+  ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);
+  ctx.strokeStyle=color;ctx.lineWidth=lw||1;
+  if(dash)ctx.setLineDash(dash);else ctx.setLineDash([]);
+  ctx.stroke();ctx.setLineDash([]);
+}
+
+function drawLabel3(pos,text,color,size,align,offsetX,offsetY){
+  const p=project(pos[0],pos[1],pos[2]);
+  if(!p)return;
+  ctx.font=(size||10)+'px "DM Mono"';
+  ctx.fillStyle=color||'#fff';
+  ctx.textAlign=align||'center';
+  ctx.textBaseline='middle';
+  ctx.fillText(text,p.x+(offsetX||0),p.y+(offsetY||0));
+}
+
+/* ═══════════════════════════════════════
+   SCENE ELEMENTS
+════════════════════════════════════════ */
+function drawBackground(){
+  const grd=ctx.createLinearGradient(0,0,0,H);
+  grd.addColorStop(0,'#0d0f18');
+  grd.addColorStop(0.5,'#141724');
+  grd.addColorStop(1,'#1a1d30');
+  ctx.fillStyle=grd;ctx.fillRect(0,0,W,H);
+}
+
+function drawGroundPlane(){
+  const s=targetD*2;
+  const pts=[[s,0,-0.5],[s,0,s*1.6],[-s,0,s*1.6],[-s,0,-0.5]];
+  drawPoly(pts,'rgba(25,30,50,0.6)',null);
+}
+
+function drawGridLines(){
+  if(!showGrid)return;
+  const s=targetD*1.8, step=1;
+  ctx.lineWidth=0.5;
+  for(let x=-s;x<=s;x+=step){
+    const a=project(x,0.01,0), b=project(x,0.01,s*1.5);
+    if(!a||!b)continue;
+    const isMajor=x%5===0;
+    ctx.strokeStyle=isMajor?'rgba(255,255,255,0.08)':'rgba(255,255,255,0.03)';
+    ctx.lineWidth=isMajor?0.8:0.4;
+    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+  }
+  for(let z=0;z<=s*1.5;z+=step){
+    const a=project(-s,0.01,z), b=project(s,0.01,z);
+    if(!a||!b)continue;
+    const isMajor=z%5===0;
+    ctx.strokeStyle=isMajor?'rgba(255,255,255,0.08)':'rgba(255,255,255,0.03)';
+    ctx.lineWidth=isMajor?0.8:0.4;
+    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+  }
+}
+
+function drawBlindSpot(){
+  if(blindD<=0.01)return;
+  const hw=blindD*Math.tan(rad(hfov/2));
+  drawPoly([[0,0.02,0],[-hw,0.02,blindD],[hw,0.02,blindD]],
+    'rgba(245,158,11,0.30)','rgba(245,158,11,0.65)',1.5);
+  // Hash lines for blind spot
+  const steps=8;
+  for(let i=0;i<steps;i++){
+    const t=i/steps;
+    const z=blindD*t;
+    const hw2=z*Math.tan(rad(hfov/2));
+    drawLine3([-hw2,0.03,z],[hw2,0.03,z],'rgba(245,158,11,0.15)',0.5,[3,3]);
+  }
+}
+
+function drawFOVGround(){
+  if(blindD<0.01)return;
+  const hwNear=blindD*Math.tan(rad(hfov/2));
+  const hwFar=maxFOVD*Math.tan(rad(hfov/2));
+  drawPoly([[-hwNear,0.02,blindD],[hwNear,0.02,blindD],[hwFar,0.02,maxFOVD],[-hwFar,0.02,maxFOVD]],
+    'rgba(250,204,21,0.20)','rgba(250,204,21,0.55)',1.5);
+}
+
+function drawFrustumVolume(){
+  if(!showEdges)return;
+  if(blindD<0.01)return;
+  const hwNear=blindD*Math.tan(rad(hfov/2));
+  const hwFar=maxFOVD*Math.tan(rad(hfov/2));
+  const hUpper=clamp(camH-maxFOVD*Math.tan(rad(Math.max(0.1,tilt-vfov/2))),0,camH+5);
+
+  // Side walls (semi-transparent)
+  drawPoly([[0,camH,0],[-hwNear,0.02,blindD],[-hwFar,0.02,maxFOVD]],
+    'rgba(250,204,21,0.06)',null);
+  drawPoly([[0,camH,0],[hwNear,0.02,blindD],[hwFar,0.02,maxFOVD]],
+    'rgba(250,204,21,0.06)',null);
+  // Top wall
+  drawPoly([[0,camH,0],[-hwFar,hUpper,maxFOVD],[hwFar,hUpper,maxFOVD]],
+    'rgba(250,204,21,0.04)',null);
+
+  // Edge lines from camera to ground corners
+  ctx.setLineDash([6,4]);
+  drawLine3([0,camH,0],[-hwNear,0.02,blindD],'rgba(250,204,21,0.5)',1);
+  drawLine3([0,camH,0],[hwNear,0.02,blindD],'rgba(250,204,21,0.5)',1);
+  drawLine3([0,camH,0],[-hwFar,0.02,maxFOVD],'rgba(250,204,21,0.5)',1);
+  drawLine3([0,camH,0],[hwFar,0.02,maxFOVD],'rgba(250,204,21,0.5)',1);
+  // Top edges
+  drawLine3([0,camH,0],[-hwFar,hUpper,maxFOVD],'rgba(250,204,21,0.35)',0.8);
+  drawLine3([0,camH,0],[hwFar,hUpper,maxFOVD],'rgba(250,204,21,0.35)',0.8);
+  // Far plane
+  drawLine3([-hwFar,0.02,maxFOVD],[hwFar,0.02,maxFOVD],'rgba(250,204,21,0.5)',1);
+  drawLine3([-hwFar,hUpper,maxFOVD],[hwFar,hUpper,maxFOVD],'rgba(250,204,21,0.35)',0.8);
+  drawLine3([-hwFar,0.02,maxFOVD],[-hwFar,hUpper,maxFOVD],'rgba(250,204,21,0.35)',0.8);
+  drawLine3([hwFar,0.02,maxFOVD],[hwFar,hUpper,maxFOVD],'rgba(250,204,21,0.35)',0.8);
+  ctx.setLineDash([]);
+}
+
+function drawDORIZones(){
+  if(!showDORI)return;
+  const[rw]=RES_MAP[res]||[1920,1080];
+  // Distance at which each zone's PPM requirement is exactly met
+  const distFor=ppmVal=>rw/ppmVal;
+  // Draw FAR→NEAR so nearer (smaller) bands paint on top of farther (larger) bands
+  let prevDist=Math.min(maxFOVD*1.4, distFor(DORI[0].ppm));
+  for(let i=0;i<DORI.length;i++){
+    const d=DORI[i];
+    const farD=i===0?Math.min(maxFOVD*1.4,distFor(d.ppm)):prevDist;
+    const nearD=i+1<DORI.length?Math.max(0.3,distFor(DORI[i+1].ppm)):0.3;
+    if(farD<=nearD)continue;
+    const hwFar=farD*Math.tan(rad(hfov/2));
+    const hwNear=nearD*Math.tan(rad(hfov/2));
+    drawPoly([[-hwNear,0.025,nearD],[hwNear,0.025,nearD],[hwFar,0.025,farD],[-hwFar,0.025,farD]],
+      d.color+'33', d.color+'88', 1.2);
+    prevDist=nearD;
+  }
+  // Boundary labels along the right edge
+  DORI.forEach(d=>{
+    const dist=distFor(d.ppm);
+    if(dist<0.5||dist>maxFOVD*1.4)return;
+    const hw=dist*Math.tan(rad(hfov/2));
+    if(hw<0.1)return;
+    const lp=project(hw+0.4,0.05,dist);
+    if(lp){
+      ctx.font='600 9px "DM Mono"';ctx.fillStyle=d.color;ctx.textAlign='left';
+      ctx.fillText(d.name+' '+f1(dist)+'m',lp.x,lp.y);
+    }
+  });
+}
+
+function drawTargetLine(){
+  const hw=targetD*Math.tan(rad(hfov/2));
+  drawLine3([hw+0.3,0.04,0],[hw+0.3,0.04,targetD],'rgba(255,255,255,0.15)',0.5,[4,4]);
+}
+
+function drawWall(){
+  const wH=camH+1.5, wW=2.5;
+  // Wall face
+  drawPoly([[-wW,0,-0.15],[wW,0,-0.15],[wW,wH,-0.15],[-wW,wH,-0.15]],
+    'rgba(55,65,81,0.5)','rgba(107,114,128,0.4)',0.8);
+  // Wall top edge
+  drawLine3([-wW,wH,-0.15],[wW,wH,-0.15],'rgba(107,114,128,0.5)',1);
+  // Bricks hint
+  for(let y=0;y<wH;y+=0.3){
+    const offset=(Math.floor(y/0.3)%2)*0.3;
+    for(let x=-wW+offset;x<wW;x+=0.6){
+      const p1=project(x,0.01+y,-0.14), p2=project(x+0.55,0.01+y,-0.14);
+      if(p1&&p2){ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.strokeStyle='rgba(107,114,128,0.15)';ctx.lineWidth=0.3;ctx.stroke();}
+    }
+  }
+}
+
+function drawCameraBody(){
+  const bw=0.1, bh=0.07, bd=0.14;
+  const lw=0.05, lh=0.04, ld=0.08;
+  const t=rad(tilt), ct=Math.cos(t), st=Math.sin(t);
+  const pn=rad(panAngle), cp=Math.cos(pn), sp=Math.sin(pn);
+
+  // Compose: first pitch (tilt) around X, then yaw (pan) around Y, then translate to camH
+  function rotY(x,y,z){
+    // pitch (tilt) around X axis
+    const y1=y*ct-z*st, z1=y*st+z*ct;
+    // yaw (pan) around Y axis
+    const x2=x*cp+z1*sp, z2=-x*sp+z1*cp;
+    return[x2, y1+camH, z2];
+  }
+
+  // Body
+  const body=[[-bw,-bh,-bd],[bw,-bh,-bd],[bw,bh,-bd],[-bw,bh,-bd],[-bw,-bh,bd],[bw,-bh,bd],[bw,bh,bd],[-bw,bh,bd]].map(v=>rotY(...v));
+  // Front face
+  drawPoly([body[4],body[5],body[6],body[7]],'#374151','#4b5563',1);
+  // Top face
+  drawPoly([body[0],body[1],body[5],body[4]],'#4b5563','#6b7280',0.8);
+  // Right face
+  drawPoly([body[1],body[2],body[6],body[5]],'#374151','#4b5563',0.8);
+
+  // Lens
+  const lens=[[-lw,-lh,bd],[lw,-lh,bd],[lw,lh,bd],[-lw,lh,bd],[-lw,-lh,bd+ld],[lw,-lh,bd+ld],[lw,lh,bd+ld],[-lw,lh,bd+ld]].map(v=>rotY(...v));
+  drawPoly([lens[4],lens[5],lens[6],lens[7]],'#1f2937','#111827',1);
+  drawPoly([lens[0],lens[1],lens[5],lens[4]],'#374151','#4b5563',0.8);
+  // Lens glass
+  const gc=rotY(0,0,bd+ld);
+  const gp=project(...gc);
+  if(gp){
+    ctx.beginPath();ctx.arc(gp.x,gp.y,Math.max(2,0.025*gp.s),0,Math.PI*2);
+    ctx.fillStyle='rgba(56,189,248,0.3)';ctx.fill();
+    ctx.strokeStyle='rgba(56,189,248,0.6)';ctx.lineWidth=1;ctx.stroke();
+  }
+  // Pivot dot
+  const pp=project(0,camH,0);
+  if(pp){ctx.beginPath();ctx.arc(pp.x,pp.y,3,0,Math.PI*2);ctx.fillStyle='#e8294c';ctx.fill();}
+
+  // Mount bracket — rotates with pan, stays horizontal-pitch (doesn't tilt with camera)
+  const mbx=0*cp+(-0.14)*sp, mbz=-0*sp+(-0.14)*cp;
+  const m1=project(0,camH,0), m2=project(mbx,camH+0.3,mbz);
+  if(m1&&m2){ctx.beginPath();ctx.moveTo(m1.x,m1.y);ctx.lineTo(m2.x,m2.y);ctx.strokeStyle='#6b7280';ctx.lineWidth=2;ctx.stroke();}
+}
+
+function drawPerson(){
+  const px=targetDy, pz=targetD;
+  const headY=targetH, shoulderY=targetH-0.25, hipY=targetH*0.5;
+  const headR=0.11, shW=0.2, hipW=0.1;
+  const col=inFOV3d?'#e8294c':'#dc2626';
+
+  // Shadow on ground
+  drawPoly([[px-0.25,0.02,pz-0.12],[px+0.25,0.02,pz-0.12],[px+0.25,0.02,pz+0.12],[px-0.25,0.02,pz+0.12]],
+    'rgba(0,0,0,0.25)',null);
+
+  function pLine(a,b){drawLine3([px+a[0],a[1],pz+a[2]],[px+b[0],b[1],pz+b[2]],col,2.5);}
+  function pCircle(y,r){
+    const pp=project(px,y,pz);
+    if(!pp)return;
+    const sr=Math.max(2,r*pp.s);
+    ctx.beginPath();ctx.arc(pp.x,pp.y,sr,0,Math.PI*2);
+    ctx.fillStyle=inFOV3d?'rgba(232,41,76,0.15)':'rgba(220,38,38,0.18)';ctx.fill();
+    ctx.strokeStyle=col;ctx.lineWidth=2;ctx.stroke();
+  }
+
+  // Head
+  pCircle(headY,headR);
+  // Neck to hip
+  pLine([0,headY-headR,0],[0,hipY,0]);
+  // Shoulders
+  pLine([-shW,shoulderY,0],[shW,shoulderY,0]);
+  // Arms
+  pLine([-shW,shoulderY,0],[-shW-0.06,hipY-0.05,0]);
+  pLine([shW,shoulderY,0],[shW+0.06,hipY-0.05,0]);
+  // Legs
+  pLine([0,hipY,0],[-hipW,0,0]);
+  pLine([0,hipY,0],[hipW,0,0]);
+
+  // Target height line
+  drawLine3([px-0.4,0.02,pz],[px-0.4,targetH,pz],'rgba(255,255,255,0.3)',0.8,[3,3]);
+  drawLabel3([px-0.5,targetH/2,pz],f1(targetH)+'m','rgba(255,255,255,0.5)',9,'right',-4,0);
+
+  // Out-of-FOV warning label above head
+  if(!inFOV3d){
+    drawLabel3([px,headY+0.3,pz],'✗ OUT OF FOV','#dc2626',10,'center',0,0);
+  }
+}
+
+function drawMeasurements(){
+  const hwTarget=targetD*Math.tan(rad(hfov/2));
+  const hwBlind=blindD*Math.tan(rad(hfov/2));
+
+  // Width at target
+  const w1=project(-hwTarget,0.05,targetD), w2=project(hwTarget,0.05,targetD);
+  if(w1&&w2){
+    ctx.setLineDash([5,4]);ctx.strokeStyle='#fff';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(w1.x,w1.y);ctx.lineTo(w2.x,w2.y);ctx.stroke();
+    ctx.setLineDash([]);
+    // End ticks
+    [w1,w2].forEach(p=>{ctx.beginPath();ctx.moveTo(p.x,p.y-5);ctx.lineTo(p.x,p.y+5);ctx.stroke();});
+    const mx=(w1.x+w2.x)/2, my=(w1.y+w2.y)/2+16;
+    ctx.font='600 12px "DM Mono"';ctx.fillStyle='#fff';ctx.textAlign='center';
+    ctx.fillText(f1(sceneW)+' m',mx,my);
+  }
+
+  // Distance to target
+  const d1=project(hwTarget+0.6,0.05,0), d2=project(hwTarget+0.6,0.05,targetD);
+  if(d1&&d2){
+    ctx.setLineDash([5,4]);ctx.strokeStyle='#fff';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(d1.x,d1.y);ctx.lineTo(d2.x,d2.y);ctx.stroke();
+    ctx.setLineDash([]);
+    [d1,d2].forEach(p=>{ctx.beginPath();ctx.moveTo(p.x-4,p.y);ctx.lineTo(p.x+4,p.y);ctx.stroke();});
+    const mx=(d1.x+d2.x)/2+14, my=(d1.y+d2.y)/2;
+    const ang=Math.atan2(d2.y-d1.y,d2.x-d1.x);
+    ctx.save();ctx.translate(mx,my);ctx.rotate(ang);
+    ctx.font='600 12px "DM Mono"';ctx.fillStyle='#fff';ctx.textAlign='center';
+    ctx.fillText(f1(targetD)+' m',0,-7);
+    ctx.restore();
+  }
+
+  // Blind spot distance
+  if(blindD>0.1&&blindD<targetD*2){
+    const b1=project(-hwTarget-0.6,0.05,0), b2=project(-hwTarget-0.6,0.05,blindD);
+    if(b1&&b2){
+      ctx.setLineDash([5,4]);ctx.strokeStyle='#f59e0b';ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.moveTo(b1.x,b1.y);ctx.lineTo(b2.x,b2.y);ctx.stroke();
+      ctx.setLineDash([]);
+      [b1,b2].forEach(p=>{ctx.beginPath();ctx.moveTo(p.x-4,p.y);ctx.lineTo(p.x+4,p.y);ctx.stroke();});
+      const mx=(b1.x+b2.x)/2-14, my=(b1.y+b2.y)/2;
+      const ang=Math.atan2(b2.y-b1.y,b2.x-b1.x);
+      ctx.save();ctx.translate(mx,my);ctx.rotate(ang);
+      ctx.font='600 11px "DM Mono"';ctx.fillStyle='#f59e0b';ctx.textAlign='center';
+      ctx.fillText(f1(blindD)+' m',0,-7);
+      ctx.restore();
+    }
+  }
+}
+
+function drawAxisIndicator(){
+  const ac=$('axis-ind'), ax=ac.getContext('2d');
+  ax.clearRect(0,0,60,60);
+  const cx=30,cy=30,l=22;
+  const axes=[
+    {dx:1,dy:0,dz:0,color:'#ef4444',label:'X'},
+    {dx:0,dy:1,dz:0,color:'#22c55e',label:'Y'},
+    {dx:0,dy:0,dz:1,color:'#3b82f6',label:'Z'}
+  ];
+  axes.forEach(a=>{
+    let x=a.dx, y=a.dy, z=a.dz;
+    const ca=Math.cos(viewAz),sa=Math.sin(viewAz);
+    let x2=x*ca+z*sa, z2=-x*sa+z*ca, y2=y;
+    const ce=Math.cos(viewEl),se=Math.sin(viewEl);
+    let y3=y2*ce-z2*se, z3=y2*se+z2*ce, x3=x2;
+    const ex=cx+x3*l, ey=cy-y3*l;
+    ax.beginPath();ax.moveTo(cx,cy);ax.lineTo(ex,ey);
+    ax.strokeStyle=a.color;ax.lineWidth=2;ax.stroke();
+    ax.font='bold 8px "DM Mono"';ax.fillStyle=a.color;ax.textAlign='center';
+    ax.fillText(a.label,ex+(x3>0.1?8:x3<-0.1?-8:0),ey+(y3>0.1?-6:y3<-0.1?10:0));
+  });
+}
+
+/* ═══════════════════════════════════════
+   MAIN RENDER
+════════════════════════════════════════ */
+function render(){
+  if(W===0||H===0)return;
+  ctx.clearRect(0,0,W,H);
+  drawBackground();
+  drawGroundPlane();
+  drawGridLines();
+  withPan(drawDORIZones);
+  drawWall();
+  withPan(drawBlindSpot);
+  withPan(drawFOVGround);
+  withPan(drawFrustumVolume);
+  withPan(drawTargetLine);
+  withPan(drawMeasurements);
+  drawPerson();
+  drawCameraBody();
+  drawAxisIndicator();
+}
+
+/* ═══════════════════════════════════════
+   CALCULATIONS
+════════════════════════════════════════ */
+function recalc(){
+  res=$('g-res').value; sensor=$('g-sensor').value;
+  fl=+$('g-fl').value; targetD=+$('g-dt').value;
+  camH=+$('g-mh').value;
+  targetH=+$('g-th').value;
+  showDORI=$('g-dori').value==='1';
+  showEdges=$('g-edges').value==='1';
+  showGrid=$('g-grid').value==='1';
+  targetDy=+$('g-dy').value;
+  panAngle=+$('g-pan').value;
+  tiltAutoMode=!$('g-tiltmode').checked;
+
+  const[sW,sH]=SENSORS[sensor]||[4.8,3.6];
+  const[rw,rh]=RES_MAP[res]||[1920,1080];
+  hfov=2*deg(Math.atan(sW/(2*fl)));
+  vfov=2*deg(Math.atan(sH/(2*fl)));
+
+  // ── α (vertical angle): arctan((camH - targetH) / targetD) — ALWAYS, per Vertical Plane page ──
+  alphaAngle=deg(Math.atan2(camH-targetH, targetD));
+
+  // ── Tilt mode: AUTO pins upper FOV ray through target top (θ = α + VFOV/2); FIXED uses slider ──
+  const tiltSlider=$('g-tlt');
+  if(tiltAutoMode){
+    tilt=alphaAngle+vfov/2;
+    tilt=Math.max(0,Math.min(70,tilt));
+    tiltSlider.value=tilt;
+    tiltSlider.disabled=true;
+  } else {
+    tiltSlider.disabled=false;
+    tilt=+tiltSlider.value;
+  }
+
+  // ── β (horizontal angle to target) and φ (offset from camera pan/LOS) — per Horizontal Plane page ──
+  betaAngle=deg(Math.atan2(targetDy,targetD));
+  phiAngle=betaAngle-panAngle;
+  inFOV3d=Math.abs(phiAngle)<=hfov/2;
+
+  sceneW=2*targetD*Math.tan(rad(hfov/2));
+  ppm=rw/sceneW;
+
+  const lowerAng=tilt+vfov/2;
+  blindD=lowerAng<89.9?camH/Math.tan(rad(lowerAng)):0;
+
+  const fmaxMode=$('g-fmax').value;
+  const upperAng=tilt-vfov/2;
+  const groundHitD=upperAng>0.1?camH/Math.tan(rad(upperAng)):targetD*5;
+  if(fmaxMode==='full')maxFOVD=Math.min(groundHitD,targetD*5);
+  else maxFOVD=targetD*parseFloat(fmaxMode);
+
+  // Update labels
+  $('gv-res').textContent=res.replace('x','×');
+  $('gv-sensor').textContent=sensor+'″';
+  $('gv-fl').textContent=f1(fl)+' mm';
+  $('gv-dt').textContent=f1(targetD)+' m';
+  $('gv-mh').textContent=f1(camH)+' m';
+  $('gv-tlt').textContent=f1(tilt)+'°'+(tiltAutoMode?' (auto)':'');
+  $('gv-th').textContent=f1(targetH)+' m';
+  $('gv-dy').textContent=(targetDy>0?'+':'')+f1(targetDy)+' m';
+  $('gv-pan').textContent=(panAngle>0?'+':'')+f1(panAngle)+'°';
+  $('gv-tiltmode').textContent=tiltAutoMode?'AUTO':'FIXED';
+  $('gv-fmax').textContent=fmaxMode==='full'?'Full':fmaxMode+'× Target';
+  $('gv-dori').textContent=showDORI?'ON':'OFF';
+  $('gv-edges').textContent=showEdges?'ON':'OFF';
+  $('gv-grid').textContent=showGrid?'ON':'OFF';
+
+  $('cv-hfov').textContent=f1(hfov)+'°';
+  $('cv-vfov').textContent=f1(vfov)+'°';
+  $('cv-blind').textContent=blindD>0?f1(blindD)+'m':'0m';
+  $('cv-ppm').textContent=f0(ppm);
+  $('cv-alpha').textContent=f1(alphaAngle)+'°';
+  $('cv-beta').textContent=f1(betaAngle)+'°';
+
+  // True DORI zone at the target's actual distance, based on pixel density (PPM) — per EN 62676-4.
+  // This is independent of the SIRA angle compliance table below.
+  const doriZone3d=doriZoneForPPM(ppm);
+  $('cv-dori-level').textContent='DORI ZONE: '+doriZone3d.name.toUpperCase();
+  $('cv-dori-level').style.color=doriZone3d.color;
+
+  // SIRA compliance table
+  const tbody=$('sira3d-tbody');
+  tbody.innerHTML=SIRA3D.map(s=>{
+    const aOk=alphaAngle<=s.maxA;
+    const bOk=s.maxB>=999?true:Math.abs(betaAngle)<=s.maxB;
+    const aMark=aOk?'<span style="color:#16a34a">✓</span>':'<span style="color:var(--ac)">✗</span>';
+    const bMark=bOk?'<span style="color:#16a34a">✓</span>':'<span style="color:var(--ac)">✗</span>';
+    return `<tr style="border-bottom:1px solid rgba(0,0,0,.04)"><td style="padding:3px 4px">${s.label}</td><td style="text-align:center;padding:3px 4px">${aMark}</td><td style="text-align:center;padding:3px 4px">${bMark}</td></tr>`;
+  }).join('');
+
+  // FOV alert
+  $('fov3d-alert').style.display=inFOV3d?'none':'flex';
+
+  // Info overlay
+  $('io-blind').textContent=blindD>0?f1(blindD)+' m':'0 m';
+  $('io-width').textContent=f1(sceneW)+' m';
+  $('io-tilt').textContent=f1(tilt)+'°';
+  $('io-dist').textContent=f1(targetD)+' m';
+  $('io-ppm').textContent=f0(ppm)+' px/m';
+  $('io-hfov').textContent=f1(hfov)+'°';
+  $('io-vfov').textContent=f1(vfov)+'°';
+  $('io-alpha').textContent=f1(alphaAngle)+'°';
+  $('io-beta').textContent=f1(betaAngle)+'°';
+  $('io-dori').innerHTML=`<span style="color:${doriZone3d.color}">● ${doriZone3d.name.toUpperCase()}</span>`;
+  const fovStatusEl=$('io-fovstatus');
+  if(!inFOV3d){
+    fovStatusEl.innerHTML='<span style="color:#ef4444">✗ TARGET OUT OF FOV</span>';
+  } else {
+    fovStatusEl.innerHTML='<span style="color:#22c55e">✓ TARGET IN FOV</span>';
+  }
+
+  // Status bar
+  $('sb-h').textContent=f1(hfov)+'°';
+  $('sb-v').textContent=f1(vfov)+'°';
+  $('sb-b').textContent=blindD>0?f1(blindD)+'m':'0m';
+  $('sb-p').textContent=f0(ppm);
+
+  render();
+}
+
+const SIRA3D=[
+  {label:'Inspection',     maxA:10, maxB:10},
+  {label:'Identification', maxA:20, maxB:45},
+  {label:'Recognition',    maxA:45, maxB:999},
+  {label:'Observation',    maxA:45, maxB:999},
+  {label:'Detection',      maxA:75, maxB:999},
+  {label:'Monitoring',     maxA:90, maxB:999},
+];
+
+/* ═══════════════════════════════════════
+   VIEW PRESETS
+════════════════════════════════════════ */
+const VIEWS={
+  '34':    {az:-0.55, el:0.48, dist:22, label:'3/4'},
+  'front': {az:0,     el:0.12, dist:28, label:'Front'},
+  'side':  {az:-1.52, el:0.18, dist:20, label:'Side'},
+  'top':   {az:-0.25, el:1.35, dist:25, label:'Top Down'},
+  'behind':{az:2.8,   el:0.45, dist:22, label:'Behind'},
+  'low':   {az:-0.5,  el:0.08, dist:16, label:'Low Angle'}
+};
+
+function setView(key,evt){
+  const v=VIEWS[key];if(!v)return;
+  targetAz=v.az; targetEl=v.el; targetDist=v.dist;
+  document.querySelectorAll('#panel_3d .vp-btn').forEach(b=>b.classList.remove('on'));
+  const trigger = evt ? evt.target : (window.event ? window.event.target : null);
+  if(trigger) trigger.classList.add('on');
+  $('sb-view').textContent=v.label;
+  animateView();
+}
+
+let animFrame=0;
+function animateView(){
+  cancelAnimationFrame(animFrame);
+  const startAz=viewAz, startEl=viewEl, startD=viewDist;
+  const dAz=targetAz-startAz, dEl=targetEl-startEl, dD=targetDist-startD;
+  let t=0;
+  function step(){
+    t+=0.06;if(t>1)t=1;
+    const e=1-Math.pow(1-t,3); // ease out cubic
+    viewAz=startAz+dAz*e; viewEl=startEl+dEl*e; viewDist=startD+dD*e;
+    render();
+    if(t<1)animFrame=requestAnimationFrame(step);
+  }
+  step();
+}
+
+/* ═══════════════════════════════════════
+   INTERACTION
+════════════════════════════════════════ */
+canvas.addEventListener('mousedown',e=>{
+  isDragging=true; lastMX=e.clientX; lastMY=e.clientY;
+  $('hint').style.opacity='0';
+});
+window.addEventListener('mousemove',e=>{
+  if(!isDragging)return;
+  const dx=e.clientX-lastMX, dy=e.clientY-lastMY;
+  targetAz-=dx*0.005;
+  targetEl=clamp(targetEl+dy*0.005,0.02,1.55);
+  lastMX=e.clientX; lastMY=e.clientY;
+  viewAz+=(targetAz-viewAz)*0.25;
+  viewEl+=(targetEl-viewEl)*0.25;
+  // Update view label
+  let closest='3/4', minD=999;
+  Object.entries(VIEWS).forEach(([k,v])=>{
+    const d=Math.abs(v.az-targetAz)+Math.abs(v.el-targetEl)*2;
+    if(d<minD){minD=d;closest=v.label;}
+  });
+  $('sb-view').textContent=closest;
+  document.querySelectorAll('.vp-btn').forEach(b=>b.classList.toggle('on',b.textContent===closest));
+  render();
+});
+window.addEventListener('mouseup',()=>{isDragging=false;});
+
+canvas.addEventListener('wheel',e=>{
+  e.preventDefault();
+  targetDist=clamp(targetDist+e.deltaY*0.02,5,60);
+  viewDist+=(targetDist-viewDist)*0.2;
+  render();
+},{passive:false});
+
+// Touch support
+let lastTouchDist=0;
+canvas.addEventListener('touchstart',e=>{
+  if(e.touches.length===1){
+    isDragging=true;lastMX=e.touches[0].clientX;lastMY=e.touches[0].clientY;
+  }else if(e.touches.length===2){
+    const dx=e.touches[0].clientX-e.touches[1].clientX;
+    const dy=e.touches[0].clientY-e.touches[1].clientY;
+    lastTouchDist=Math.sqrt(dx*dx+dy*dy);
+  }
+  $('hint').style.opacity='0';
+},{passive:true});
+canvas.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  if(e.touches.length===1&&isDragging){
+    const dx=e.touches[0].clientX-lastMX, dy=e.touches[0].clientY-lastMY;
+    targetAz-=dx*0.005;targetEl=clamp(targetEl+dy*0.005,0.02,1.55);
+    lastMX=e.touches[0].clientX;lastMY=e.touches[0].clientY;
+    viewAz+=(targetAz-viewAz)*0.25;viewEl+=(targetEl-viewEl)*0.25;
+    render();
+  }else if(e.touches.length===2){
+    const dx=e.touches[0].clientX-e.touches[1].clientX;
+    const dy=e.touches[0].clientY-e.touches[1].clientY;
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    const delta=lastTouchDist-dist;
+    targetDist=clamp(targetDist+delta*0.08,5,60);
+    viewDist+=(targetDist-viewDist)*0.2;
+    lastTouchDist=dist;
+    render();
+  }
+},{passive:false});
+canvas.addEventListener('touchend',()=>{isDragging=false;});
+
+/* ═══════════════════════════════════════
+   RESIZE
+════════════════════════════════════════ */
+function resize(){
+  const rect=canvas.parentElement.getBoundingClientRect();
+  if(rect.width<2||rect.height<2)return; // panel hidden/not yet laid out — skip, avoid zero-size canvas
+  W=canvas.width=rect.width*devicePixelRatio;
+  H=canvas.height=rect.height*devicePixelRatio;
+  canvas.style.width=rect.width+'px';
+  canvas.style.height=rect.height+'px';
+  ctx.setTransform(1,0,0,1,0,0); // reset before scaling, since canvas.width/height already cleared transform once
+  ctx.scale(devicePixelRatio,devicePixelRatio);
+  W=rect.width;H=rect.height;
+  render();
+}
+window.addEventListener('resize',resize);
+
+// Defensive: re-attempt sizing whenever the canvas's actual container size changes
+// (catches the case where the panel becomes visible but the resize() call from
+// switchTab's requestAnimationFrame fired one tick too early).
+if(typeof ResizeObserver!=='undefined'){
+  const ro=new ResizeObserver(()=>resize());
+  ro.observe(canvas.parentElement);
+}
+
+/* ═══════════════════════════════════════
+   INIT
+════════════════════════════════════════ */
+resize();
+recalc();
+
+// Hide hint after 4 seconds
+setTimeout(()=>$('hint').style.opacity='0',4000);
+
+window.setView=setView;
+window.recalc=recalc;
+window.resize3d=resize;
+})();
+</script>
+</body>
+</html>

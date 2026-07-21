@@ -1,0 +1,2861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Switch &amp; Rack Designer</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&family=Share+Tech+Mono&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg0:#f2f5f9; --bg1:#ffffff; --bg2:#eef1f6; --bg3:#eef2f7; --bg4:#e3e8f0;
+  --b0:#dde3ec; --b1:#c7d2e0; --b2:#b8c4d4;
+  --acc:#2563b0; --accg:rgba(37,99,176,0.10); --acch:rgba(37,99,176,0.4);
+  --tea:#0d9488; --teag:rgba(13,148,136,.12); --teah:rgba(13,148,136,.4);
+  --amb:#b45309; --ambg:rgba(180,83,9,.12); --ambh:rgba(180,83,9,.4);
+  --red:#dc2626; --redg:rgba(220,38,38,.12); --redh:rgba(220,38,38,.4);
+  --t0:#1a2233; --t1:#5a6b85; --t2:#94a3b8;
+  --fui:'Inter',sans-serif; --fmono:'IBM Plex Mono',monospace;
+  --r:6px; --rl:10px; --hw:110px; --tbh:66px;
+  --lw:270px; --rw:264px; --rulw:22px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;background:var(--bg0);color:var(--t0);font-family:var(--fui);font-size:13px;-webkit-font-smoothing:antialiased;background-image:linear-gradient(rgba(37,99,176,0.045) 1px,transparent 1px),linear-gradient(90deg,rgba(37,99,176,0.045) 1px,transparent 1px);background-size:42px 42px}
+button{cursor:pointer;border:none;outline:none;font-family:var(--fui);background:none;color:inherit}
+input,select{outline:none;font-family:var(--fmono);background:none;border:none;color:var(--t0);font-size:11.5px}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--b2);border-radius:3px}
+
+#app{min-height:100vh;display:flex;flex-direction:column}
+
+/* HEADER */
+#hdr{height:var(--hw);background:var(--bg1);border-bottom:1px solid var(--b0);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;z-index:50}
+.crumb{height:26px;display:flex;align-items:center;gap:7px;padding:0 20px;font-family:var(--fmono);font-size:9.5px;letter-spacing:1.1px;text-transform:uppercase;color:var(--t1);border-bottom:1px solid var(--b0);flex-shrink:0;white-space:nowrap;overflow-x:auto}
+.crumb .sep{color:var(--amb);opacity:.75}
+.crumb .cur{color:var(--t0);font-weight:600}
+.hero-row{flex:1;display:flex;align-items:center;justify-content:space-between;padding:0 20px;gap:16px;flex-wrap:wrap;min-height:0}
+.hero-left{display:flex;align-items:center;gap:14px;min-width:0}
+.icon-badge{width:46px;height:46px;border-radius:12px;background:var(--bg3);border:1px solid var(--acch);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 0 1px rgba(96,165,250,.08),0 4px 16px rgba(96,165,250,.14)}
+.icon-badge svg{width:23px;height:23px;color:var(--acc)}
+.headline-wrap{min-width:0}
+.brand-name{font-family:'Rajdhani',sans-serif;font-weight:800;font-size:23px;letter-spacing:.4px;text-transform:uppercase;color:var(--t0);line-height:1.05;white-space:nowrap}
+.brand-name span{color:var(--acc)}
+.brand-sub{font-size:9px;color:var(--t1);font-family:var(--fmono);letter-spacing:1.1px;text-transform:uppercase;margin-top:4px}
+.proj-name{background:var(--bg3);border:1px solid var(--b1);border-radius:var(--r);padding:7px 11px;font-size:11.5px;font-family:var(--fui);color:var(--t0);width:170px}
+.hdr-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.hdr-div{width:1px;height:20px;background:var(--b1);margin:0 4px}
+
+
+.btn{height:33px;padding:0 14px;border-radius:var(--r);font-size:11.5px;font-weight:600;display:flex;align-items:center;gap:6px;transition:.15s;white-space:nowrap}
+.btn-g{background:var(--bg3);border:1px solid var(--b1);color:var(--t0)}
+.btn-g:hover{background:var(--bg4);border-color:var(--b2)}
+.btn-acc{background:var(--accg);border:1px solid var(--acch);color:var(--acc)}
+.btn-acc:hover{filter:brightness(1.15)}
+.btn-tea{background:var(--teag);border:1px solid var(--teah);color:var(--tea)}
+.btn-tea:hover{background:var(--teah)}
+.btn-red{background:var(--redg);border:1px solid var(--redh);color:var(--red)}
+.btn-red:hover{background:rgba(255,93,93,.22)}
+
+/* TABS */
+#tabs{display:flex;gap:10px;background:var(--bg1);border-bottom:1px solid var(--b0);padding:14px 22px;flex-shrink:0;position:sticky;top:var(--hw);z-index:49;height:var(--tbh);overflow-x:auto;align-items:center}
+.tabbtn{flex:0 0 auto;display:flex;align-items:center;gap:9px;padding:10px 18px;border-radius:12px;background:var(--bg2);border:1px solid var(--b0);color:var(--t1);font-size:12px;font-weight:700;transition:.15s;white-space:nowrap}
+.tabbtn:hover{background:var(--bg3);border-color:var(--b1);color:var(--t0)}
+.tabbtn.active{background:var(--accg);border-color:var(--acch);color:var(--acc)}
+.tabbtn .tb-ic{width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tabbtn .tb-ic svg{width:19px;height:19px}
+.tabbtn .tb-lbl{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:.2px}
+.tabbtn:hover:not(.active){color:var(--t0)}
+
+/* MAIN LAYOUT */
+#main{flex:1;padding:20px;display:none;gap:18px}
+#main.active{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:start}
+.pagegrid{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:start;padding:20px;gap:18px}
+@media (max-width: 980px){ #main.active{grid-template-columns:1fr} .pagegrid{grid-template-columns:1fr} }
+
+.card{background:var(--bg1);border:1px solid var(--b0);border-radius:var(--rl);margin-bottom:16px;overflow:hidden}
+.card-hd{padding:13px 16px;border-bottom:1px solid var(--b0);display:flex;align-items:center;justify-content:space-between}
+.card-hd b{font-size:12.5px;letter-spacing:.2px}
+.card-hd .sub{font-size:10px;color:var(--t1);font-weight:400;margin-top:2px}
+.card-bd{padding:14px 16px}
+.slbl{font-size:9.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--t1);margin-bottom:8px}
+
+/* TABLES */
+table.dtbl{width:100%;border-collapse:collapse;font-size:11px}
+table.dtbl th{background:var(--bg3);color:var(--t1);text-align:left;padding:7px 8px;font-size:9px;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap}
+table.dtbl td{padding:5px 6px;border-bottom:1px solid var(--b0);vertical-align:middle}
+table.dtbl tr:hover td{background:var(--bg2)}
+table.dtbl input,table.dtbl select{width:100%;background:var(--bg3);border:1px solid var(--b1);border-radius:5px;padding:6px 7px;font-size:10.5px;color:var(--t0)}
+table.dtbl input:focus,table.dtbl select:focus{border-color:var(--acc)}
+table.dtbl input[type=number]{text-align:right}
+.col-name{min-width:150px}
+.col-num{width:64px}
+.col-sel{width:110px}
+.col-chk{width:34px;text-align:center}
+.rowdel{width:30px;text-align:center}
+.rowdel button{width:24px;height:24px;border-radius:5px;background:var(--redg);color:var(--red);font-size:12px}
+.rowdel button:hover{background:var(--redh)}
+.tbl-foot{padding:9px 8px;display:flex;justify-content:space-between;align-items:center}
+.btn-add{background:var(--accg);border:1px solid var(--acch);color:var(--acc);font-size:10.5px;font-weight:600;padding:6px 11px;border-radius:5px;display:flex;align-items:center;gap:5px}
+.btn-add:hover{background:var(--acch)}
+
+/* SETTINGS GRID */
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
+.sfield{display:flex;flex-direction:column;gap:5px}
+.sfield label{font-size:10px;color:var(--t1)}
+.sfield input,.sfield select{background:var(--bg3);border:1px solid var(--b1);border-radius:var(--r);padding:8px 9px;font-size:11.5px;color:var(--t0)}
+.sfield input:focus,.sfield select:focus{border-color:var(--acc)}
+.chkrow{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:11px;color:var(--t0)}
+.chkrow input{width:15px;height:15px;accent-color:var(--acc)}
+
+/* METRICS */
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.metric{background:var(--bg3);border:1px solid var(--b1);border-radius:var(--r);padding:11px 13px}
+.metric .ml{font-size:9.5px;color:var(--t1);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
+.metric .mv{font-family:var(--fmono);font-size:17px;font-weight:600;color:var(--t0)}
+.metric .mv small{font-size:11px;color:var(--t1);font-weight:400}
+.metric.wide{grid-column:1 / -1}
+.metric.pass{border-color:var(--teah);background:var(--teag)}
+.metric.pass .mv{color:var(--tea)}
+.metric.fail{border-color:var(--redh);background:var(--redg)}
+.metric.fail .mv{color:var(--red)}
+.metric.warn{border-color:var(--ambh);background:var(--ambg)}
+.metric.warn .mv{color:var(--amb)}
+
+.status-line{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:var(--r);font-size:11.5px;font-weight:600;margin-top:4px}
+.status-line.ok{background:var(--teag);border:1px solid var(--teah);color:var(--tea)}
+.status-line.bad{background:var(--redg);border:1px solid var(--redh);color:var(--red)}
+
+.note{font-size:10.5px;color:var(--t1);line-height:1.55;background:var(--bg3);border:1px solid var(--b1);border-radius:var(--r);padding:9px 11px;margin-top:10px}
+.note b{color:var(--t0)}
+
+/* RACK ELEVATION */
+#rack-wrap{display:flex;justify-content:center;padding:10px 0}
+.rack-frame{background:var(--bg3);border:2px solid var(--b2);border-radius:6px;padding:8px;position:relative}
+.rack-cap{text-align:center;font-family:var(--fmono);font-size:9.5px;color:var(--t1);padding:4px 0}
+.rack-slot{width:230px;border-bottom:1px solid var(--b0);display:flex;align-items:center;padding:0 8px;font-size:9.5px;position:relative;gap:6px}
+.rack-slot .u-idx{font-family:var(--fmono);font-size:7.5px;color:var(--t2);width:16px;flex-shrink:0}
+.rack-slot .u-lbl{flex:1;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rack-slot .u-h{font-family:var(--fmono);font-size:8px;color:rgba(0,0,0,.55);flex-shrink:0}
+.rack-slot.blank{background:repeating-linear-gradient(135deg,var(--bg2),var(--bg2) 4px,var(--bg3) 4px,var(--bg3) 8px);color:var(--t2)}
+.rack-slot.blank .u-lbl{color:var(--t2);font-weight:400}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;justify-content:center}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:9.5px;color:var(--t1)}
+.leg-sw{width:11px;height:11px;border-radius:3px;flex-shrink:0}
+
+/* Cat colors */
+.cat-patch{background:#c4b5fd}
+.cat-cable{background:#94a3b8}
+.cat-switch{background:#60a5fa}
+.cat-router{background:#f472b6}
+.cat-server{background:#fb923c}
+.cat-wireless{background:#facc15}
+.cat-ups{background:#2dd4bf}
+.cat-other{background:#a3a3a3}
+
+#toast-wrap{position:fixed;right:18px;top:74px;z-index:200;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--bg2);border:1px solid var(--b1);border-left:3px solid var(--tea);border-radius:7px;padding:10px 14px;font-size:11.5px;box-shadow:0 10px 30px rgba(0,0,0,.5);min-width:200px;animation:tin .2s ease}
+.toast.err{border-left-color:var(--red)}
+@keyframes tin{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
+
+.ref-table{width:100%;border-collapse:collapse;font-size:10.5px;margin-top:8px}
+.ref-table th{background:var(--bg3);color:var(--t1);text-align:left;padding:6px 8px;font-size:9px;text-transform:uppercase}
+.ref-table td{padding:6px 8px;border-bottom:1px solid var(--b0);color:var(--t0)}
+
+/* ═══════════ ROOM DESIGN PAGE ═══════════ */
+.fg{margin-bottom:10px}
+.fg label{display:block;font-size:10px;color:var(--t1);margin-bottom:5px}
+.fg input,.fg select{width:100%;background:var(--bg3);border:1px solid var(--b1);border-radius:var(--r);padding:8px 9px;font-size:11.5px;color:var(--t0)}
+.fg input:focus,.fg select:focus{border-color:var(--acc)}
+.fg-inline{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hidden{display:none !important}
+.toggle-wrap{display:flex;align-items:center;gap:9px;font-size:11px;color:var(--t0);cursor:pointer}
+.toggle{position:relative;width:32px;height:18px;flex-shrink:0}
+.toggle input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;z-index:1}
+.toggle .slider{position:absolute;inset:0;background:var(--bg4);border:1px solid var(--b1);border-radius:10px;transition:.15s}
+.toggle .slider::before{content:'';position:absolute;width:12px;height:12px;left:2px;top:2px;background:var(--t1);border-radius:50%;transition:.15s}
+.toggle input:checked + .slider{background:var(--accg);border-color:var(--acch)}
+.toggle input:checked + .slider::before{transform:translateX(14px);background:var(--acc)}
+.rack-stepper{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px}
+.rack-count-val{font-size:1.2rem;font-weight:700;color:var(--acc);min-width:26px;text-align:center;font-family:var(--fmono)}
+.subcard{background:var(--bg3);border:1px solid var(--b1);border-radius:var(--r);padding:10px 11px;margin-bottom:9px}
+.subcard-title{font-size:9.5px;color:var(--acc);font-weight:700;letter-spacing:.6px;text-transform:uppercase;margin-bottom:8px}
+#roomCanvasWrap{display:flex;justify-content:center;padding:6px 0;overflow-x:auto}
+#roomCanvas{border-radius:8px;background:#f4f7fb;max-width:100%;border:1px solid var(--b0)}
+.chip-badge{background:var(--accg);border:1px solid var(--acch);color:var(--acc);font-size:9.5px;font-weight:700;padding:4px 9px;border-radius:12px;white-space:nowrap;align-self:flex-start}
+
+/* ROOM DESIGN sub-tabs */
+.subtabs{display:flex;gap:4px;margin-bottom:14px;background:var(--bg2);border-radius:10px;padding:4px}
+.subtab{flex:1;text-align:center;padding:9px 6px;border-radius:7px;font-size:11.5px;font-weight:700;color:var(--t1);cursor:pointer;transition:.15s}
+.subtab:hover{color:var(--t0)}
+.subtab.active{background:var(--bg1);color:var(--acc);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.subtab-body{display:none}
+.subtab-body.active{display:block}
+
+/* Rack tabs (Equipment sub-tab) */
+.racktabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.racktab{padding:7px 13px;border-radius:8px;background:var(--bg3);border:1px solid var(--b1);font-size:11px;font-weight:700;color:var(--t1);cursor:pointer;transition:.15s}
+.racktab:hover{border-color:var(--acch)}
+.racktab.active{background:var(--accg);border-color:var(--acch);color:var(--acc)}
+.racktab .ru{font-family:var(--fmono);font-weight:400;font-size:9.5px;margin-left:4px;opacity:.8}
+
+.eq-toolbar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.eq-toolbar .btn-sm{white-space:nowrap}
+
+table.eqtbl{width:100%;border-collapse:collapse;font-size:10.5px}
+table.eqtbl th{background:var(--bg3);color:var(--t1);text-align:left;padding:6px 6px;font-size:8.5px;text-transform:uppercase}
+table.eqtbl td{padding:4px 5px;border-bottom:1px solid var(--b0);vertical-align:middle}
+table.eqtbl input,table.eqtbl select{width:100%;background:var(--bg3);border:1px solid var(--b1);border-radius:5px;padding:5px 6px;font-size:10px;color:var(--t0)}
+.eq-drag{cursor:grab;color:var(--t2);width:16px;text-align:center;user-select:none}
+.eq-drag:active{cursor:grabbing}
+tr.eq-dragging{opacity:.4}
+
+.sw-calc-box{background:var(--bg3);border:1px solid var(--b1);border-radius:8px;padding:12px;margin-top:10px}
+.sw-calc-box .title{font-size:10.5px;font-weight:700;color:var(--t0);margin-bottom:8px}
+.sw-inc-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;font-size:11px;color:var(--t0);border-bottom:1px solid var(--b0)}
+.sw-inc-row:last-child{border-bottom:none}
+
+.preset-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.preset-btn{background:var(--bg3);border:1px solid var(--b1);border-radius:8px;padding:10px 8px;font-size:10.5px;font-weight:600;color:var(--t0);text-align:center;cursor:pointer;transition:.15s}
+.preset-btn:hover{border-color:var(--acch);background:var(--accg)}
+
+/* Rack elevation (front view) canvas cards */
+.rackelev-wrap{display:flex;justify-content:center;padding:6px 0}
+#roomCanvas, .rackelev-canvas{background:#f4f7fb;border-radius:8px;border:1px solid var(--b0);max-width:100%}
+.spare-u-label{text-align:center;font-family:var(--fmono);font-size:10px;margin-top:6px;padding:6px;border-radius:6px}
+.spare-u-label.ok{background:var(--teag);color:var(--tea)}
+.spare-u-label.warn{background:var(--ambg);color:var(--amb)}
+.spare-u-label.fail{background:var(--redg);color:var(--red)}
+
+.proj-info-box{background:var(--bg3);border:1px solid var(--b1);border-radius:8px;padding:14px;font-family:var(--fmono);font-size:10.5px;line-height:1.9;color:var(--t0);white-space:pre-wrap}
+.vrow{display:flex;align-items:center;gap:9px;padding:8px 16px;border-bottom:1px solid var(--b0);font-size:11px}
+.vrow:last-child{border-bottom:none}
+.vicon{font-size:12px;flex-shrink:0}
+.vtitle{flex:1;font-weight:600;color:var(--t0)}
+.vdetail{font-family:var(--fmono);font-size:10px;color:var(--t1);white-space:nowrap}
+.vrow.fail .vtitle{color:var(--red)}
+.vrow.warn .vtitle{color:var(--amb)}
+
+/* ═══════════ SCHEMATIC PAGE — faithful CAD-style riser diagram engine ═══════════
+   Scoped light "drafting sheet" theme (professional convention: technical
+   drawings render on light paper regardless of app chrome) — vars scoped to
+   #main-schematic only, does not affect the rest of the dark UI. */
+#main-schematic{
+  --accent:#2563b0; --text:#1a2a3a; --text2:#5a7090; --text3:#94a8bc;
+  --border:#dde3ec; --border2:#c8d2e0; --danger:#c02020;
+  display:none; position:fixed; top:calc(var(--hw) + var(--tbh)); left:0; right:0; bottom:0;
+  background:#eef2f7; flex-direction:column; overflow:hidden; z-index:15;
+}
+#schToolbar{height:46px;background:#ffffff;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:5px;padding:0 10px;flex-shrink:0;overflow-x:auto;overflow-y:hidden}
+.spr{margin-bottom:7px}
+.spr label{display:block;font-size:0.67rem;color:var(--text2);margin-bottom:3px}
+.stb{padding:4px 9px;border-radius:5px;font-size:0.71rem;font-weight:600;background:#f0f4f8;border:1px solid var(--border2);color:var(--text2);cursor:pointer;transition:.12s;font-family:'Exo 2',sans-serif;white-space:nowrap;flex-shrink:0}
+.stb:hover{background:#e4e8f0;color:var(--text)}
+.stb.active{background:rgba(37,99,176,.12);border-color:var(--accent);color:var(--accent)}
+.tb-sep-lbl{font-size:0.68rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-right:2px;flex-shrink:0}
+.sch-rtab{transition:.12s}
+
+@media print{
+  #hdr .hdr-actions, #tabs, .btn-add, .rowdel, #main-schematic{display:none !important}
+  body{background:#fff;color:#111}
+  #main{display:block !important}
+  .card{border:1px solid #ccc;background:#fff;break-inside:avoid}
+  .card-hd b{color:#111}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header id="hdr">
+    <div class="crumb">
+      <span>MEP PLATFORM</span><span class="sep">›</span><span>ICT DESIGN TOOLS</span><span class="sep">›</span><span class="cur" id="crumb-current">ICT TOOLS</span>
+    </div>
+    <div class="hero-row">
+      <div class="hero-left">
+        <div class="icon-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="4" rx="1"></rect><rect x="3" y="15" width="6" height="4" rx="1"></rect><rect x="15" y="15" width="6" height="4" rx="1"></rect><path d="M12 7v4M12 11H6v4M12 11h6v4"></path></svg>
+        </div>
+        <div class="headline-wrap">
+          <div class="brand-name" id="hero-title">Switch <span>&amp; Rack</span> Designer</div>
+          <div class="brand-sub" id="hero-sub">5 design modules available</div>
+        </div>
+        <input class="proj-name" id="proj-name" placeholder="Project name" value="Untitled Project" />
+      </div>
+      <div class="hdr-actions">
+        <button class="btn btn-g" id="btn-example">✨ Load Worked Example</button>
+        <button class="btn btn-g" id="btn-reset">↺ Reset</button>
+        <div class="hdr-div"></div>
+        <button class="btn btn-tea" id="btn-print">🖨️ Print / Save PDF</button>
+        <button class="btn btn-acc" id="btn-export-csv">⤓ Export BOQ (CSV)</button>
+      </div>
+    </div>
+  </header>
+
+  <nav id="tabs">
+    <button class="tabbtn active" data-tab="switch">
+      <span class="tb-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="10" rx="2"></rect><path d="M6 11h.01M10 11h.01M14 11h.01M18 11h.01"></path><path d="M6 21v-4M12 21v-4M18 21v-4"></path></svg></span>
+      <span class="tb-lbl">Switch Sizing</span>
+    </button>
+    <button class="tabbtn" data-tab="rack">
+      <span class="tb-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="1"></rect><path d="M8 6h.01M8 10h.01M8 14h.01M8 18h.01"></path><line x1="11" y1="6" x2="17" y2="6"></line><line x1="11" y1="10" x2="17" y2="10"></line><line x1="11" y1="14" x2="17" y2="14"></line><line x1="11" y1="18" x2="17" y2="18"></line></svg></span>
+      <span class="tb-lbl">Rack Layout</span>
+    </button>
+    <button class="tabbtn" data-tab="room">
+      <span class="tb-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9v11h14V9"></path><path d="M10 20v-6h4v6"></path></svg></span>
+      <span class="tb-lbl">Room Design</span>
+    </button>
+    <button class="tabbtn" data-tab="schematic">
+      <span class="tb-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="6" rx="1"></rect><rect x="14" y="4" width="7" height="6" rx="1"></rect><rect x="8.5" y="15" width="7" height="6" rx="1"></rect><path d="M6.5 10v3.5h10V10M12 13.5V15"></path></svg></span>
+      <span class="tb-lbl">Schematic</span>
+    </button>
+    <button class="tabbtn" data-tab="ref">
+      <span class="tb-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></span>
+      <span class="tb-lbl">Reference</span>
+    </button>
+  </nav>
+
+  <!-- ═══════════════ SWITCH SIZING TAB ═══════════════ -->
+  <div id="main-switch" class="pagegrid" style="display:none">
+    <div>
+      <div class="card">
+        <div class="card-hd">
+          <div><b>Device Inventory</b><div class="sub">Every connected device, by system</div></div>
+          <button class="btn-add" id="add-device">＋ Add Device</button>
+        </div>
+        <div class="card-bd" style="overflow-x:auto">
+          <table class="dtbl" id="device-tbl">
+            <thead><tr>
+              <th class="col-name">System</th>
+              <th class="col-name">Device</th>
+              <th class="col-num">Qty</th>
+              <th class="col-num">W / unit</th>
+              <th class="col-sel">PoE Class</th>
+              <th class="col-chk">PoE?</th>
+              <th class="rowdel"></th>
+            </tr></thead>
+            <tbody id="device-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><b>Sizing Parameters</b></div>
+        <div class="card-bd">
+          <div class="sgrid">
+            <div class="sfield"><label>Switch model PoE budget (W)</label><input type="number" id="p-switchBudget" value="370" step="5"></div>
+            <div class="sfield"><label>Ports per switch</label><input type="number" id="p-portsPerSwitch" value="24" step="1"></div>
+            <div class="sfield"><label>Cable loss (%)</label><input type="number" id="p-cableLoss" value="5" step="1"></div>
+            <div class="sfield"><label>Power spare margin (%)</label><input type="number" id="p-spareMargin" value="20" step="1"></div>
+            <div class="sfield"><label>Port spare margin (%)</label><input type="number" id="p-sparePorts" value="17.5" step="0.5"></div>
+            <div class="sfield"><label>Single-port power limit (W)</label>
+              <select id="p-portLimit">
+                <option value="15.4">802.3af — 15.4 W</option>
+                <option value="30" selected>802.3at (PoE+) — 30 W</option>
+                <option value="60">802.3bt Type 3 — 60 W</option>
+                <option value="90">802.3bt Type 4 — 90 W</option>
+              </select>
+            </div>
+          </div>
+          <div class="chkrow"><input type="checkbox" id="p-vlan"><label for="p-vlan">Needs VLANs / QoS (multi-system convergence)</label></div>
+          <div class="chkrow"><input type="checkbox" id="p-redundancy"><label for="p-redundancy">Needs redundancy (ring/RSTP, dual uplinks)</label></div>
+          <div class="chkrow"><input type="checkbox" id="p-lifesafety"><label for="p-lifesafety">Serves life-safety systems (fire alarm network)</label></div>
+          <div class="chkrow"><input type="checkbox" id="p-highbit"><label for="p-highbit">High-bitrate video (4K / thermal streams)</label></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-hd"><b>PoE Power Budget</b><div class="sub">connectedLoad → designLoad → switch count</div></div>
+        <div class="card-bd">
+          <div class="metrics">
+            <div class="metric"><div class="ml">Total Devices</div><div class="mv" id="m-totaldevices">0</div></div>
+            <div class="metric"><div class="ml">Connected Load</div><div class="mv" id="m-connectedload">0 <small>W</small></div></div>
+            <div class="metric wide"><div class="ml">Design Load  (× 1+cableLoss × 1+spareMargin)</div><div class="mv" id="m-designload">0 <small>W</small></div></div>
+            <div class="metric"><div class="ml">Switches by Power</div><div class="mv" id="m-swpower">0</div></div>
+            <div class="metric"><div class="ml">Switches by Ports</div><div class="mv" id="m-swports">0</div></div>
+            <div class="metric wide pass" id="m-required-wrap"><div class="ml">Switches Required</div><div class="mv" id="m-required">0</div></div>
+          </div>
+          <div class="status-line" id="worstport-status">—</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><b>Tier &amp; Uplink Recommendation</b></div>
+        <div class="card-bd">
+          <div class="note" id="tier-rec">—</div>
+          <div class="note" id="uplink-rec" style="margin-top:8px">—</div>
+          <div class="note" id="redundancy-rec" style="margin-top:8px;display:none"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ RACK LAYOUT TAB ═══════════════ -->
+  <div id="main-rack" class="pagegrid" style="display:none">
+    <div>
+      <div class="card">
+        <div class="card-hd">
+          <div><b>Rack Item List</b><div class="sub">Everything mounted in the enclosure</div></div>
+          <button class="btn-add" id="add-item">＋ Add Item</button>
+        </div>
+        <div class="card-bd" style="overflow-x:auto">
+          <table class="dtbl" id="item-tbl">
+            <thead><tr>
+              <th class="col-name">Item</th>
+              <th class="col-sel">Category</th>
+              <th class="col-num">Qty</th>
+              <th class="col-num">U each</th>
+              <th class="col-num">W / unit</th>
+              <th class="rowdel"></th>
+            </tr></thead>
+            <tbody id="item-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><b>Rack &amp; Power Parameters</b></div>
+        <div class="card-bd">
+          <div class="sgrid">
+            <div class="sfield"><label>Rack type</label>
+              <select id="r-racktype">
+                <option>Open frame (2/4-post)</option>
+                <option>Wall-mount cabinet</option>
+                <option selected>Free-standing enclosed cabinet</option>
+                <option>Outdoor / NEMA-rated cabinet</option>
+              </select>
+            </div>
+            <div class="sfield"><label>U spare margin (%)</label><input type="number" id="r-uspare" value="25" step="1"></div>
+            <div class="sfield"><label>UPS power factor</label><input type="number" id="r-pf" value="0.9" step="0.05"></div>
+            <div class="sfield"><label>UPS headroom (%)</label><input type="number" id="r-upshead" value="27.5" step="1"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-hd"><b>Rack Sizing</b></div>
+        <div class="card-bd">
+          <div class="metrics">
+            <div class="metric"><div class="ml">Total U Needed</div><div class="mv" id="rm-totalu">0<small> U</small></div></div>
+            <div class="metric pass"><div class="ml">Recommended Rack Size</div><div class="mv" id="rm-racksize">—</div></div>
+            <div class="metric"><div class="ml">Total Power Load</div><div class="mv" id="rm-power">0 <small>W</small></div></div>
+            <div class="metric"><div class="ml">Required UPS</div><div class="mv" id="rm-ups">0 <small>VA</small></div></div>
+            <div class="metric wide"><div class="ml">Heat Load</div><div class="mv" id="rm-heat">0 <small>BTU/hr</small></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><b>Rack Elevation</b><div class="sub">Auto-arranged top → bottom per best practice order</div></div>
+        <div class="card-bd">
+          <div id="rack-wrap"></div>
+          <div class="legend" id="rack-legend"></div>
+          <div class="note">Order: patch panels → cable managers → switches → routers/firewalls → servers/NVRs → wireless controllers/PA → UPS (bottom). Blank panels fill unused U for airflow.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ ROOM DESIGN TAB ═══════════════ -->
+  <div id="main-room" class="pagegrid" style="display:none">
+    <div>
+      <div class="subtabs">
+        <button class="subtab active" data-sub="project">Project</button>
+        <button class="subtab" data-sub="equipment">Equipment</button>
+        <button class="subtab" data-sub="export">Export</button>
+      </div>
+
+      <!-- ═══ PROJECT SUB-TAB ═══ -->
+      <div id="rd-sub-project" class="subtab-body active">
+      <div class="card">
+        <div class="card-hd"><b>Building Parameters</b><div class="sub">Drives work-area count and port demand</div></div>
+        <div class="card-bd">
+          <div class="fg">
+            <label>Building Type</label>
+            <select id="rm-buildingType">
+              <option value="office">Standard Office (10 WA/93m²)</option>
+              <option value="openoffice">Open Office / Call Centre (18 WA/93m²)</option>
+              <option value="healthcare">Healthcare (7 WA/93m²)</option>
+              <option value="education">Education / Campus (10 WA/93m²)</option>
+              <option value="industrial">Industrial / Warehouse (2 WA/93m²)</option>
+              <option value="residential">Residential (4 WA/93m²)</option>
+              <option value="retail">Retail (8 WA/93m²)</option>
+              <option value="datacenter">Data Center / Server Room (24 WA/93m²)</option>
+              <option value="custom">Custom Density…</option>
+            </select>
+          </div>
+          <div class="fg hidden" id="rm-customWA-wrap">
+            <label>Custom Building Type Name</label><input type="text" id="rm-customBuildingName" value="Custom" style="margin-bottom:8px">
+            <label>Custom WA per 93m²</label><input type="number" id="rm-customWA" value="10" min="1">
+          </div>
+          <div class="fg"><label>Floor Area Served (m²)</label><input type="number" id="rm-area" value="650" step="10"></div>
+          <div class="fg-inline">
+            <div class="fg"><label>Ports per Work Area</label><input type="number" id="rm-portsPerWA" value="2" step="1" min="1"></div>
+            <div class="fg"><label>Spare Capacity (%)</label><input type="number" id="rm-sparePct" value="25" step="5"></div>
+          </div>
+          <div class="fg-inline">
+            <div class="fg"><label>Max Horizontal Cable (m)</label><input type="number" id="rm-cableLen" value="90" step="5"></div>
+            <div class="fg"><label>PoE Standard</label>
+              <select id="rm-poeStd">
+                <option value="af">802.3af — 15.4W</option>
+                <option value="at" selected>802.3at (PoE+) — 30W</option>
+                <option value="bt">802.3bt (PoE++) — 60W</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><b>FD Room Layout</b><div class="sub">CQB #5 Floor Distribution room presets</div></div>
+        <div class="card-bd">
+          <div class="fg">
+            <label>Room Layout Type</label>
+            <select id="rm-roomLayout">
+              <option value="type1">TYPE-1/5 — 2 racks, 3.0×3.0m, centre aisle</option>
+              <option value="type2">TYPE-2 — 2 racks side by side, 3.0×2.5m</option>
+              <option value="type3">TYPE-3 — 1 rack, 3.0×2.5m</option>
+              <option value="type4">TYPE-4 — Wall-mount 12U, 3.0×2.5m</option>
+              <option value="type6">TYPE-6 — 3 racks, 4.0×3.0m</option>
+              <option value="type7">TYPE-7 — 4 racks, 5.0×3.0m</option>
+              <option value="custom">Custom Layout…</option>
+            </select>
+          </div>
+          <div class="note" id="rm-layout-desc" style="margin-top:-2px">—</div>
+
+          <div class="subcard hidden" id="rm-custom-wrap">
+            <div class="subcard-title">Custom Room Dimensions</div>
+            <div class="fg-inline">
+              <div class="fg"><label>Width (m)</label><input type="number" id="rm-customW" value="3.0" step="0.1"></div>
+              <div class="fg"><label>Depth (m)</label><input type="number" id="rm-customD" value="3.0" step="0.1"></div>
+            </div>
+            <div class="rack-stepper">
+              <span class="fl" style="font-size:10.5px;color:var(--t1)">Rack Count</span>
+              <button class="btn-sm" id="rm-rackminus" style="flex:0 0 30px">－</button>
+              <span class="rack-count-val" id="rm-rackcountval">2</span>
+              <button class="btn-sm" id="rm-rackplus" style="flex:0 0 30px">＋</button>
+            </div>
+            <div class="subcard-title" style="margin-top:12px">Rack Offsets from Walls</div>
+            <div class="fg-inline">
+              <div class="fg"><label style="color:#b45309">Rear Wall → Rack (≥0.9m)</label><input type="number" id="rm-customRear" value="0.9" step="0.1"></div>
+              <div class="fg"><label style="color:#0d9488">Front Clearance (≥1.0m)</label><input type="number" id="rm-customFront" value="1.0" step="0.1"></div>
+            </div>
+            <div class="fg-inline">
+              <div class="fg"><label style="color:#9333ea">Left Wall → Rack (≥0.15m)</label><input type="number" id="rm-customLeft" value="0.15" step="0.05"></div>
+              <div class="fg"><label style="color:#9333ea">Right Wall → Rack (≥0.15m)</label><input type="number" id="rm-customRight" value="0.15" step="0.05"></div>
+            </div>
+            <div class="fg"><label style="color:#16a34a">Between Racks (≥0.3m)</label><input type="number" id="rm-customGap" value="0.3" step="0.05"></div>
+            <div class="note" id="rm-offset-hint" style="margin-top:4px">All offsets meet BICSI minimums.</div>
+          </div>
+
+          <div class="subcard-title" style="margin-top:14px">Door Position</div>
+          <div class="fg-inline">
+            <div class="fg"><label>Wall</label>
+              <select id="rm-doorWall"><option value="bottom" selected>Bottom</option><option value="top">Top</option><option value="left">Left</option><option value="right">Right</option></select>
+            </div>
+            <div class="fg"><label>Offset from corner (m)</label><input type="number" id="rm-doorOffset" value="0" step="0.1" min="0"></div>
+          </div>
+          <div class="fg-inline">
+            <div class="fg"><label>Door Width (m)</label><input type="number" id="rm-doorWidth" value="0.91" step="0.01" min="0.6"></div>
+            <div class="fg"><label>Swing Direction</label>
+              <select id="rm-doorSwing"><option value="inward" selected>Inward</option><option value="outward">Outward</option></select>
+            </div>
+          </div>
+          <div class="fg"><label>Door Leaf Configuration</label>
+            <select id="rm-doorLeaf"><option value="single" selected>Single Leaf</option><option value="double">Double Leaf (Equal Split)</option></select>
+          </div>
+
+          <div class="subcard-title" style="margin-top:14px">Fixtures</div>
+          <label class="toggle-wrap"><span class="toggle"><input type="checkbox" id="rm-fx-ladder" checked><span class="slider"></span></span>Overhead Cable Ladder</label><br>
+          <label class="toggle-wrap" style="margin-top:8px"><span class="toggle"><input type="checkbox" id="rm-fx-plywood"><span class="slider"></span></span>Fire-Rated Plywood Backboard</label><br>
+          <label class="toggle-wrap" style="margin-top:8px"><span class="toggle"><input type="checkbox" id="rm-fx-antistatic"><span class="slider"></span></span>Anti-Static Floor Label</label><br>
+          <label class="toggle-wrap" style="margin-top:8px"><span class="toggle"><input type="checkbox" id="rm-fx-ac"><span class="slider"></span></span>A/C Unit (on wall)</label><br>
+          <label class="toggle-wrap" style="margin-top:8px"><span class="toggle"><input type="checkbox" id="rm-fx-lightswitch"><span class="slider"></span></span>Light Switch</label><br>
+          <label class="toggle-wrap" style="margin-top:8px"><span class="toggle"><input type="checkbox" id="rm-fx-poweroutlets"><span class="slider"></span></span>Power Outlets Panel</label>
+
+          <div class="subcard-title" style="margin-top:14px">Room Features</div>
+          <label class="toggle-wrap"><span class="toggle"><input type="checkbox" id="rm-showClear" checked><span class="slider"></span></span>Show clearance zones</label><br>
+          <label class="toggle-wrap" style="margin-top:8px"><span class="toggle"><input type="checkbox" id="rm-showDims" checked><span class="slider"></span></span>Show dimension lines</label><br>
+          <label class="toggle-wrap" style="margin-top:8px"><span class="toggle"><input type="checkbox" id="rm-showGrid" checked><span class="slider"></span></span>Show grid lines</label><br>
+          <label class="toggle-wrap" style="margin-top:8px"><span class="toggle"><input type="checkbox" id="rm-showRuler" checked><span class="slider"></span></span>Show ruler &amp; scale bar</label>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><b>Rack Configuration</b></div>
+        <div class="card-bd">
+          <div class="fg-inline">
+            <div class="fg"><label>Rack Height (U)</label>
+              <select id="rm-rackHeight">
+                <option>12</option><option>18</option><option>24</option><option>27</option><option>36</option><option selected>42</option><option>45</option><option>47</option>
+              </select>
+            </div>
+            <div class="fg"><label>Rack Width</label>
+              <select id="rm-rackWidth"><option value="600" selected>600mm (19")</option><option value="800">800mm (Wide)</option></select>
+            </div>
+          </div>
+          <div class="fg-inline">
+            <div class="fg"><label>Rack Depth</label>
+              <select id="rm-rackDepth"><option value="600">600mm</option><option value="800" selected>800mm</option><option value="1000">1000mm</option><option value="1200">1200mm</option></select>
+            </div>
+            <div class="fg"><label>Show Measurements</label>
+              <select id="rm-showMeasurements"><option value="u" selected>U Only</option><option value="mm">mm Only</option><option value="both">Both</option></select>
+            </div>
+          </div>
+          <label class="toggle-wrap"><span class="toggle"><input type="checkbox" id="rm-manualUOverride"><span class="slider"></span></span>Manual U Override</label>
+          <div class="fg hidden" id="rm-manualU-wrap" style="margin-top:8px"><label>Override Rack Height (U)</label><input type="number" id="rm-manualUValue" value="42" min="4"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><b>Rack Placement</b><div class="sub">Drag on the plan, or set X / Y / rotation directly</div></div>
+        <div class="card-bd">
+          <div class="note">Drag a rack on the Room Plan to move it · Right-click a rack to rotate 90°.</div>
+          <div id="rd-rackpos-rows" style="margin-top:8px"></div>
+        </div>
+      </div>
+      </div>
+
+      <!-- ═══ EQUIPMENT SUB-TAB ═══ -->
+      <div id="rd-sub-equipment" class="subtab-body">
+        <div class="card">
+          <div class="card-hd"><b>Per-Rack Equipment</b><div class="sub" id="rd-eq-usage">Editing Rack: Rack 1 · 0/42U</div></div>
+          <div class="card-bd">
+            <div class="racktabs" id="rd-racktabs"></div>
+            <div class="eq-toolbar">
+              <button class="btn-sm" id="rd-eq-add">＋ Add Device</button>
+              <select class="btn-sm" id="rd-eq-preset-sel" style="max-width:150px"></select>
+              <button class="btn-sm" id="rd-eq-copyall">📋 Copy → All</button>
+              <button class="btn-sm" id="rd-eq-clear" style="color:var(--red)">🗑 Clear</button>
+            </div>
+            <div class="eq-toolbar">
+              <button class="btn-sm" id="rd-eq-autostack">⚡ Auto-Stack (no gaps)</button>
+              <button class="btn-sm" id="rd-eq-sorttop">↑ Sort Top→Bottom</button>
+              <button class="btn-sm" id="rd-eq-sortbot">↓ Sort Bottom→Top</button>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="eqtbl">
+                <thead><tr><th></th><th>Device Name</th><th>Type</th><th>Start U</th><th>H (U)</th><th>W (Watt)</th><th></th></tr></thead>
+                <tbody id="rd-eq-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hd"><b>Network Switch Sizing</b><div class="sub">Mini-calculator for this rack's access switch</div></div>
+          <div class="card-bd">
+            <div class="fg-inline">
+              <div class="fg"><label>Data Outlets (DO)</label><input type="number" id="rd-sw-do" value="24" min="1"></div>
+              <div class="fg"><label>Spare % for Ports</label><input type="number" id="rd-sw-spare" value="20" step="5"></div>
+            </div>
+            <div class="note" id="rd-sw-result">—</div>
+            <div class="sw-calc-box">
+              <div class="title">Include in Rack</div>
+              <div class="sw-inc-row"><span>Fiber Patch Panel</span><span class="toggle"><input type="checkbox" id="rd-inc-fpp"><span class="slider"></span></span></div>
+              <div class="sw-inc-row"><span>Patching Controller</span><span class="toggle"><input type="checkbox" id="rd-inc-pc"><span class="slider"></span></span></div>
+              <div class="sw-inc-row"><span>Fiber Distribution Switch</span><span class="toggle"><input type="checkbox" id="rd-inc-fds"><span class="slider"></span></span></div>
+              <div class="sw-inc-row"><span>UPS (at bottom)</span><span class="toggle"><input type="checkbox" id="rd-inc-ups" checked><span class="slider"></span></span></div>
+              <div class="sw-inc-row"><span>Firewall / UTM</span><span class="toggle"><input type="checkbox" id="rd-inc-fw"><span class="slider"></span></span></div>
+              <div class="sw-inc-row"><span>Server (1U)</span><span class="toggle"><input type="checkbox" id="rd-inc-srv"><span class="slider"></span></span></div>
+            </div>
+            <button class="btn-add" id="rd-eq-generate" style="width:100%;justify-content:center;margin-top:10px">⚡ Generate Standard Rack Arrangement</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hd"><b>Quick Presets</b><div class="sub">CQB #31</div></div>
+          <div class="card-bd">
+            <div class="preset-grid">
+              <div class="preset-btn" data-preset="fd">📡 Standard FD Rack</div>
+              <div class="preset-btn" data-preset="cctv">🎥 CCTV / Security Rack</div>
+              <div class="preset-btn" data-preset="av">🔊 AV / IPTV Rack</div>
+              <div class="preset-btn" data-preset="full">⚡ Full FD Room (27U)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ EXPORT SUB-TAB ═══ -->
+      <div id="rd-sub-export" class="subtab-body">
+        <div class="card">
+          <div class="card-hd"><b>Export</b></div>
+          <div class="card-bd" style="display:flex;flex-direction:column;gap:8px">
+            <button class="btn btn-g" id="rd-exp-plan" style="justify-content:center">📸 Export Room Plan (PNG)</button>
+            <div id="rd-exp-rack-btns" style="display:flex;flex-direction:column;gap:8px"></div>
+            <button class="btn btn-tea" id="rd-exp-print" style="justify-content:center">🖨 Print / Save as PDF</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><b>Project Info Summary</b></div>
+          <div class="card-bd">
+            <div class="proj-info-box" id="rd-proj-info">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-hd"><b>Sizing Results</b></div>
+        <div class="card-bd">
+          <div class="metrics" id="rm-results"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd" id="rm-valid-hdr"><b id="rm-valid-title">Checking design…</b><div class="sub" id="rm-valid-sub">Validating against BICSI TDMM / CQB #5 minimums</div></div>
+        <div class="card-bd" style="padding:0">
+          <div id="rm-valid-checks"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd">
+          <div><b>Room Plan (Top View)</b><div class="sub">Walls, door swing &amp; rack footprint — clearances per BICSI TDDM</div></div>
+          <div style="display:flex;gap:6px">
+            <span class="chip-badge" id="rm-chip-size">3.0×3.0m</span>
+            <span class="chip-badge" id="rm-chip-racks">2 Racks</span>
+          </div>
+        </div>
+        <div class="card-bd">
+          <div id="roomCanvasWrap"><canvas id="roomCanvas" width="820" height="560"></canvas></div>
+          <div class="note" id="rm-clearance-warning" style="display:none"></div>
+        </div>
+      </div>
+
+      <div id="rd-rackelev-cards"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ SCHEMATIC TAB — CAD-style riser diagram ═══════════════ -->
+  <div id="main-schematic">
+    <div id="schToolbar"></div>
+
+    <div style="display:flex;flex:1;overflow:hidden;min-height:0">
+
+      <!-- CANVAS ZONE -->
+      <div style="flex:1;position:relative;overflow:hidden;background:#f8fafc;cursor:default" id="schCanvasWrap">
+        <canvas id="schCanvas" style="position:absolute;top:0;left:0"></canvas>
+
+        <div id="schHint" style="position:absolute;top:10px;left:50%;transform:translateX(-50%);font-size:0.7rem;color:var(--text2);font-family:'Share Tech Mono',monospace;background:rgba(255,255,255,.95);border:1px solid var(--border);padding:4px 14px;border-radius:20px;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.06)">Click to select · Drag to move · Alt+drag or ✋ Pan to pan · Scroll to zoom</div>
+
+        <div style="position:absolute;right:14px;bottom:14px;z-index:8;display:flex;align-items:center;gap:2px;background:#ffffff;border:1px solid var(--border);border-radius:10px;padding:4px;box-shadow:0 2px 10px rgba(0,0,0,.08)">
+          <button onclick="SCH.zoomBy(0.8)" style="width:26px;height:26px;border-radius:6px;font-size:14px;display:flex;align-items:center;justify-content:center;color:var(--text2);background:none;border:none;cursor:pointer" title="Zoom out">−</button>
+          <span id="schZoomLabel" style="font-family:'Share Tech Mono',monospace;font-size:0.68rem;color:var(--text2);width:42px;text-align:center">100%</span>
+          <button onclick="SCH.zoomBy(1.25)" style="width:26px;height:26px;border-radius:6px;font-size:14px;display:flex;align-items:center;justify-content:center;color:var(--text2);background:none;border:none;cursor:pointer" title="Zoom in">+</button>
+          <span style="width:1px;height:18px;background:var(--border);margin:0 2px"></span>
+          <button onclick="SCH.fitToDrawing()" style="width:26px;height:26px;border-radius:6px;font-size:12px;display:flex;align-items:center;justify-content:center;color:var(--accent);background:none;border:none;cursor:pointer" title="Fit to screen">⛶</button>
+        </div>
+
+        <div style="position:absolute;left:14px;bottom:14px;z-index:8;display:flex;align-items:center;gap:10px;background:#ffffff;border:1px solid var(--border);border-radius:10px;padding:5px 12px;box-shadow:0 2px 10px rgba(0,0,0,.08);font-family:'Share Tech Mono',monospace;font-size:0.68rem;color:var(--text2)">
+          <span>x:<span id="schX" style="color:var(--text)">0</span></span>
+          <span>y:<span id="schY" style="color:var(--text)">0</span></span>
+          <span style="width:1px;height:12px;background:var(--border)"></span>
+          <span id="schSelCount" style="color:var(--text)">0 selected</span>
+        </div>
+      </div>
+
+      <!-- RIGHT PANEL with tabs -->
+      <aside id="schPanel" style="width:240px;background:#fafbfd;border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden">
+        <div style="display:flex;border-bottom:1px solid var(--border);flex-shrink:0">
+          <div class="sch-rtab active" data-rtab="props" onclick="SCH.switchPanelTab('props')" style="flex:1;text-align:center;padding:8px 4px;font-size:0.68rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;color:var(--accent);border-bottom:2px solid var(--accent)">Properties</div>
+          <div class="sch-rtab" data-rtab="cables" onclick="SCH.switchPanelTab('cables')" style="flex:1;text-align:center;padding:8px 4px;font-size:0.68rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent">Cables</div>
+          <div class="sch-rtab" data-rtab="info" onclick="SCH.switchPanelTab('info')" style="flex:1;text-align:center;padding:8px 4px;font-size:0.68rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent">Info</div>
+        </div>
+
+        <div class="sch-rbody active" id="sch-rtab-props" style="flex:1;overflow-y:auto;padding:12px;font-size:0.78rem">
+          <div id="schPropsContent" style="color:var(--text)">
+            <div style="text-align:center;padding:30px 10px;color:var(--text3)">
+              <div style="font-size:1.6rem;margin-bottom:8px">🎯</div>
+              Select a node<br>to view properties
+            </div>
+          </div>
+        </div>
+
+        <div class="sch-rbody" id="sch-rtab-cables" style="display:none;flex:1;overflow-y:auto;padding:12px;font-size:0.78rem">
+          <div style="font-size:0.68rem;font-weight:700;color:var(--text);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Cable Breakdown</div>
+          <div id="schCableSummary" style="font-size:0.74rem;color:var(--text);line-height:1.9;font-family:'Share Tech Mono',monospace"></div>
+        </div>
+
+        <div class="sch-rbody" id="sch-rtab-info" style="display:none;flex:1;overflow-y:auto;padding:12px;font-size:0.78rem">
+          <div style="background:#ffffff;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:0.74rem;color:var(--text2);line-height:1.9">
+            <div style="font-size:0.8rem;font-weight:700;color:var(--text);margin-bottom:8px">📋 Project</div>
+            <div id="schProjInfo">—</div>
+          </div>
+          <div style="margin-top:14px;font-size:0.68rem;color:var(--text3);line-height:1.8">
+            <b>Shortcuts</b><br>
+            Del — delete selected<br>
+            Ctrl+Z — undo<br>
+            Ctrl+A — select all<br>
+            Shift/Ctrl+Click — multi-select<br>
+            Alt+Drag — pan canvas<br>
+            Scroll — zoom in/out
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div id="main-ref" style="display:none;display:none;grid-template-columns:1fr">
+    <div style="grid-column:1/-1;max-width:900px;margin:0 auto;width:100%">
+      <div class="card">
+        <div class="card-hd"><b>PoE Standards</b></div>
+        <div class="card-bd">
+          <table class="ref-table">
+            <thead><tr><th>Standard</th><th>Max Port Power</th><th>Typical Use</th></tr></thead>
+            <tbody>
+              <tr><td>802.3af (PoE)</td><td>15.4 W</td><td>Basic IP phones, sensors</td></tr>
+              <tr><td>802.3at (PoE+)</td><td>30 W</td><td>PTZ cameras, standard APs</td></tr>
+              <tr><td>802.3bt Type 3 (PoE++)</td><td>60 W</td><td>High-power PTZ, WiFi6 APs</td></tr>
+              <tr><td>802.3bt Type 4 (PoE++)</td><td>90–100 W</td><td>Thermal cameras, large displays</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><b>Distance &amp; Media Constraints</b></div>
+        <div class="card-bd">
+          <table class="ref-table">
+            <thead><tr><th>Media</th><th>Max Distance</th><th>Notes</th></tr></thead>
+            <tbody>
+              <tr><td>UTP Cat6/6A (copper)</td><td>100 m</td><td>Standard PoE runs</td></tr>
+              <tr><td>Multimode fiber</td><td>300–550 m</td><td>Building-to-building, backbone</td></tr>
+              <tr><td>Single-mode fiber</td><td>10 km+</td><td>Campus / long backbone runs</td></tr>
+            </tbody>
+          </table>
+          <div class="note">If a device exceeds 100 m from the nearest switch: relocate an IDF/switch closer, use a fiber media converter, or use a PoE extender (extenders reduce available power at the far end).</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><b>Key Formulas</b></div>
+        <div class="card-bd">
+          <div class="note" style="font-family:var(--fmono);white-space:pre-wrap;line-height:1.8">connectedLoad   = Σ (deviceCount × devicePower)
+designLoad      = connectedLoad × (1 + cableLoss) × (1 + spareMargin)
+switchesByPower = ⌈ designLoad / switchBudget ⌉
+switchesByPorts = ⌈ totalDevices×(1+sparePorts) / portsPerSwitch ⌉
+switchesRequired= max(switchesByPower, switchesByPorts, 1)
+worstPortDemand = max(devicePower_i) × (1 + cableLoss)
+
+totalU_needed   = Σ (item height in U)
+rackSize        = nextStandardSize(totalU_needed × (1+uSpare))
+requiredUPS_VA  = totalPowerLoad_W / powerFactor
+heatLoad_BTU/hr = totalPowerLoad_W × 3.412</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><b>Documentation Deliverables Checklist</b></div>
+        <div class="card-bd">
+          <div class="note">1. Rack elevation drawing — front view showing every item's U-position&#10;2. Rack schedule / BOQ — item, model, U-height, power draw, port count&#10;3. Cable schedule — from/to labels, cable type, length&#10;4. Power one-line — PDU circuits, breaker ratings, UPS runtime&#10;5. Labeling schema document — naming convention reference for techs</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-wrap"></div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════
+   SWITCH & RACK DESIGNER — sizing calculator
+   Implements formulas from "Designing Switches and Racks" guide
+   ══════════════════════════════════════════════════ */
+
+function notify(msg, type='ok'){
+  const wrap = document.getElementById('toast-wrap');
+  const el = document.createElement('div');
+  el.className='toast'+(type==='err'?' err':''); el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(()=>{ el.style.transition='opacity .25s'; el.style.opacity='0'; setTimeout(()=>el.remove(),250); }, 2400);
+}
+function uid(){ return 'id'+Math.random().toString(36).slice(2,9); }
+
+/* ───── STATE ───── */
+let devices = [];
+let items = [];
+
+const EXAMPLE_DEVICES = [
+  {system:'CCTV', name:'Dome Camera', qty:40, watt:7, poeClass:'af', poe:true},
+  {system:'CCTV', name:'PTZ Camera', qty:8, watt:24, poeClass:'at', poe:true},
+  {system:'WiFi', name:'WiFi AP', qty:6, watt:20, poeClass:'at', poe:true},
+];
+const EXAMPLE_ITEMS = [
+  {name:'Patch Panel 48-port', cat:'patch', qty:2, u:2, watt:0},
+  {name:'Cable Manager', cat:'cable', qty:3, u:1, watt:0},
+  {name:'24-port PoE+ Switch', cat:'switch', qty:3, u:1, watt:0},
+  {name:'Core / Uplink Switch', cat:'switch', qty:1, u:1, watt:0},
+  {name:'NVR (16ch)', cat:'server', qty:4, u:2, watt:150},
+  {name:'Firewall / Router', cat:'router', qty:1, u:1, watt:40},
+  {name:'UPS', cat:'ups', qty:1, u:2, watt:0},
+];
+
+const POE_CLASSES = [
+  {v:'af', l:'802.3af — 15.4W'},
+  {v:'at', l:'802.3at (PoE+) — 30W'},
+  {v:'bt3', l:'802.3bt T3 — 60W'},
+  {v:'bt4', l:'802.3bt T4 — 90W'},
+  {v:'na', l:'Non-PoE'},
+];
+const CATS = [
+  {v:'patch', l:'Patch Panel'},
+  {v:'cable', l:'Cable Mgmt'},
+  {v:'switch', l:'Switch'},
+  {v:'router', l:'Router / Firewall'},
+  {v:'server', l:'Server / NVR'},
+  {v:'wireless', l:'Wireless / PA'},
+  {v:'ups', l:'UPS'},
+  {v:'other', l:'Other'},
+];
+const CAT_ORDER = ['patch','cable','switch','router','server','wireless','ups','other'];
+const CAT_LABEL = Object.fromEntries(CATS.map(c=>[c.v,c.l]));
+const STD_SIZES = [6,9,12,15,18,21,24,27,32,37,42,45,48];
+
+/* ───── TABS ───── */
+const TAB_META = {
+  switch:    {label:'SWITCH SIZING', title:'Switch Sizing &amp; <span>PoE Budget</span>', sub:'Device inventory · power budget · switch count'},
+  rack:      {label:'RACK LAYOUT', title:'Rack Layout &amp; <span>Elevation</span>', sub:'BOQ · U-fill · UPS &amp; heat load'},
+  room:      {label:'ROOM DESIGN', title:'FD Room <span>Design</span>', sub:'CQB #5 layouts · clearances · validation'},
+  schematic: {label:'SCHEMATIC', title:'Schematic / <span>Riser Diagram</span>', sub:'Single-line ICT riser diagram'},
+  ref:       {label:'REFERENCE', title:'Standards &amp; <span>Quick Reference</span>', sub:'PoE classes · distances · formulas'},
+};
+
+function switchTab(t){
+  document.querySelectorAll('.tabbtn').forEach(b=>b.classList.toggle('active', b.dataset.tab===t));
+  document.getElementById('main-switch').style.display = t==='switch' ? 'grid' : 'none';
+  document.getElementById('main-rack').style.display = t==='rack' ? 'grid' : 'none';
+  document.getElementById('main-room').style.display = t==='room' ? 'grid' : 'none';
+  document.getElementById('main-schematic').style.display = t==='schematic' ? 'flex' : 'none';
+  document.getElementById('main-ref').style.display = t==='ref' ? 'grid' : 'none';
+  if (t==='room'){ calcRoom(); drawRoomPlan(); }
+  if (t==='schematic'){ loadSchematicFrame(); }
+
+  const meta = TAB_META[t] || TAB_META.switch;
+  document.getElementById('crumb-current').textContent = meta.label;
+  document.getElementById('hero-title').innerHTML = meta.title;
+  document.getElementById('hero-sub').textContent = meta.sub;
+}
+
+document.querySelectorAll('.tabbtn').forEach(btn=>{
+  btn.addEventListener('click', ()=> switchTab(btn.dataset.tab));
+});
+
+/* ───── DEVICE TABLE ───── */
+function renderDeviceTbl(){
+  const tb = document.getElementById('device-tbody');
+  tb.innerHTML = '';
+  devices.forEach(d=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input data-f="system" value="${esc(d.system)}" placeholder="e.g. CCTV"></td>
+      <td><input data-f="name" value="${esc(d.name)}" placeholder="Device name"></td>
+      <td><input data-f="qty" type="number" min="0" step="1" value="${d.qty}"></td>
+      <td><input data-f="watt" type="number" min="0" step="0.5" value="${d.watt}"></td>
+      <td><select data-f="poeClass">${POE_CLASSES.map(c=>`<option value="${c.v}" ${c.v===d.poeClass?'selected':''}>${c.l}</option>`).join('')}</select></td>
+      <td class="col-chk"><input data-f="poe" type="checkbox" ${d.poe?'checked':''}></td>
+      <td class="rowdel"><button data-del="1">✕</button></td>`;
+    tr.querySelectorAll('[data-f]').forEach(el=>{
+      el.addEventListener('input', ()=>{
+        const f = el.dataset.f;
+        d[f] = el.type==='checkbox' ? el.checked : (el.type==='number' ? parseFloat(el.value)||0 : el.value);
+        if (f==='poeClass'){ const map={af:15.4,at:30,bt3:60,bt4:90}; if(map[d.poeClass] && d.watt===0) {} }
+        calcSwitch();
+      });
+    });
+    tr.querySelector('[data-del]').addEventListener('click', ()=>{ devices = devices.filter(x=>x.id!==d.id); renderDeviceTbl(); calcSwitch(); });
+    tb.appendChild(tr);
+  });
+}
+document.getElementById('add-device').addEventListener('click', ()=>{
+  devices.push({id:uid(), system:'', name:'', qty:1, watt:10, poeClass:'at', poe:true});
+  renderDeviceTbl(); calcSwitch();
+});
+
+/* ───── ITEM TABLE ───── */
+function renderItemTbl(){
+  const tb = document.getElementById('item-tbody');
+  tb.innerHTML = '';
+  items.forEach(it=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input data-f="name" value="${esc(it.name)}" placeholder="Item name"></td>
+      <td><select data-f="cat">${CATS.map(c=>`<option value="${c.v}" ${c.v===it.cat?'selected':''}>${c.l}</option>`).join('')}</select></td>
+      <td><input data-f="qty" type="number" min="0" step="1" value="${it.qty}"></td>
+      <td><input data-f="u" type="number" min="0" step="1" value="${it.u}"></td>
+      <td><input data-f="watt" type="number" min="0" step="1" value="${it.watt}"></td>
+      <td class="rowdel"><button data-del="1">✕</button></td>`;
+    tr.querySelectorAll('[data-f]').forEach(el=>{
+      el.addEventListener('input', ()=>{
+        const f = el.dataset.f;
+        it[f] = (el.tagName==='SELECT') ? el.value : (el.type==='number' ? parseFloat(el.value)||0 : el.value);
+        calcRack();
+      });
+    });
+    tr.querySelector('[data-del]').addEventListener('click', ()=>{ items = items.filter(x=>x.id!==it.id); renderItemTbl(); calcRack(); });
+    tb.appendChild(tr);
+  });
+}
+document.getElementById('add-item').addEventListener('click', ()=>{
+  items.push({id:uid(), name:'', cat:'other', qty:1, u:1, watt:0});
+  renderItemTbl(); calcRack();
+});
+
+function esc(s){ return (s+'').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+/* ───── SWITCH CALCULATIONS ───── */
+function calcSwitch(){
+  const cableLoss = (parseFloat(document.getElementById('p-cableLoss').value)||0)/100;
+  const spareMargin = (parseFloat(document.getElementById('p-spareMargin').value)||0)/100;
+  const sparePorts = (parseFloat(document.getElementById('p-sparePorts').value)||0)/100;
+  const switchBudget = parseFloat(document.getElementById('p-switchBudget').value)||1;
+  const portsPerSwitch = parseFloat(document.getElementById('p-portsPerSwitch').value)||1;
+  const portLimit = parseFloat(document.getElementById('p-portLimit').value)||30;
+
+  const totalDevices = devices.reduce((s,d)=>s+(d.qty||0),0);
+  const connectedLoad = devices.reduce((s,d)=> s + (d.poe ? (d.qty||0)*(d.watt||0) : 0), 0);
+  const designLoad = connectedLoad * (1+cableLoss) * (1+spareMargin);
+  const totalPortsNeeded = totalDevices * (1+sparePorts);
+
+  const switchesByPower = Math.max(1, Math.ceil(designLoad/switchBudget) || 0);
+  const switchesByPorts = Math.max(1, Math.ceil(totalPortsNeeded/portsPerSwitch) || 0);
+  const switchesRequired = Math.max(switchesByPower, switchesByPorts, 1);
+
+  document.getElementById('m-totaldevices').textContent = totalDevices;
+  document.getElementById('m-connectedload').innerHTML = connectedLoad.toFixed(1)+' <small>W</small>';
+  document.getElementById('m-designload').innerHTML = designLoad.toFixed(1)+' <small>W</small>';
+  document.getElementById('m-swpower').textContent = switchesByPower;
+  document.getElementById('m-swports').textContent = switchesByPorts;
+  document.getElementById('m-required').textContent = switchesRequired + (switchesRequired===1?' switch':' switches');
+
+  // worst single port check
+  const poeDevices = devices.filter(d=>d.poe && d.qty>0);
+  const worstDevW = poeDevices.length ? Math.max(...poeDevices.map(d=>d.watt||0)) : 0;
+  const worstPortDemand = worstDevW * (1+cableLoss);
+  const wpEl = document.getElementById('worstport-status');
+  if (poeDevices.length===0){
+    wpEl.className='status-line'; wpEl.textContent='No PoE devices in inventory.';
+  } else if (worstPortDemand <= portLimit){
+    wpEl.className='status-line ok';
+    wpEl.textContent = `✓ Worst-case port demand ${worstPortDemand.toFixed(1)} W ≤ ${portLimit} W limit — PASS`;
+  } else {
+    wpEl.className='status-line bad';
+    wpEl.textContent = `✕ Worst-case port demand ${worstPortDemand.toFixed(1)} W exceeds ${portLimit} W limit — upgrade port class`;
+  }
+
+  // Tier recommendation
+  const vlan = document.getElementById('p-vlan').checked;
+  const redundancy = document.getElementById('p-redundancy').checked;
+  const lifesafety = document.getElementById('p-lifesafety').checked;
+  const highbit = document.getElementById('p-highbit').checked;
+  let tier;
+  if (vlan || redundancy || lifesafety || totalDevices>48){
+    tier = `<b>Fully managed (L2/L3)</b> — recommended given ${vlan?'VLAN/QoS needs, ':''}${redundancy?'redundancy requirements, ':''}${lifesafety?'life-safety scope, ':''}${totalDevices>48?'device count over 48. ':''}Supports multi-VLAN segmentation, SNMP monitoring, and redundancy protocols.`;
+  } else if (totalDevices>12){
+    tier = `<b>Smart-managed</b> — sufficient for this site size, giving basic VLANs and QoS without the cost of full L2/L3 management.`;
+  } else {
+    tier = `<b>Unmanaged</b> may suffice for this small device cluster, though smart-managed is still worth considering for future flexibility.`;
+  }
+  document.getElementById('tier-rec').innerHTML = tier;
+
+  // Uplink recommendation
+  const poeCount = poeDevices.reduce((s,d)=>s+d.qty,0);
+  const upRatio = Math.ceil(poeCount/9);
+  let uplink;
+  if (highbit || totalDevices>16){
+    uplink = `<b>SFP+ (10G) uplink</b> recommended — ${highbit?'high-bitrate video streams (4K/thermal) ':''}${totalDevices>16?'and a device count above ~16 ':''}call for more uplink headroom than 1G can comfortably provide.`;
+  } else {
+    uplink = `<b>1 Gbps uplink</b> per switch is adequate at this scale (rule of thumb: 1 Gbps per 8–10 PoE camera ports; ≈${poeCount} PoE ports here).`;
+  }
+  document.getElementById('uplink-rec').innerHTML = uplink;
+
+  const redEl = document.getElementById('redundancy-rec');
+  if (redundancy || lifesafety){
+    redEl.style.display='block';
+    redEl.innerHTML = `<b>Redundancy plan:</b> ${lifesafety? 'For life-safety (fire alarm) scope, apply N+1 switch sparing plus a ring/loop topology with RSTP/MSTP. ' : ''}${redundancy? 'Provide dual uplinks to separate core switches and redundant power supplies (RPS) on core/distribution switches.' : ''}`;
+  } else {
+    redEl.style.display='none';
+  }
+}
+['p-switchBudget','p-portsPerSwitch','p-cableLoss','p-spareMargin','p-sparePorts','p-portLimit','p-vlan','p-redundancy','p-lifesafety','p-highbit'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', calcSwitch);
+  document.getElementById(id).addEventListener('change', calcSwitch);
+});
+
+/* ───── RACK CALCULATIONS ───── */
+function nextStandardSize(v){
+  for (const s of STD_SIZES){ if (s>=v) return s; }
+  // exceeds largest standard single-bay size — round up to nearest 3U and flag multi-bay
+  return Math.ceil(v/3)*3;
+}
+function calcRack(){
+  const uSpare = (parseFloat(document.getElementById('r-uspare').value)||0)/100;
+  const pf = parseFloat(document.getElementById('r-pf').value)||0.9;
+  const upsHead = (parseFloat(document.getElementById('r-upshead').value)||0)/100;
+
+  const totalU = items.reduce((s,it)=>s+(it.qty||0)*(it.u||0),0);
+  const totalPower = items.reduce((s,it)=>s+(it.qty||0)*(it.watt||0),0);
+  const rackSize = totalU>0 ? nextStandardSize(totalU*(1+uSpare)) : 0;
+  const requiredUPS_VA = (totalPower/pf) * (1+upsHead);
+  const heatLoad = totalPower*3.412;
+
+  document.getElementById('rm-totalu').innerHTML = totalU + '<small> U</small>';
+  document.getElementById('rm-racksize').textContent = rackSize ? rackSize+'U' : '—';
+  document.getElementById('rm-power').innerHTML = totalPower.toFixed(0)+' <small>W</small>';
+  document.getElementById('rm-ups').innerHTML = requiredUPS_VA.toFixed(0)+' <small>VA</small>';
+  document.getElementById('rm-heat').innerHTML = heatLoad.toFixed(0)+' <small>BTU/hr</small>';
+
+  if (rackSize > 48){
+    notify('Total U needed exceeds a single standard bay — consider splitting across multiple rack bays.');
+  }
+
+  drawRackElevation(rackSize, totalU);
+  if (typeof validateRoom==='function' && document.getElementById('rm-valid-checks')) validateRoom();
+}
+['r-uspare','r-pf','r-upshead','r-racktype'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', calcRack);
+  document.getElementById(id).addEventListener('change', calcRack);
+});
+
+function drawRackElevation(rackSize, totalU){
+  const wrap = document.getElementById('rack-wrap');
+  const legend = document.getElementById('rack-legend');
+  wrap.innerHTML = ''; legend.innerHTML = '';
+  if (!rackSize){ wrap.innerHTML = '<div class="note">Add rack items to generate the elevation.</div>'; return; }
+
+  // expand items into single-U-block units, grouped by category, ordered
+  const grouped = {};
+  items.forEach(it=>{
+    if (!it.qty || !it.u) return;
+    if (!grouped[it.cat]) grouped[it.cat]=[];
+    for (let i=0;i<it.qty;i++) grouped[it.cat].push({name:it.name||'(unnamed)', u:it.u});
+  });
+
+  const frame = document.createElement('div');
+  frame.className='rack-frame';
+  const cap1 = document.createElement('div'); cap1.className='rack-cap'; cap1.textContent = `▲ TOP — ${rackSize}U enclosed cabinet`;
+  frame.appendChild(cap1);
+
+  let uUsed = 0;
+  const usedCats = new Set();
+  CAT_ORDER.forEach(cat=>{
+    (grouped[cat]||[]).forEach(entry=>{
+      usedCats.add(cat);
+      const slot = document.createElement('div');
+      slot.className = 'rack-slot';
+      slot.style.height = (entry.u*20)+'px';
+      slot.style.background = catColor(cat);
+      slot.innerHTML = `<span class="u-idx">${entry.u}U</span><span class="u-lbl">${esc(entry.name)}</span><span class="u-h">${CAT_LABEL[cat]}</span>`;
+      frame.appendChild(slot);
+      uUsed += entry.u;
+    });
+  });
+  // fill blanks
+  let blankU = rackSize - uUsed;
+  if (blankU < 0) blankU = 0;
+  for (let i=0;i<blankU;i++){
+    const slot = document.createElement('div');
+    slot.className='rack-slot blank';
+    slot.style.height='20px';
+    slot.innerHTML = `<span class="u-idx">1U</span><span class="u-lbl">Blank panel</span>`;
+    frame.appendChild(slot);
+  }
+  const cap2 = document.createElement('div'); cap2.className='rack-cap'; cap2.textContent = '▼ BOTTOM';
+  frame.appendChild(cap2);
+  wrap.appendChild(frame);
+
+  if (uUsed > rackSize){
+    const warn = document.createElement('div');
+    warn.className='note'; warn.style.color='var(--red)';
+    warn.textContent = `⚠ Items require ${uUsed}U but the recommended enclosure is only ${rackSize}U — increase rack size or U spare margin.`;
+    wrap.appendChild(warn);
+  }
+
+  usedCats.add('other');
+  CAT_ORDER.filter(c=>usedCats.has(c) && grouped[c] && grouped[c].length).forEach(c=>{
+    const li = document.createElement('div'); li.className='leg-item';
+    li.innerHTML = `<span class="leg-sw" style="background:${catColor(c)}"></span>${CAT_LABEL[c]}`;
+    legend.appendChild(li);
+  });
+  const bl = document.createElement('div'); bl.className='leg-item';
+  bl.innerHTML = `<span class="leg-sw" style="background:repeating-linear-gradient(135deg,#eef1f6,#eef1f6 2px,#eef2f7 2px,#eef2f7 4px)"></span>Blank panel`;
+  legend.appendChild(bl);
+}
+function catColor(cat){
+  const map = {patch:'#c4b5fd',cable:'#94a3b8',switch:'#60a5fa',router:'#f472b6',server:'#fb923c',wireless:'#facc15',ups:'#2dd4bf',other:'#a3a3a3'};
+  return map[cat]||'#a3a3a3';
+}
+
+/* ═══════════ ROOM DESIGN ═══════════ */
+const BUILDING_DENSITY = { office:10, openoffice:18, healthcare:7, education:10, industrial:2, residential:4, retail:8, datacenter:24 };
+const BUILDING_NAME = { office:'Standard Office', openoffice:'Open Office', healthcare:'Healthcare', education:'Education', industrial:'Industrial', residential:'Residential', retail:'Retail', datacenter:'Data Center' };
+const ROOM_LAYOUTS = {
+  type1:{type:'TYPE-1/5', w:3.0, d:3.0, racks:2, front:1.0, rear:0.9, left:0.15, right:0.15, gap:0.3, desc:'Two racks with a centre service aisle — the standard BICSI-preferred FD layout.'},
+  type2:{type:'TYPE-2', w:3.0, d:2.5, racks:2, front:1.0, rear:0.9, left:0.15, right:0.15, gap:0.3, desc:'Two racks side by side against the back wall — compact footprint.'},
+  type3:{type:'TYPE-3', w:3.0, d:2.5, racks:1, front:1.0, rear:0.9, left:0.15, right:0.15, gap:0.3, desc:'Single rack room — smallest standard FD footprint.'},
+  type4:{type:'TYPE-4', w:3.0, d:2.5, racks:1, front:1.0, rear:0.3, left:0.15, right:0.15, gap:0.3, wallMount:true, desc:'Wall-mount 12U enclosure — no rear service clearance needed.'},
+  type6:{type:'TYPE-6', w:4.0, d:3.0, racks:3, front:1.0, rear:0.9, left:0.15, right:0.15, gap:0.3, desc:'Three-rack row — mid-size FD serving a larger floor plate.'},
+  type7:{type:'TYPE-7', w:5.0, d:3.0, racks:4, front:1.0, rear:0.9, left:0.15, right:0.15, gap:0.3, desc:'Four-rack row — largest standard FD preset.'},
+};
+let rmRackCount = 2;
+let rackPosState = [];      // [{x,y,rot}] meters, top-left origin, null entries use auto default
+let perRackEquipment = [];  // [[{id,name,type,startU,uHeight,watt}]] one array per rack
+let activeRackTab = 0;
+let RM_VIEW = null;         // {ox,oy,scale,layout,rWm,rDm} — set each drawRoomPlan() call, used by mouse handlers
+let rmDrag = null;          // {idx, offX, offY} while dragging a rack
+
+const EQ_TYPES = [
+  {v:'patch', l:'Patch Panel', c:'#c4b5fd'},
+  {v:'fiber', l:'Fiber Enclosure', c:'#facc15'},
+  {v:'cable', l:'Cable Mgmt', c:'#94a3b8'},
+  {v:'switch', l:'Switch', c:'#60a5fa'},
+  {v:'router', l:'Router / Firewall', c:'#f472b6'},
+  {v:'server', l:'Server / NVR', c:'#fb923c'},
+  {v:'ups', l:'UPS', c:'#2dd4bf'},
+  {v:'other', l:'Other', c:'#a3a3a3'},
+];
+function eqColor(t){ const f=EQ_TYPES.find(x=>x.v===t); return f?f.c:'#a3a3a3'; }
+function eqUid(){ return 'e'+Math.random().toString(36).slice(2,9); }
+function devEsc2(s){ return (s+'').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+const RD_PRESETS = {
+  fd:   {name:'Standard FD Rack', items:[
+    {name:'Fiber Patch Panel', type:'fiber', u:1, w:0},
+    {name:'Cable Manager', type:'cable', u:1, w:0},
+    {name:'Core Switch', type:'switch', u:1, w:150},
+    {name:'Access Switch', type:'switch', u:1, w:150},
+    {name:'Patch Panel 48P', type:'patch', u:2, w:0},
+    {name:'Cable Manager', type:'cable', u:1, w:0},
+    {name:'UPS', type:'ups', u:2, w:0},
+  ]},
+  cctv: {name:'CCTV / Security Rack', items:[
+    {name:'NVR 32ch', type:'server', u:2, w:150},
+    {name:'PoE Switch 24P', type:'switch', u:1, w:370},
+    {name:'Patch Panel 24P', type:'patch', u:1, w:0},
+    {name:'UPS', type:'ups', u:2, w:0},
+  ]},
+  av:   {name:'AV / IPTV Rack', items:[
+    {name:'IPTV Head-End', type:'server', u:2, w:100},
+    {name:'AV Distribution Switch', type:'switch', u:1, w:150},
+    {name:'Amplifier', type:'other', u:2, w:200},
+    {name:'UPS', type:'ups', u:2, w:0},
+  ]},
+  full: {name:'Full FD Room (27U)', items:[
+    {name:'Fiber Enclosure', type:'fiber', u:1, w:0},
+    {name:'Patch Panel 48P', type:'patch', u:2, w:0},
+    {name:'Cable Manager', type:'cable', u:1, w:0},
+    {name:'Core Switch', type:'switch', u:1, w:150},
+    {name:'Access Switch A', type:'switch', u:1, w:150},
+    {name:'Access Switch B', type:'switch', u:1, w:150},
+    {name:'Patch Panel 48P', type:'patch', u:2, w:0},
+    {name:'Cable Manager', type:'cable', u:1, w:0},
+    {name:'Firewall / UTM', type:'router', u:1, w:40},
+    {name:'Server', type:'server', u:2, w:200},
+    {name:'UPS', type:'ups', u:3, w:0},
+  ]},
+};
+
+function getRoomLayoutRM(){
+  const t = document.getElementById('rm-roomLayout').value;
+  if (t==='custom'){
+    return {
+      type:'CUSTOM', w:parseFloat(document.getElementById('rm-customW').value)||3.0, d:parseFloat(document.getElementById('rm-customD').value)||3.0,
+      racks: rmRackCount, front:parseFloat(document.getElementById('rm-customFront').value)||1.0, rear:parseFloat(document.getElementById('rm-customRear').value)||0.9,
+      left:parseFloat(document.getElementById('rm-customLeft').value)||0.15, right:parseFloat(document.getElementById('rm-customRight').value)||0.15,
+      gap:parseFloat(document.getElementById('rm-customGap').value)||0.3, desc:'Custom room — verify clearances meet BICSI TDMM minimums (front ≥1.0m, rear ≥0.9m, side ≥0.15m).'
+    };
+  }
+  return ROOM_LAYOUTS[t];
+}
+
+function getRackU(){
+  if (document.getElementById('rm-manualUOverride').checked) return parseInt(document.getElementById('rm-manualUValue').value)||42;
+  return parseInt(document.getElementById('rm-rackHeight').value)||42;
+}
+
+function syncRackState(){
+  const layout = getRoomLayoutRM();
+  const n = Math.max(1, layout.racks||1);
+  while (rackPosState.length < n) rackPosState.push(null);
+  rackPosState.length = n;
+  while (perRackEquipment.length < n) perRackEquipment.push([]);
+  perRackEquipment.length = n;
+  for (let i=0;i<n;i++) if (!perRackEquipment[i]) perRackEquipment[i]=[];
+  if (activeRackTab >= n) activeRackTab = n-1;
+  if (activeRackTab < 0) activeRackTab = 0;
+}
+
+function isSwappedRot(rot){ const r=((rot%360)+360)%360; return r===90||r===270; }
+function getDefaultRackPositions(layout, rWm, rDm){
+  const racks = layout.racks;
+  const totalRackW = racks*rWm + Math.max(0,racks-1)*layout.gap;
+  const startX = layout.w/2 - totalRackW/2;
+  const y = layout.rear||0;
+  const arr=[];
+  for(let i=0;i<racks;i++) arr.push({x:startX+i*(rWm+layout.gap), y, rot:0});
+  return arr;
+}
+function getRackPos(i, layout, rWm, rDm){
+  const defs = getDefaultRackPositions(layout, rWm, rDm);
+  return rackPosState[i] || defs[i] || {x:0,y:0,rot:0};
+}
+
+/* ═══════════ RESULTS BAR ═══════════ */
+function computeResultsBar(){
+  const buildingType = document.getElementById('rm-buildingType').value;
+  document.getElementById('rm-customWA-wrap').classList.toggle('hidden', buildingType!=='custom');
+  const density = buildingType==='custom' ? (parseFloat(document.getElementById('rm-customWA').value)||10) : BUILDING_DENSITY[buildingType];
+  const areaM2 = parseFloat(document.getElementById('rm-area').value)||650;
+  const ppa = parseFloat(document.getElementById('rm-portsPerWA').value)||2;
+  const spare = parseFloat(document.getElementById('rm-sparePct').value)||25;
+  const cableLen = parseFloat(document.getElementById('rm-cableLen').value)||90;
+  const poeStd = document.getElementById('rm-poeStd').value;
+
+  const areaSqft = areaM2*10.764;
+  const wa = Math.max(1, Math.round((areaSqft/1000)*density));
+  const rawPorts = wa*ppa;
+  const portsWithSpare = Math.ceil(rawPorts*(1+spare/100));
+  const switchPorts = portsWithSpare<=24?24:(portsWithSpare<=48?48:Math.ceil(portsWithSpare/48)*48);
+  const switchQty = Math.ceil(portsWithSpare/48);
+  const poePow = {af:15.4, at:30, bt:60}[poeStd]||30;
+  const totalPoe = portsWithSpare*poePow;
+  const cableOk = cableLen<=90;
+  const bldName = buildingType==='custom' ? (document.getElementById('rm-customBuildingName').value||'Custom') : BUILDING_NAME[buildingType];
+
+  const layout = getRoomLayoutRM();
+  document.getElementById('rm-layout-desc').textContent = layout.desc;
+  document.getElementById('rm-custom-wrap').classList.toggle('hidden', document.getElementById('rm-roomLayout').value!=='custom');
+  document.getElementById('rm-manualU-wrap').classList.toggle('hidden', !document.getElementById('rm-manualUOverride').checked);
+
+  const rackU = getRackU();
+  const totalUsed = perRackEquipment.reduce((s,arr)=>s+arr.reduce((s2,it)=>s2+(it.uHeight||0),0),0);
+  const totalCap = rackU*layout.racks;
+  const spareU = totalCap-totalUsed;
+  const sparePctRack = totalCap>0 ? spareU/totalCap*100 : 0;
+  const rackCls = spareU<0 ? 'fail' : (sparePctRack<20 ? 'warn' : 'pass');
+
+  const cards = [
+    {l:'Building / Density', v:bldName, s:`${density} WA / 93m²`, cls:''},
+    {l:'Work Areas', v:`${wa} WA`, s:`${areaM2} m² = ${areaSqft.toFixed(0)} ft²`, cls:''},
+    {l:'Ports Required', v:`${portsWithSpare} ports`, s:`${rawPorts} raw + ${spare}% spare`, cls:'pass'},
+    {l:'Switch Recommendation', v:`${switchPorts}-port (×${switchQty})`, s:`IEEE 802.3${poeStd.toUpperCase()}`, cls:''},
+    {l:'Total PoE Budget', v:`${(totalPoe/1000).toFixed(1)} kW`, s:`${poePow}W/port × ${portsWithSpare} ports`, cls: totalPoe>3000?'warn':''},
+    {l:'Room Layout (CQB #5)', v:layout.type, s:`${layout.w.toFixed(1)}×${layout.d.toFixed(1)}m · ${layout.racks} rack(s)`, cls:''},
+    {l:'Rack Height / Used', v:`${totalUsed}/${totalCap}U`, s:`${spareU>=0?spareU:0}U spare (${sparePctRack.toFixed(0)}%)`, cls: rackCls},
+    {l:'Horizontal Cable', v: cableOk?'✓ ≤ 90m OK':'⚠ > 90m', s: cableOk?'Within BICSI limit':'Extra TR required per floor', cls: cableOk?'pass':'warn'},
+  ];
+  document.getElementById('rm-results').innerHTML = cards.map(c=>`
+    <div class="metric ${c.cls}"><div class="ml">${c.l}</div><div class="mv" style="font-size:14px">${c.v}</div><div style="font-size:9.5px;color:var(--t1);margin-top:3px">${c.s}</div></div>`).join('');
+
+  document.getElementById('rm-chip-size').textContent = `${layout.w.toFixed(1)}×${layout.d.toFixed(1)}m`;
+  document.getElementById('rm-chip-racks').textContent = `${layout.racks} Rack${layout.racks!==1?'s':''}`;
+}
+
+/* ═══════════ MASTER RECALC (structural changes) ═══════════ */
+function calcRoom(){
+  syncRackState();
+  computeResultsBar();
+  renderRackTabs();
+  renderEquipmentTable();
+  renderRackElevationCards();
+  renderExportRackButtons();
+  renderProjectInfo();
+  renderRackPosRows();
+  validateRoom();
+}
+
+/* Lighter refresh used while typing inside an equipment table cell —
+   avoids rebuilding the table itself (which would steal input focus). */
+function afterEquipmentChange(){
+  computeResultsBar();
+  renderRackTabs();
+  renderRackElevationCards();
+  renderExportRackButtons();
+  renderProjectInfo();
+  validateRoom();
+}
+
+/* ═══════════ VALIDATION CHECKLIST ═══════════ */
+function validateRoom(){
+  const layout = getRoomLayoutRM();
+  const rackU = getRackU();
+  const isWall = !!layout.wallMount;
+  const usedU = perRackEquipment.reduce((s,arr)=>s+arr.reduce((s2,it)=>s2+(it.uHeight||0),0),0);
+  const totalCap = rackU*layout.racks;
+  const spareU = Math.max(0, totalCap-usedU);
+  const sparePct = totalCap>0 ? spareU/totalCap*100 : 0;
+  const cableLen = parseFloat(document.getElementById('rm-cableLen').value)||90;
+  const nRacks = layout.racks||0;
+
+  const checks=[];
+  function chk(st,title,detail){ checks.push({status:st,title,detail}); }
+
+  chk(layout.w>=3.0&&layout.d>=2.5?'pass':'fail','Room size ≥ BICSI min (3.0×2.5m)',`${layout.w.toFixed(1)}×${layout.d.toFixed(1)} m`);
+  chk(layout.front>=1.0?'pass':'fail','Front clearance ≥ 1.0 m',`${layout.front.toFixed(2)} m`);
+  chk(isWall||layout.rear>=0.9?'pass':'fail','Rear clearance ≥ 0.9 m', isWall?'Wall-mount N/A':`${layout.rear.toFixed(2)} m`);
+  chk(layout.left>=0.15?'pass':'fail','Side clearance ≥ 0.15 m each',`${layout.left.toFixed(2)} m`);
+  if (nRacks>=2) chk(layout.gap>=0.3?'pass':'fail','Between-rack gap ≥ 0.3 m',`${layout.gap.toFixed(2)} m`);
+  chk(!isWall||rackU<=22?'pass':'fail', isWall?'Wall-mount ≤ 22U':`${rackU}U floor-standing`, `${rackU}U`);
+  chk(sparePct>=20?'pass':sparePct>=10?'warn':'fail','Spare capacity ≥ 20%',`${spareU.toFixed(0)}U spare (${sparePct.toFixed(0)}%)`);
+  chk(totalCap>0&&usedU/totalCap<=0.8?'pass':usedU/totalCap<=1?'warn':'fail','Rack fill ≤ 80%',`${usedU.toFixed(0)}/${totalCap}U (${totalCap>0?Math.round(usedU/totalCap*100):0}%)`);
+  chk(cableLen<=90?'pass':cableLen<=100?'warn':'fail','Cable run ≤ 90m (TIA-568)',`${cableLen}m`);
+  chk(nRacks>0?'pass':'warn','Minimum 1 rack required',`${nRacks} rack(s)`);
+  const rW=(parseFloat(document.getElementById('rm-rackWidth').value)||600)/1000;
+  const needed=nRacks*(rW+0.3)+0.3;
+  chk(needed<=layout.w?'pass':'fail',`Rack(s) fit within room width`,`${needed.toFixed(2)}m needed / ${layout.w.toFixed(1)}m`);
+  if (!isWall){
+    const rD=(parseFloat(document.getElementById('rm-rackDepth').value)||800)/1000;
+    const dN=layout.rear+rD+layout.front;
+    chk(dN<=layout.d?'pass':'fail','Room depth ≥ rack+clearances',`${dN.toFixed(2)}m / ${layout.d.toFixed(1)}m`);
+  }
+  chk('pass','TGB grounding busbar required','Per NEC / BICSI');
+  chk(document.getElementById('rm-fx-ladder').checked?'pass':'warn','Overhead cable ladder required','Per CQB #5');
+
+  const anyFail = checks.some(c=>c.status==='fail');
+  const anyWarn = checks.some(c=>c.status==='warn');
+  const hdr = document.getElementById('rm-valid-hdr');
+  const titleEl = document.getElementById('rm-valid-title');
+  const subEl = document.getElementById('rm-valid-sub');
+  if (anyFail){
+    const fc = checks.filter(c=>c.status==='fail').length;
+    hdr.style.background='var(--redg)'; titleEl.style.color='var(--red)';
+    titleEl.textContent = `❌ ${fc} violation${fc>1?'s':''} found`;
+    subEl.textContent = 'Review failed items below before finalizing';
+  } else if (anyWarn){
+    const wc = checks.filter(c=>c.status==='warn').length;
+    hdr.style.background='var(--ambg)'; titleEl.style.color='var(--amb)';
+    titleEl.textContent = `⚠️ ${wc} warning${wc>1?'s':''} — review`;
+    subEl.textContent = 'Meets minimums but worth double-checking';
+  } else {
+    hdr.style.background='var(--teag)'; titleEl.style.color='var(--tea)';
+    titleEl.textContent = '✅ All design criteria met!';
+    subEl.textContent = 'Validated against BICSI TDMM / CQB #5 minimums';
+  }
+  const ICONS={pass:'✅',fail:'❌',warn:'⚠️'};
+  document.getElementById('rm-valid-checks').innerHTML = checks.map(c=>`
+    <div class="vrow ${c.status}"><span class="vicon">${ICONS[c.status]}</span><span class="vtitle">${c.title}</span><span class="vdetail">${c.detail}</span></div>`).join('');
+}
+
+/* ═══════════ ROOM PLAN (TOP VIEW) ═══════════ */
+function drawRoomPlan(){
+  const canvas = document.getElementById('roomCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = '#f4f7fb'; ctx.fillRect(0,0,W,H);
+
+  const layout = getRoomLayoutRM();
+  const rw = parseFloat(document.getElementById('rm-rackWidth').value)||600;   // mm
+  const rd = parseFloat(document.getElementById('rm-rackDepth').value)||800;   // mm
+  const showClear = document.getElementById('rm-showClear').checked;
+  const showDims = document.getElementById('rm-showDims').checked;
+  const showGrid = document.getElementById('rm-showGrid').checked;
+  const showRuler = document.getElementById('rm-showRuler').checked;
+
+  const MARGIN = 78;
+  const drawW = W-MARGIN*2, drawH = H-MARGIN*2;
+  const maxDim = Math.max(layout.w, layout.d, 3.0);
+  const scale = Math.min(drawW/maxDim, drawH/maxDim)*0.82;
+  const roomWpx = layout.w*scale, roomHpx = layout.d*scale;
+  const ox = MARGIN+(drawW-roomWpx)/2, oy = MARGIN+(drawH-roomHpx)/2;
+  const m = v => v*scale; // metres -> px
+  const wt = 6; // wall thickness px
+  const rWm = rw/1000, rDm = rd/1000;
+
+  RM_VIEW = {ox, oy, scale, layout, rWm, rDm};
+
+  // floor grid
+  if (showGrid){
+    ctx.strokeStyle = 'rgba(37,99,176,0.09)'; ctx.lineWidth = 1;
+    for (let x=0; x<=layout.w+0.001; x+=0.5){ ctx.beginPath(); ctx.moveTo(ox+m(x), oy); ctx.lineTo(ox+m(x), oy+m(layout.d)); ctx.stroke(); }
+    for (let y=0; y<=layout.d+0.001; y+=0.5){ ctx.beginPath(); ctx.moveTo(ox, oy+m(y)); ctx.lineTo(ox+m(layout.w), oy+m(y)); ctx.stroke(); }
+  }
+
+  // clearance zones (rear = top / back wall, front = towards door)
+  if (showClear){
+    ctx.fillStyle = 'rgba(13,148,136,0.16)';
+    ctx.fillRect(ox, oy+m(layout.d)-m(layout.front), m(layout.w), m(layout.front));
+    if (!layout.wallMount){
+      ctx.fillStyle = 'rgba(217,119,6,0.16)';
+      ctx.fillRect(ox, oy, m(layout.w), m(layout.rear));
+    }
+    ctx.fillStyle = 'rgba(147,51,234,0.13)';
+    ctx.fillRect(ox, oy+m(layout.rear||0), m(layout.left), m(layout.d-(layout.rear||0)-layout.front));
+    ctx.fillRect(ox+m(layout.w)-m(layout.right||layout.left), oy+m(layout.rear||0), m(layout.right||layout.left), m(layout.d-(layout.rear||0)-layout.front));
+  }
+
+  // walls
+  ctx.fillStyle = '#334155';
+  ctx.fillRect(ox-wt, oy-wt, roomWpx+wt*2, wt);
+  ctx.fillRect(ox-wt, oy+roomHpx, roomWpx+wt*2, wt);
+  ctx.fillRect(ox-wt, oy-wt, wt, roomHpx+wt*2);
+  ctx.fillRect(ox+roomWpx, oy-wt, wt, roomHpx+wt*2);
+  ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 1.5; ctx.strokeRect(ox, oy, roomWpx, roomHpx);
+
+  // room title bar
+  ctx.fillStyle = 'rgba(37,99,176,0.14)'; ctx.fillRect(ox, oy, roomWpx, 20);
+  ctx.fillStyle = '#1d4ed8'; ctx.font = 'bold 10px "IBM Plex Mono", monospace';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(`FD ROOM | ${layout.type} | ${layout.w.toFixed(1)}×${layout.d.toFixed(1)}m`, ox+roomWpx/2, oy+10);
+
+  // fixtures (drawn under racks/door so they don't obscure them)
+  drawFixturesRM(ctx, ox, oy, roomWpx, roomHpx);
+
+  // door — any of 4 walls, single/double leaf, inward/outward swing
+  drawDoorRM(ctx, ox, oy, roomWpx, roomHpx, wt);
+
+  // racks — draggable / rotatable footprints
+  const rackRectsPx = [];
+  for (let i=0;i<layout.racks;i++){
+    const pos = getRackPos(i, layout, rWm, rDm);
+    const swapped = isSwappedRot(pos.rot||0);
+    const wPxr = (swapped?rDm:rWm)*scale, hPxr = (swapped?rWm:rDm)*scale;
+    const bx = ox+pos.x*scale, by = oy+pos.y*scale;
+    rackRectsPx.push({x:bx,y:by,w:wPxr,h:hPxr});
+    ctx.fillStyle = '#2563b0'; ctx.fillRect(bx, by, wPxr, hPxr);
+    ctx.strokeStyle = '#0f172a'; ctx.lineWidth=1.5; ctx.strokeRect(bx, by, wPxr, hPxr);
+    ctx.strokeStyle='rgba(255,255,255,0.25)';
+    for (let t=1;t<6;t++){ const ty = by + hPxr*t/6; ctx.beginPath(); ctx.moveTo(bx, ty); ctx.lineTo(bx+wPxr, ty); ctx.stroke(); }
+    ctx.fillStyle = '#ffffff'; ctx.font = 'bold 10px Inter, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(`RACK ${i+1}`, bx+wPxr/2, by+hPxr/2-6);
+    ctx.font = '8px "IBM Plex Mono", monospace'; ctx.fillStyle='rgba(255,255,255,0.75)';
+    ctx.fillText(`${rw}×${rd}mm${pos.rot?' · '+pos.rot+'°':''}`, bx+wPxr/2, by+hPxr/2+7);
+  }
+
+  // dimension arrows (based on leftmost/rightmost rack extents)
+  if (showDims && rackRectsPx.length){
+    const sorted = [...rackRectsPx].sort((a,b)=>a.x-b.x);
+    const fr = sorted[0], lr = sorted[sorted.length-1];
+    drawDimLineRM(ctx, ox, oy-40, ox+roomWpx, oy-40, `${layout.w.toFixed(2)} m`, 0,-13,'#2563b0');
+    ctx.save(); ctx.translate(ox-42, oy+roomHpx/2); ctx.rotate(-Math.PI/2);
+    drawDimLineRM(ctx, -roomHpx/2,0, roomHpx/2,0, `${layout.d.toFixed(2)} m`, 0,-13,'#2563b0'); ctx.restore();
+
+    const midX = ox+roomWpx*0.78;
+    if (!layout.wallMount) drawDimLineRM(ctx, midX, oy+2, midX, fr.y, `${layout.rear.toFixed(2)}m`, 16,0,'#b45309');
+    drawDimLineRM(ctx, midX, fr.y+fr.h, midX, oy+roomHpx-2, `${layout.front.toFixed(2)}m`, 16,0,'#0d9488');
+    drawDimLineRM(ctx, ox+2, fr.y+fr.h/2, fr.x, fr.y+fr.h/2, `${layout.left.toFixed(2)}m`, 0,-14,'#9333ea');
+    drawDimLineRM(ctx, lr.x+lr.w, lr.y+lr.h/2, ox+roomWpx-2, lr.y+lr.h/2, `${(layout.right||layout.left).toFixed(2)}m`, 0,-14,'#9333ea');
+    for (let i=1;i<sorted.length;i++){
+      const gapM = (sorted[i].x-(sorted[i-1].x+sorted[i-1].w))/scale;
+      const midY = sorted[i].y+sorted[i].h/2;
+      drawDimLineRM(ctx, sorted[i-1].x+sorted[i-1].w, midY, sorted[i].x, midY, `${gapM.toFixed(2)}m`, 0,-14,'#16a34a');
+    }
+  }
+
+  // N compass
+  ctx.fillStyle = '#475569'; ctx.font = 'bold 13px Inter, sans-serif';
+  ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillText('N↑', W-56, MARGIN-38);
+
+  // rulers + scale bar
+  if (showRuler){
+    drawRoomRulersRM(ctx, ox, oy, roomWpx, roomHpx, scale, layout);
+    drawScaleBarRM(ctx, 14, H-14, scale);
+  }
+
+  ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+
+  // drawing legend
+  drawLegendRM(ctx, ox, oy+roomHpx+34);
+
+  // clearance validation warning (custom mode only)
+  const warn = document.getElementById('rm-clearance-warning');
+  if (document.getElementById('rm-roomLayout').value==='custom'){
+    const issues = [];
+    const totalRackW = layout.racks*rWm + Math.max(0,layout.racks-1)*layout.gap;
+    if (layout.front < 1.0) issues.push(`front clearance ${layout.front}m (min 1.0m)`);
+    if (!layout.wallMount && layout.rear < 0.9) issues.push(`rear clearance ${layout.rear}m (min 0.9m)`);
+    if (layout.left < 0.15) issues.push(`left clearance ${layout.left}m (min 0.15m)`);
+    if (layout.right < 0.15) issues.push(`right clearance ${layout.right}m (min 0.15m)`);
+    if (totalRackW > layout.w) issues.push(`racks (${totalRackW.toFixed(2)}m) exceed room width (${layout.w}m)`);
+    if (issues.length){
+      warn.style.display='block'; warn.style.color='var(--red)';
+      warn.innerHTML = `⚠ <b>Clearance issue:</b> ${issues.join('; ')} — per BICSI TDMM minimums.`;
+    } else { warn.style.display='none'; }
+  } else { warn.style.display='none'; }
+}
+
+function drawDoorRM(ctx, ox, oy, roomWpx, roomHpx, wt){
+  const wall = document.getElementById('rm-doorWall').value;
+  const offsetM = parseFloat(document.getElementById('rm-doorOffset').value)||0;
+  const widthM = parseFloat(document.getElementById('rm-doorWidth').value)||0.91;
+  const swing = document.getElementById('rm-doorSwing').value;
+  const leaf = document.getElementById('rm-doorLeaf').value;
+  const scale = RM_VIEW.scale;
+  const wPx = widthM*scale, offPx = offsetM*scale;
+
+  let hx,hy,ux,uy;
+  if (wall==='bottom'){ hx=ox+offPx; hy=oy+roomHpx; ux=1; uy=0; }
+  else if (wall==='top'){ hx=ox+offPx; hy=oy; ux=1; uy=0; }
+  else if (wall==='left'){ hx=ox; hy=oy+offPx; ux=0; uy=1; }
+  else { hx=ox+roomWpx; hy=oy+offPx; ux=0; uy=1; }
+  const fx = hx+ux*wPx, fy = hy+uy*wPx;
+
+  ctx.fillStyle='#f4f7fb';
+  if (uy===0) ctx.fillRect(Math.min(hx,fx)-1, hy-wt/2-1, Math.abs(fx-hx)+2, wt+2);
+  else ctx.fillRect(hx-wt/2-1, Math.min(hy,fy)-1, wt+2, Math.abs(fy-hy)+2);
+
+  let inX=0,inY=0;
+  if (wall==='bottom'){ inX=0; inY=-1; }
+  if (wall==='top'){ inX=0; inY=1; }
+  if (wall==='left'){ inX=1; inY=0; }
+  if (wall==='right'){ inX=-1; inY=0; }
+  const sgn = swing==='inward' ? 1 : -1;
+  const swX = inX*sgn, swY = inY*sgn;
+
+  function leafAndArc(hingeX,hingeY, dirX,dirY, r){
+    ctx.lineWidth=2; ctx.strokeStyle='#b54a1e';
+    ctx.beginPath(); ctx.moveTo(hingeX,hingeY); ctx.lineTo(hingeX+dirX*r,hingeY+dirY*r); ctx.stroke();
+    const a0 = Math.atan2(dirY,dirX);
+    const a1 = Math.atan2(swY,swX);
+    ctx.lineWidth=1; ctx.strokeStyle='rgba(180,74,30,.5)';
+    ctx.beginPath(); ctx.arc(hingeX,hingeY,r,a0,a1); ctx.stroke();
+  }
+
+  if (leaf==='single'){
+    leafAndArc(hx,hy, ux,uy, wPx);
+  } else {
+    const half = wPx/2;
+    leafAndArc(hx,hy, ux,uy, half);
+    leafAndArc(fx,fy, -ux,-uy, half);
+  }
+
+  const midX=(hx+fx)/2, midY=(hy+fy)/2;
+  ctx.fillStyle = '#b54a1e'; ctx.font = 'bold 9px Inter, sans-serif';
+  if (uy===0){ ctx.textAlign='center'; ctx.textBaseline='top'; ctx.fillText(`DOOR ${widthM.toFixed(2)}m`, midX, midY+wt+3); }
+  else { ctx.textAlign = (swX>=0?'left':'right'); ctx.textBaseline='middle'; ctx.fillText(`DOOR ${widthM.toFixed(2)}m`, midX+(swX>=0?10:-10), midY); }
+}
+
+function drawFixturesRM(ctx, ox, oy, roomWpx, roomHpx){
+  const on = id => document.getElementById(id).checked;
+  ctx.save();
+  if (on('rm-fx-ladder')){
+    ctx.strokeStyle='rgba(100,116,139,.55)'; ctx.setLineDash([6,4]); ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(ox+8, oy+26); ctx.lineTo(ox+roomWpx-8, oy+26); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(71,85,105,.85)'; ctx.font='7px Inter, sans-serif'; ctx.textAlign='left'; ctx.textBaseline='top';
+    ctx.fillText('CABLE LADDER', ox+10, oy+29);
+  }
+  if (on('rm-fx-plywood')){
+    ctx.fillStyle='rgba(180,120,60,.22)'; ctx.fillRect(ox+2, oy+roomHpx-3, roomWpx-4, 3);
+    ctx.fillStyle='rgba(120,72,24,.9)'; ctx.font='6.5px Inter, sans-serif'; ctx.textAlign='right'; ctx.textBaseline='bottom';
+    ctx.fillText('FIRE-RATED PLYWOOD BACKBOARD', ox+roomWpx-4, oy+roomHpx-4);
+  }
+  if (on('rm-fx-antistatic')){
+    ctx.strokeStyle='rgba(13,148,136,.65)'; ctx.lineWidth=1.2; ctx.setLineDash([3,3]);
+    ctx.strokeRect(ox+roomWpx*0.32, oy+roomHpx*0.6, roomWpx*0.36, roomHpx*0.25);
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(13,148,136,.9)'; ctx.font='7px Inter, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('ESD FLOOR LABEL', ox+roomWpx*0.5, oy+roomHpx*0.72);
+  }
+  if (on('rm-fx-ac')){
+    const aw=28, ah=11;
+    ctx.fillStyle='#94a3b8'; ctx.fillRect(ox+roomWpx-aw-8, oy+6, aw, ah);
+    ctx.fillStyle='#334155'; ctx.font='bold 6px Inter, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('A/C', ox+roomWpx-aw/2-8, oy+6+ah/2);
+  }
+  if (on('rm-fx-lightswitch')){
+    ctx.fillStyle='#facc15'; ctx.strokeStyle='#0f172a'; ctx.lineWidth=1;
+    ctx.fillRect(ox-4, oy+roomHpx*0.18, 7, 11); ctx.strokeRect(ox-4, oy+roomHpx*0.18, 7, 11);
+  }
+  if (on('rm-fx-poweroutlets')){
+    ctx.fillStyle='#60a5fa'; ctx.strokeStyle='#0f172a'; ctx.lineWidth=1;
+    ctx.fillRect(ox-4, oy+roomHpx*0.4, 7, 9); ctx.strokeRect(ox-4, oy+roomHpx*0.4, 7, 9);
+    ctx.fillRect(ox-4, oy+roomHpx*0.5, 7, 9); ctx.strokeRect(ox-4, oy+roomHpx*0.5, 7, 9);
+  }
+  ctx.restore();
+}
+
+function drawLegendRM(ctx, x, y){
+  const items = [
+    {c:'rgba(13,148,136,0.5)', l:'Front clearance'},
+    {c:'rgba(217,119,6,0.5)', l:'Rear clearance'},
+    {c:'rgba(147,51,234,0.4)', l:'Side clearance'},
+    {c:'#2563b0', l:'Rack footprint'},
+    {c:'#b54a1e', l:'Door swing'},
+  ];
+  ctx.save();
+  ctx.font='7.5px Inter, sans-serif'; ctx.textAlign='left'; ctx.textBaseline='middle';
+  let cx = x;
+  items.forEach(it=>{
+    ctx.fillStyle = it.c; ctx.fillRect(cx, y-4, 10, 8);
+    ctx.fillStyle = '#475569'; ctx.fillText(it.l, cx+14, y);
+    cx += 14 + ctx.measureText(it.l).width + 16;
+  });
+  ctx.restore();
+}
+
+function drawDimLineRM(ctx,x1,y1,x2,y2,label,offX=0,offY=0,color='#b45309'){
+  ctx.save();
+  ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=1.3;
+  const A=7, ang=Math.atan2(y2-y1,x2-x1);
+  const nx=Math.sin(ang)*5, ny=-Math.cos(ang)*5;
+  ctx.beginPath(); ctx.moveTo(x1+nx,y1+ny); ctx.lineTo(x1-nx,y1-ny); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2+nx,y2+ny); ctx.lineTo(x2-nx,y2-ny); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  function arrow(px,py,a){ ctx.beginPath(); ctx.moveTo(px,py); ctx.lineTo(px-A*Math.cos(a-0.4),py-A*Math.sin(a-0.4)); ctx.lineTo(px-A*Math.cos(a+0.4),py-A*Math.sin(a+0.4)); ctx.closePath(); ctx.fill(); }
+  arrow(x1,y1,ang+Math.PI); arrow(x2,y2,ang);
+  ctx.font='bold 10px Inter, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  const mx=(x1+x2)/2+offX, my=(y1+y2)/2+offY;
+  const tw = ctx.measureText(label).width;
+  ctx.fillStyle='rgba(255,255,255,0.88)'; ctx.fillRect(mx-tw/2-3,my-7,tw+6,14);
+  ctx.strokeStyle='rgba(0,0,0,0.08)'; ctx.lineWidth=1; ctx.strokeRect(mx-tw/2-3,my-7,tw+6,14);
+  ctx.fillStyle=color; ctx.fillText(label,mx,my);
+  ctx.restore();
+}
+
+function drawRoomRulersRM(ctx, ox, oy, roomWpx, roomHpx, scale, layout){
+  ctx.save();
+  const tickMinor=0.1, tickMajor=0.5;
+  ctx.font='8px "IBM Plex Mono", monospace';
+  const rulerY=oy-24, rulerH=12;
+  ctx.fillStyle='rgba(226,232,240,.9)'; ctx.fillRect(ox, rulerY, roomWpx, rulerH);
+  ctx.strokeStyle='rgba(100,116,139,.35)'; ctx.strokeRect(ox, rulerY, roomWpx, rulerH);
+  for (let mm=0; mm<=layout.w+0.001; mm+=tickMinor){
+    const x=ox+mm*scale; if (x>ox+roomWpx+0.5) break;
+    const isMajor = Math.abs(mm/tickMajor - Math.round(mm/tickMajor)) < 0.001;
+    ctx.strokeStyle = isMajor ? 'rgba(37,99,176,.65)' : 'rgba(100,116,139,.35)';
+    ctx.beginPath(); ctx.moveTo(x, rulerY+rulerH); ctx.lineTo(x, rulerY+rulerH-(isMajor?8:3)); ctx.stroke();
+    if (isMajor){ ctx.fillStyle='#475569'; ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.fillText(mm.toFixed(1), x, rulerY+4); }
+  }
+  const rulerX=ox-24, rulerW=12;
+  ctx.fillStyle='rgba(226,232,240,.9)'; ctx.fillRect(rulerX, oy, rulerW, roomHpx);
+  ctx.strokeStyle='rgba(100,116,139,.35)'; ctx.strokeRect(rulerX, oy, rulerW, roomHpx);
+  for (let mm=0; mm<=layout.d+0.001; mm+=tickMinor){
+    const y=oy+mm*scale; if (y>oy+roomHpx+0.5) break;
+    const isMajor = Math.abs(mm/tickMajor - Math.round(mm/tickMajor)) < 0.001;
+    ctx.strokeStyle = isMajor ? 'rgba(37,99,176,.65)' : 'rgba(100,116,139,.35)';
+    ctx.beginPath(); ctx.moveTo(rulerX+rulerW, y); ctx.lineTo(rulerX+rulerW-(isMajor?8:3), y); ctx.stroke();
+    if (isMajor){ ctx.save(); ctx.translate(rulerX+3, y); ctx.rotate(-Math.PI/2); ctx.fillStyle='#475569'; ctx.textAlign='center'; ctx.textBaseline='top'; ctx.fillText(mm.toFixed(1), 0, 0); ctx.restore(); }
+  }
+  ctx.restore();
+}
+
+function drawScaleBarRM(ctx, x, y, scale){
+  const candidates=[0.1,0.25,0.5,1,2,5,10];
+  let barM = candidates[0];
+  for (const cd of candidates){ if (cd*scale>=60 && cd*scale<=160){ barM=cd; break; } if (cd*scale<160) barM=cd; }
+  const barPx = barM*scale;
+  ctx.save();
+  ctx.strokeStyle='#475569'; ctx.fillStyle='#475569'; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+barPx,y); ctx.stroke();
+  [0,0.5,1].forEach(f=>{ const tx=x+barPx*f; ctx.beginPath(); ctx.moveTo(tx,y-4); ctx.lineTo(tx,y+4); ctx.stroke(); });
+  ctx.fillRect(x, y-2, barPx/2, 4);
+  ctx.font='8px "IBM Plex Mono", monospace'; ctx.textAlign='center'; ctx.textBaseline='bottom';
+  ctx.fillText('0', x, y-6); ctx.fillText(barM+'m', x+barPx, y-6);
+  ctx.restore();
+}
+
+/* ═══════════ RACK DRAG / ROTATE ON CANVAS ═══════════ */
+function canvasXYRM(e){
+  const canvas = document.getElementById('roomCanvas');
+  const rect = canvas.getBoundingClientRect();
+  const sx = canvas.width/rect.width, sy = canvas.height/rect.height;
+  return {px:(e.clientX-rect.left)*sx, py:(e.clientY-rect.top)*sy};
+}
+function hitTestRackRM(px,py){
+  if (!RM_VIEW) return -1;
+  const {ox,oy,scale,layout,rWm,rDm} = RM_VIEW;
+  for (let i=layout.racks-1;i>=0;i--){
+    const pos = getRackPos(i, layout, rWm, rDm);
+    const swapped = isSwappedRot(pos.rot||0);
+    const bw=(swapped?rDm:rWm)*scale, bh=(swapped?rWm:rDm)*scale;
+    const bx=ox+pos.x*scale, by=oy+pos.y*scale;
+    if (px>=bx&&px<=bx+bw&&py>=by&&py<=by+bh) return i;
+  }
+  return -1;
+}
+(function initRoomCanvasEvents(){
+  const canvas = document.getElementById('roomCanvas');
+  canvas.addEventListener('mousedown', e=>{
+    const {px,py} = canvasXYRM(e);
+    const idx = hitTestRackRM(px,py);
+    if (idx<0 || !RM_VIEW) return;
+    const {ox,oy,scale} = RM_VIEW;
+    const pos = getRackPos(idx, RM_VIEW.layout, RM_VIEW.rWm, RM_VIEW.rDm);
+    rmDrag = {idx, offX: px-(ox+pos.x*scale), offY: py-(oy+pos.y*scale)};
+    canvas.style.cursor='grabbing';
+  });
+  canvas.addEventListener('mousemove', e=>{
+    const {px,py} = canvasXYRM(e);
+    if (!rmDrag || !RM_VIEW){
+      canvas.style.cursor = hitTestRackRM(px,py)>=0 ? 'grab' : 'default';
+      return;
+    }
+    const {ox,oy,scale,layout,rWm,rDm} = RM_VIEW;
+    const cur = rackPosState[rmDrag.idx] || getRackPos(rmDrag.idx, layout, rWm, rDm);
+    const swapped = isSwappedRot(cur.rot||0);
+    const fw = swapped?rDm:rWm, fh = swapped?rWm:rDm;
+    let nx = (px-rmDrag.offX-ox)/scale;
+    let ny = (py-rmDrag.offY-oy)/scale;
+    nx = Math.max(0, Math.min(layout.w-fw, nx));
+    ny = Math.max(0, Math.min(layout.d-fh, ny));
+    rackPosState[rmDrag.idx] = {x:nx, y:ny, rot:cur.rot||0};
+    drawRoomPlan();
+    renderRackPosRows();
+  });
+  window.addEventListener('mouseup', ()=>{ rmDrag=null; });
+  canvas.addEventListener('contextmenu', e=>{
+    e.preventDefault();
+    const {px,py} = canvasXYRM(e);
+    const idx = hitTestRackRM(px,py);
+    if (idx<0 || !RM_VIEW) return;
+    const pos = getRackPos(idx, RM_VIEW.layout, RM_VIEW.rWm, RM_VIEW.rDm);
+    rackPosState[idx] = {x:pos.x, y:pos.y, rot:((pos.rot||0)+90)%360};
+    drawRoomPlan();
+    renderRackPosRows();
+  });
+})();
+
+/* ═══════════ RACK PLACEMENT (numeric X/Y/Rotation) ═══════════ */
+function renderRackPosRows(){
+  const layout = getRoomLayoutRM();
+  const rw=parseFloat(document.getElementById('rm-rackWidth').value)||600;
+  const rd=parseFloat(document.getElementById('rm-rackDepth').value)||800;
+  const rWm=rw/1000, rDm=rd/1000;
+  const wrap = document.getElementById('rd-rackpos-rows');
+  wrap.innerHTML='';
+  for (let i=0;i<layout.racks;i++){
+    const pos = getRackPos(i, layout, rWm, rDm);
+    const row = document.createElement('div');
+    row.style.cssText='display:flex;gap:8px;align-items:end;margin-bottom:8px';
+    row.innerHTML = `
+      <div class="fg" style="flex:1"><label>Rack ${i+1} X (m)</label><input type="number" step="0.05" value="${pos.x.toFixed(2)}" data-rp="x" data-i="${i}"></div>
+      <div class="fg" style="flex:1"><label>Y (m)</label><input type="number" step="0.05" value="${pos.y.toFixed(2)}" data-rp="y" data-i="${i}"></div>
+      <div class="fg" style="flex:0 0 62px"><label>Rot°</label><input type="number" step="90" value="${pos.rot||0}" data-rp="rot" data-i="${i}"></div>
+      <button class="btn-sm" data-rot-i="${i}" style="flex:0 0 34px;height:33px" title="Rotate 90°">↻</button>`;
+    wrap.appendChild(row);
+  }
+  wrap.querySelectorAll('[data-rp]').forEach(inp=>{
+    inp.addEventListener('input', ()=>{
+      const i=parseInt(inp.dataset.i), f=inp.dataset.rp;
+      const layout2=getRoomLayoutRM();
+      const rw2=parseFloat(document.getElementById('rm-rackWidth').value)||600, rd2=parseFloat(document.getElementById('rm-rackDepth').value)||800;
+      const cur = getRackPos(i, layout2, rw2/1000, rd2/1000);
+      const next = {x:cur.x,y:cur.y,rot:cur.rot||0};
+      next[f] = parseFloat(inp.value)||0;
+      rackPosState[i] = next;
+      drawRoomPlan();
+    });
+  });
+  wrap.querySelectorAll('[data-rot-i]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const i=parseInt(btn.dataset.rotI);
+      const layout2=getRoomLayoutRM();
+      const rw2=parseFloat(document.getElementById('rm-rackWidth').value)||600, rd2=parseFloat(document.getElementById('rm-rackDepth').value)||800;
+      const cur=getRackPos(i, layout2, rw2/1000, rd2/1000);
+      rackPosState[i]={x:cur.x,y:cur.y,rot:((cur.rot||0)+90)%360};
+      drawRoomPlan(); renderRackPosRows();
+    });
+  });
+}
+
+/* ═══════════ EQUIPMENT SUB-TAB ═══════════ */
+function renderRackTabs(){
+  const layout = getRoomLayoutRM();
+  const rackU = getRackU();
+  const wrap = document.getElementById('rd-racktabs');
+  wrap.innerHTML = '';
+  for (let i=0;i<layout.racks;i++){
+    const used = (perRackEquipment[i]||[]).reduce((s,it)=>s+(it.uHeight||0),0);
+    const btn = document.createElement('div');
+    btn.className = 'racktab'+(i===activeRackTab?' active':'');
+    btn.innerHTML = `Rack ${i+1}<span class="ru">${used}/${rackU}U</span>`;
+    btn.addEventListener('click', ()=>{ activeRackTab=i; renderRackTabs(); renderEquipmentTable(); });
+    wrap.appendChild(btn);
+  }
+  const used0 = (perRackEquipment[activeRackTab]||[]).reduce((s,it)=>s+(it.uHeight||0),0);
+  document.getElementById('rd-eq-usage').textContent = `Editing Rack: Rack ${activeRackTab+1} · ${used0}/${rackU}U`;
+}
+
+function renderEquipmentTable(){
+  const tbody = document.getElementById('rd-eq-tbody');
+  tbody.innerHTML='';
+  const list = perRackEquipment[activeRackTab] || (perRackEquipment[activeRackTab]=[]);
+  list.forEach((it,idx)=>{
+    const tr = document.createElement('tr');
+    tr.draggable = true;
+    tr.dataset.idx = idx;
+    tr.innerHTML = `
+      <td class="eq-drag">⠿</td>
+      <td><input data-f="name" value="${devEsc2(it.name)}"></td>
+      <td><select data-f="type">${EQ_TYPES.map(t=>`<option value="${t.v}" ${t.v===it.type?'selected':''}>${t.l}</option>`).join('')}</select></td>
+      <td><input data-f="startU" type="number" value="${it.startU}" min="1"></td>
+      <td><input data-f="uHeight" type="number" value="${it.uHeight}" min="1"></td>
+      <td><input data-f="watt" type="number" value="${it.watt||0}" min="0"></td>
+      <td><button data-del="1" style="color:var(--red)">✕</button></td>`;
+    tr.querySelectorAll('[data-f]').forEach(el=>{
+      el.addEventListener('input', ()=>{
+        const f=el.dataset.f;
+        it[f] = (el.tagName==='SELECT') ? el.value : (parseFloat(el.value)||0);
+        afterEquipmentChange();
+      });
+    });
+    tr.querySelector('[data-del]').addEventListener('click', ()=>{
+      list.splice(idx,1); renderEquipmentTable(); calcRoom();
+    });
+    tr.addEventListener('dragstart', ()=>{ tr.classList.add('eq-dragging'); });
+    tr.addEventListener('dragend', ()=>{
+      tr.classList.remove('eq-dragging');
+      const newOrder = Array.from(tbody.children).map(r=>list[parseInt(r.dataset.idx)]);
+      perRackEquipment[activeRackTab] = newOrder;
+      renderEquipmentTable(); calcRoom();
+    });
+    tr.addEventListener('dragover', e=>{
+      e.preventDefault();
+      const dragging = tbody.querySelector('.eq-dragging');
+      if (!dragging || dragging===tr) return;
+      const rect = tr.getBoundingClientRect();
+      const before = (e.clientY - rect.top) < rect.height/2;
+      tbody.insertBefore(dragging, before? tr : tr.nextSibling);
+    });
+    tbody.appendChild(tr);
+  });
+}
+
+function applyPreset(key){
+  const p = RD_PRESETS[key]; if (!p) return;
+  let cursor=1;
+  perRackEquipment[activeRackTab] = p.items.map(it=>{
+    const e={id:eqUid(), name:it.name, type:it.type, startU:cursor, uHeight:it.u, watt:it.w||0};
+    cursor+=it.u; return e;
+  });
+  calcRoom();
+  notify('Applied preset: '+p.name);
+}
+
+function calcSwitchMini(){
+  const doCount = parseFloat(document.getElementById('rd-sw-do').value)||24;
+  const sparePct = parseFloat(document.getElementById('rd-sw-spare').value)||20;
+  const portsNeeded = Math.ceil(doCount*(1+sparePct/100));
+  const switchSize = portsNeeded<=24?24:(portsNeeded<=48?48:Math.ceil(portsNeeded/48)*48);
+  document.getElementById('rd-sw-result').innerHTML = `<b>${switchSize}-port switch</b> recommended — ${portsNeeded} ports needed (${doCount} DO + ${sparePct}% spare)`;
+  return {portsNeeded, switchSize};
+}
+
+/* ═══════════ RACK ELEVATION (FRONT VIEW) ═══════════ */
+function renderRackElevationCards(){
+  const layout = getRoomLayoutRM();
+  const rackU = getRackU();
+  const wrap = document.getElementById('rd-rackelev-cards');
+  wrap.innerHTML = '';
+  for (let i=0;i<layout.racks;i++){
+    const used = (perRackEquipment[i]||[]).reduce((s,it)=>s+(it.uHeight||0),0);
+    const spare = rackU-used;
+    const pct = rackU>0 ? used/rackU*100 : 0;
+    const statusCls = pct>100 ? 'fail' : (pct>80 ? 'warn' : 'ok');
+    const card = document.createElement('div');
+    card.className='card';
+    card.innerHTML = `
+      <div class="card-hd"><b>Rack ${i+1} Elevation</b><div class="sub">Front view — ${rackU}U</div></div>
+      <div class="card-bd">
+        <div class="rackelev-wrap"><canvas class="rackelev-canvas" id="rackElevCanvas${i}" width="210" height="520"></canvas></div>
+        <div class="spare-u-label ${statusCls}">${used}/${rackU}U used · ${spare>=0?spare:0}U spare (${pct.toFixed(0)}%)</div>
+      </div>`;
+    wrap.appendChild(card);
+  }
+  for (let i=0;i<layout.racks;i++) drawRackElevationCanvasRM(i);
+}
+
+function drawRackElevationCanvasRM(idx){
+  const canvas = document.getElementById('rackElevCanvas'+idx);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const rackU = getRackU();
+  const showMeas = document.getElementById('rm-showMeasurements').value;
+  const W=canvas.width, railW=24, bodyX=railW, bodyW=W-railW*2;
+  const topPad=10, uPx = (canvas.height-topPad*2)/rackU;
+  ctx.clearRect(0,0,W,canvas.height);
+  ctx.fillStyle='#f4f7fb'; ctx.fillRect(0,0,W,canvas.height);
+  ctx.fillStyle='#e2e8f0'; ctx.fillRect(0,topPad,railW,rackU*uPx); ctx.fillRect(bodyX+bodyW,topPad,railW,rackU*uPx);
+  ctx.strokeStyle='#94a3b8'; ctx.strokeRect(bodyX,topPad,bodyW,rackU*uPx);
+  ctx.font='7px "IBM Plex Mono", monospace'; ctx.fillStyle='#64748b'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  for (let u=1; u<=rackU; u++){
+    const y = topPad + (u-1)*uPx;
+    ctx.strokeStyle='rgba(148,163,184,.35)'; ctx.beginPath(); ctx.moveTo(bodyX,y); ctx.lineTo(bodyX+bodyW,y); ctx.stroke();
+    ctx.fillStyle='#64748b'; ctx.fillText(String(rackU-u+1), railW/2, y+uPx/2);
+  }
+  const list = perRackEquipment[idx]||[];
+  list.forEach(it=>{
+    const yTop = topPad + (rackU-(it.startU+it.uHeight-1))*uPx;
+    const h = it.uHeight*uPx;
+    ctx.fillStyle = eqColor(it.type);
+    ctx.fillRect(bodyX+2, yTop, bodyW-4, Math.max(1,h-1));
+    ctx.strokeStyle='#0f172a'; ctx.lineWidth=1; ctx.strokeRect(bodyX+2, yTop, bodyW-4, Math.max(1,h-1));
+    ctx.fillStyle='#0f172a'; ctx.font='bold 8px Inter, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    let label = it.name||'';
+    if (showMeas==='u') label += ` (${it.uHeight}U)`;
+    else if (showMeas==='mm') label += ` (${Math.round(it.uHeight*44.45)}mm)`;
+    else label += ` (${it.uHeight}U/${Math.round(it.uHeight*44.45)}mm)`;
+    ctx.fillText(label.length>28?label.slice(0,26)+'…':label, bodyX+bodyW/2, yTop+h/2);
+  });
+}
+
+/* ═══════════ EXPORT SUB-TAB ═══════════ */
+function renderExportRackButtons(){
+  const layout = getRoomLayoutRM();
+  const wrap = document.getElementById('rd-exp-rack-btns');
+  wrap.innerHTML = '';
+  for (let i=0;i<layout.racks;i++){
+    const btn = document.createElement('button');
+    btn.className='btn btn-g'; btn.style.justifyContent='center';
+    btn.textContent = `📸 Export Rack ${i+1} Elevation (PNG)`;
+    btn.addEventListener('click', ()=>{
+      const canvas = document.getElementById('rackElevCanvas'+i);
+      if (!canvas) return;
+      const a=document.createElement('a'); a.href=canvas.toDataURL('image/png'); a.download=(document.getElementById('proj-name').value||'room')+`_Rack${i+1}_Elevation.png`; a.click();
+    });
+    wrap.appendChild(btn);
+  }
+}
+
+function renderProjectInfo(){
+  const layout = getRoomLayoutRM();
+  const rackU = getRackU();
+  const proj = document.getElementById('proj-name').value||'Untitled Project';
+  const buildingType = document.getElementById('rm-buildingType').value;
+  const bldName = buildingType==='custom' ? (document.getElementById('rm-customBuildingName').value||'Custom') : BUILDING_NAME[buildingType];
+  const area = document.getElementById('rm-area').value;
+  const totalUsed = perRackEquipment.reduce((s,arr)=>s+arr.reduce((s2,it)=>s2+(it.uHeight||0),0),0);
+  const totalCap = rackU*layout.racks;
+  const info = document.getElementById('rd-proj-info');
+  if (!info) return;
+  info.textContent =
+`PROJECT: ${proj}
+BUILDING TYPE: ${bldName}
+FLOOR AREA: ${area} m²
+ROOM LAYOUT: ${layout.type}  (${layout.w.toFixed(1)}×${layout.d.toFixed(1)}m)
+RACK COUNT: ${layout.racks}
+RACK SIZE: ${rackU}U  (${document.getElementById('rm-rackWidth').value}×${document.getElementById('rm-rackDepth').value}mm)
+TOTAL U CAPACITY: ${totalCap}U
+TOTAL U USED: ${totalUsed}U (${totalCap>0?Math.round(totalUsed/totalCap*100):0}%)
+DOOR: ${document.getElementById('rm-doorWall').value} wall · ${document.getElementById('rm-doorLeaf').value} leaf · swing ${document.getElementById('rm-doorSwing').value}
+GENERATED: ${new Date().toLocaleString()}`;
+}
+
+/* ═══════════ SUB-TAB SWITCHING ═══════════ */
+document.querySelectorAll('.subtab').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.subtab').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.subtab-body').forEach(b=>b.classList.remove('active'));
+    document.getElementById('rd-sub-'+btn.dataset.sub).classList.add('active');
+  });
+});
+
+/* ═══════════ EQUIPMENT TOOLBAR WIRING ═══════════ */
+document.getElementById('rd-eq-add').addEventListener('click', ()=>{
+  const list = perRackEquipment[activeRackTab]||(perRackEquipment[activeRackTab]=[]);
+  const nextU = list.length? Math.max(...list.map(it=>it.startU+it.uHeight)) : 1;
+  list.push({id:eqUid(), name:'New Device', type:'other', startU:nextU, uHeight:1, watt:0});
+  calcRoom();
+});
+document.getElementById('rd-eq-copyall').addEventListener('click', ()=>{
+  const src = perRackEquipment[activeRackTab]||[];
+  const layout = getRoomLayoutRM();
+  for (let i=0;i<layout.racks;i++){ if (i===activeRackTab) continue; perRackEquipment[i] = src.map(it=>({...it, id:eqUid()})); }
+  calcRoom();
+  notify('Copied Rack '+(activeRackTab+1)+' layout to all racks');
+});
+document.getElementById('rd-eq-clear').addEventListener('click', ()=>{
+  if ((perRackEquipment[activeRackTab]||[]).length && !confirm('Clear all equipment from Rack '+(activeRackTab+1)+'?')) return;
+  perRackEquipment[activeRackTab]=[];
+  calcRoom();
+});
+document.getElementById('rd-eq-autostack').addEventListener('click', ()=>{
+  const list = perRackEquipment[activeRackTab]||[];
+  list.sort((a,b)=>a.startU-b.startU);
+  let cursor=1; list.forEach(it=>{ it.startU=cursor; cursor+=it.uHeight; });
+  calcRoom();
+});
+document.getElementById('rd-eq-sorttop').addEventListener('click', ()=>{
+  (perRackEquipment[activeRackTab]||[]).sort((a,b)=>a.startU-b.startU);
+  renderEquipmentTable();
+});
+document.getElementById('rd-eq-sortbot').addEventListener('click', ()=>{
+  (perRackEquipment[activeRackTab]||[]).sort((a,b)=>b.startU-a.startU);
+  renderEquipmentTable();
+});
+document.querySelectorAll('.preset-btn').forEach(b=>{
+  b.addEventListener('click', ()=>applyPreset(b.dataset.preset));
+});
+const rdPresetSel = document.getElementById('rd-eq-preset-sel');
+rdPresetSel.innerHTML = '<option value="">📋 Preset…</option>'+Object.entries(RD_PRESETS).map(([k,p])=>`<option value="${k}">${p.name}</option>`).join('');
+rdPresetSel.addEventListener('change', ()=>{ if (rdPresetSel.value){ applyPreset(rdPresetSel.value); rdPresetSel.value=''; } });
+['rd-sw-do','rd-sw-spare'].forEach(id=> document.getElementById(id).addEventListener('input', calcSwitchMini));
+document.getElementById('rd-eq-generate').addEventListener('click', ()=>{
+  const {switchSize} = calcSwitchMini();
+  const arr = [];
+  if (document.getElementById('rd-inc-fpp').checked) arr.push({name:'Fiber Patch Panel', type:'fiber', u:1, w:0});
+  if (document.getElementById('rd-inc-pc').checked) arr.push({name:'Patching Controller', type:'fiber', u:1, w:15});
+  if (document.getElementById('rd-inc-fds').checked) arr.push({name:'Fiber Distribution Switch', type:'switch', u:1, w:60});
+  arr.push({name:`Access Switch ${switchSize}P`, type:'switch', u:1, w:150});
+  if (document.getElementById('rd-inc-fw').checked) arr.push({name:'Firewall / UTM', type:'router', u:1, w:40});
+  if (document.getElementById('rd-inc-srv').checked) arr.push({name:'Server', type:'server', u:1, w:150});
+  if (document.getElementById('rd-inc-ups').checked) arr.push({name:'UPS', type:'ups', u:2, w:0});
+  let cursor=1;
+  perRackEquipment[activeRackTab] = arr.map(it=>{ const e={id:eqUid(), name:it.name, type:it.type, startU:cursor, uHeight:it.u, watt:it.w}; cursor+=it.u; return e; });
+  calcRoom();
+  notify('Generated standard rack arrangement');
+});
+
+/* ═══════════ EXPORT SUB-TAB WIRING ═══════════ */
+document.getElementById('rd-exp-plan').addEventListener('click', ()=>{
+  const canvas = document.getElementById('roomCanvas');
+  const a=document.createElement('a'); a.href=canvas.toDataURL('image/png'); a.download=(document.getElementById('proj-name').value||'room')+'_RoomPlan.png'; a.click();
+  notify('Room plan exported as PNG');
+});
+document.getElementById('rd-exp-print').addEventListener('click', ()=> window.print());
+
+/* ═══════════ ROOM/RACK FIELD LISTENERS ═══════════ */
+['rm-buildingType','rm-customWA','rm-customBuildingName','rm-area','rm-portsPerWA','rm-sparePct','rm-cableLen','rm-poeStd',
+ 'rm-roomLayout','rm-rackWidth','rm-rackDepth','rm-rackHeight','rm-customW','rm-customD',
+ 'rm-customFront','rm-customRear','rm-customLeft','rm-customRight','rm-customGap',
+ 'rm-showClear','rm-showDims','rm-showGrid','rm-showRuler','rm-showMeasurements',
+ 'rm-manualUOverride','rm-manualUValue',
+ 'rm-doorWall','rm-doorOffset','rm-doorWidth','rm-doorSwing','rm-doorLeaf',
+ 'rm-fx-ladder','rm-fx-plywood','rm-fx-antistatic','rm-fx-ac','rm-fx-lightswitch','rm-fx-poweroutlets'
+].forEach(id=>{
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('input', ()=>{ calcRoom(); drawRoomPlan(); });
+  el.addEventListener('change', ()=>{ calcRoom(); drawRoomPlan(); });
+});
+document.getElementById('rm-rackplus').addEventListener('click', ()=>{ rmRackCount = Math.min(8, rmRackCount+1); document.getElementById('rm-rackcountval').textContent = rmRackCount; calcRoom(); drawRoomPlan(); });
+document.getElementById('rm-rackminus').addEventListener('click', ()=>{ rmRackCount = Math.max(1, rmRackCount-1); document.getElementById('rm-rackcountval').textContent = rmRackCount; calcRoom(); drawRoomPlan(); });
+
+
+function loadExample(){
+  devices = EXAMPLE_DEVICES.map(d=>({...d,id:uid()}));
+  items = EXAMPLE_ITEMS.map(it=>({...it,id:uid()}));
+  renderDeviceTbl(); renderItemTbl(); calcSwitch(); calcRack();
+  notify('Worked example loaded from the guide');
+}
+document.getElementById('btn-example').addEventListener('click', loadExample);
+document.getElementById('btn-reset').addEventListener('click', ()=>{
+  devices = []; items = [];
+  renderDeviceTbl(); renderItemTbl(); calcSwitch(); calcRack();
+  notify('Cleared');
+});
+
+/* ───── PRINT ───── */
+document.getElementById('btn-print').addEventListener('click', ()=>{ window.print(); });
+
+/* ───── CSV EXPORT ───── */
+document.getElementById('btn-export-csv').addEventListener('click', ()=>{
+  const rows = [['Section','System/Category','Item','Qty','U each','W/unit','PoE Class']];
+  devices.forEach(d=>rows.push(['Switch Devices', d.system, d.name, d.qty, '', d.watt, d.poeClass]));
+  items.forEach(it=>rows.push(['Rack Items', CAT_LABEL[it.cat]||it.cat, it.name, it.qty, it.u, it.watt, '']));
+  const csv = rows.map(r=>r.map(v=>`"${(v+'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv],{type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download=(document.getElementById('proj-name').value||'design')+'_BOQ.csv'; a.click();
+  URL.revokeObjectURL(url);
+  notify('BOQ exported as CSV');
+});
+
+/* ───── SCHEMATIC TAB ACTIVATION ───── */
+let _schInited = false;
+function loadSchematicFrame(){
+  setTimeout(()=>{ if (typeof initSchematicEngine==='function') initSchematicEngine(); }, 20);
+}
+
+/* ───── INIT ───── */
+loadExample();
+calcRoom(); drawRoomPlan();
+switchTab('switch');
+</script>
+<script>
+
+/* ══════════════════════════════════════════════════════════════
+   SCHEMATIC DIAGRAM — CAD-style single-line / riser diagram engine
+   Ported from the Telecom Room Design tool's Schematic page, bridged
+   to this tool's Room Design / Rack Layout data model.
+   ══════════════════════════════════════════════════════════════ */
+
+// Alias so the ported engine's calls to getRoomLayout() resolve to
+// this tool's Room Design tab function.
+function getRoomLayout(){ return (typeof getRoomLayoutRM==='function') ? getRoomLayoutRM() : {w:0,d:0,racks:0,type:'—'}; }
+
+const OUTLET_TYPES = {
+  do_data:     { label:'DATA',  color:'#1a3a7a', cables:2, cableType:'CAT.6A', desc:'Indoor CAT6A Data' },
+  do_tel:      { label:'TEL',   color:'#1a6a4a', cables:2, cableType:'CAT.6A', desc:'CAT6A Telephone' },
+  do_bms:      { label:'BMS',   color:'#2a5a8a', cables:2, cableType:'CAT.6A', desc:'BMS Panel' },
+  do_acs:      { label:'ACS',   color:'#5a2a6a', cables:2, cableType:'CAT.6A', desc:'Access Control' },
+  do_cam:      { label:'CAM',   color:'#1a5a1a', cables:2, cableType:'CAT.6A', desc:'CCTV Camera' },
+  do_wap_wall: { label:'WAP',   color:'#4a4a4a', cables:2, cableType:'CAT.6A', desc:'Wall WAP (WP)' },
+  do_wap_ceil: { label:'WAP',   color:'#4a4a4a', cables:2, cableType:'CAT.6A', desc:'Ceiling WAP' },
+  do_facp:     { label:'FACP',  color:'#8a1a1a', cables:2, cableType:'CAT.6A', desc:'Fire Alarm Panel' },
+  do_iptv:     { label:'IPTV',  color:'#1a3a5a', cables:2, cableType:'CAT.6A', desc:'IPTV Outlet' },
+  do_dual:     { label:'D+V',   color:'#1a3a7a', cables:2, cableType:'CAT.6A', desc:'Dual Data/Voice' },
+  do_screen:   { label:'SCR',   color:'#2a2a6a', cables:2, cableType:'CAT.6A', desc:'Screen Display' },
+  do_intercom: { label:'ICS',   color:'#2a4a2a', cables:2, cableType:'CAT.6A', desc:'Intercom Station' },
+  do_thermo:   { label:'THERM', color:'#5a3a1a', cables:2, cableType:'CAT.6A', desc:'Thermostat' },
+  do_quad:     { label:'QUAD',  color:'#1a3a7a', cables:4, cableType:'CAT.6A', desc:'Quad Data' },
+  do_av:       { label:'AV',    color:'#2a4a2a', cables:2, cableType:'CAT.6A', desc:'Audio/Visual' },
+};
+
+const SCH = {
+  canvas:null, ctx:null,
+  nodes:[], edges:[],
+  selected:new Set(),
+  connectMode:false, connectFrom:null,
+  panMode:false,
+  history:[], historyIdx:-1,
+  panX:30, panY:30, scale:1,
+  dragging:false, dragNodes:[], dragStartPositions:[],
+  snapEnabled:false, snapSize:10,
+  dragOX:0, dragOY:0,
+  panning:false, panStartX:0, panStartY:0, panStartPX:0, panStartPY:0,
+  selectBox:null,
+  _idSeq:0,
+
+  C:{
+    bg:'#f2f5fa', grid:'rgba(140,170,210,.35)', gridMaj:'rgba(100,140,190,.55)',
+    rack:'#e8eff8', rackHdr:'#d4e0ee', rackBdr:'#5a80b0',
+    floorLine:'#4a78c8', floorTxt:'#1a4a88',
+    room:'#e4eef8', roomBdr:'#4a78b0', roomTxt:'#1a4a88',
+    wire:'#4a78c0', wireSel:'#1a5ab8', wireLbl:'#2a5080',
+    sel:'#1a6aee', txt:'#1a3a60', label:'#2a5080'
+  },
+
+  newId(){ return 'n'+(++this._idSeq); },
+
+  addNode(type,x,y){
+    const d=this.nodeDefaults(type);
+    const n={id:this.newId(),type,x,y,w:d.w,h:d.h,label:d.label,data:{...d.data}};
+    this.nodes.push(n); return n;
+  },
+
+  addEdge(fromId,toId,cableType,count){
+    const e={id:'e'+(++this._idSeq),from:fromId,to:toId,cableType:cableType||'CAT.6A',count:count||1};
+    this.edges.push(e); return e;
+  },
+
+  nodeDefaults(t){
+    if(t==='rack')       return {w:130,h:220,label:'ICT-B01\nIDF ROOM',data:{uSize:42,rackIdx:0,cableCount:48,cableType:'U/UTP CAT6A',rackId:'ICT-B01',floor:0}};
+    if(t==='floor_sep')  return {w:0,h:0,label:'GR',data:{level:0,autoWidth:true}};
+    if(t==='room')       return {w:70,h:22,label:'ROOM\nGR-001',data:{roomId:'GR-001',floor:0}};
+    if(t==='label')      return {w:140,h:18,label:'U/UTP CAT6A CABLE',data:{fontSize:9}};
+    const ot=OUTLET_TYPES[t];
+    if(ot) return {w:28,h:55,label:ot.label,data:{cables:ot.cables,cableType:ot.cableType,qty:1,floor:0}};
+    return {w:60,h:28,label:'Node',data:{}};
+  },
+
+  saveHistory(){
+    const s=JSON.stringify({nodes:this.nodes,edges:this.edges});
+    this.history=this.history.slice(0,this.historyIdx+1);
+    this.history.push(s);
+    if(this.history.length>50)this.history.shift();
+    this.historyIdx=this.history.length-1;
+  },
+
+  undo(){
+    if(this.historyIdx<=0)return;
+    this.historyIdx--;
+    const s=JSON.parse(this.history[this.historyIdx]);
+    this.nodes=s.nodes; this.edges=s.edges; this.selected=new Set();
+    this.render(); this.updateSummary();
+  },
+
+  init(){
+    this.canvas=document.getElementById('schCanvas');
+    if(!this.canvas)return;
+    this.ctx=this.canvas.getContext('2d');
+    this.resize(); this.buildToolbar(); this.bindEvents();
+    this.saveHistory(); this.render(); this.updateSummary();
+    this.updateZoomLabel(); this.updateProjInfo();
+  },
+
+  // ── Zoom / Fit (PlotScale-style) ──
+  zoomBy(factor){
+    const cx=this.canvas.width/2, cy=this.canvas.height/2;
+    const {x,y}=this.cw(cx,cy);
+    this.scale=Math.max(0.08,Math.min(8,this.scale*factor));
+    this.panX=cx-x*this.scale; this.panY=cy-y*this.scale;
+    this.render(); this.updateZoomLabel();
+  },
+  updateZoomLabel(){
+    const el=document.getElementById('schZoomLabel');
+    if(el) el.textContent=Math.round(this.scale*100)+'%';
+  },
+  updateSelCount(){
+    const el=document.getElementById('schSelCount');
+    if(el) el.textContent=this.selected.size+' selected';
+  },
+  fitToDrawing(){
+    if(this.nodes.length===0){ this.panX=30; this.panY=30; this.scale=1; this.render(); this.updateZoomLabel(); return; }
+    let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+    this.nodes.forEach(n=>{
+      minX=Math.min(minX,n.x); minY=Math.min(minY,n.y-30);
+      maxX=Math.max(maxX,n.x+n.w); maxY=Math.max(maxY,n.y+n.h+20);
+    });
+    const w=maxX-minX, h=maxY-minY;
+    if(w<=0||h<=0) return;
+    const cw=this.canvas.width, ch=this.canvas.height;
+    const z=Math.min((cw*0.9)/w,(ch*0.9)/h,4);
+    this.scale=z;
+    this.panX=(cw-w*z)/2-minX*z;
+    this.panY=(ch-h*z)/2-minY*z;
+    this.render(); this.updateZoomLabel();
+  },
+
+  // ── Right panel tab switching ──
+  switchPanelTab(tab){
+    document.querySelectorAll('.sch-rtab').forEach(function(t){
+      const isActive=t.dataset.rtab===tab;
+      t.style.color=isActive?'var(--accent)':'var(--text2)';
+      t.style.borderBottomColor=isActive?'var(--accent)':'transparent';
+    });
+    ['props','cables','info'].forEach(function(t){
+      const el=document.getElementById('sch-rtab-'+t);
+      if(el) el.style.display=(t===tab)?'flex':'none';
+    });
+    if(tab==='info') SCH.updateProjInfo();
+  },
+
+  updateProjInfo(){
+    const el=document.getElementById('schProjInfo');
+    if(!el) return;
+    const projName=document.getElementById('proj-name')?.value||'—';
+    const layout=(typeof getRoomLayout==='function')?getRoomLayout():{w:0,d:0,racks:0,type:'—'};
+    const racks=this.nodes.filter(function(n){return n.type==='rack';}).length;
+    const floors=this.nodes.filter(function(n){return n.type==='floor_sep';}).length;
+    const outlets=this.nodes.filter(function(n){return OUTLET_TYPES[n.type];}).length;
+    el.innerHTML =
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:3px 8px">'
+      + '<div style="color:var(--text3)">Project</div><div>'+projName+'</div>'
+      + '<div style="color:var(--text3)">Room Type</div><div>'+(layout.type||'—')+'</div>'
+      + '<div style="color:var(--text3)">Room Size</div><div>'+(layout.w||0).toFixed(1)+'×'+(layout.d||0).toFixed(1)+'m</div>'
+      + '<div style="color:var(--text3)">Racks (sch)</div><div>'+racks+'</div>'
+      + '<div style="color:var(--text3)">Floors (sch)</div><div>'+floors+'</div>'
+      + '<div style="color:var(--text3)">Outlets (sch)</div><div>'+outlets+'</div>'
+      + '</div>';
+  },
+
+  resize(){
+    const wrap=document.getElementById('schCanvasWrap');
+    if(!wrap||!this.canvas)return;
+    this.canvas.width=wrap.clientWidth||900;
+    this.canvas.height=wrap.clientHeight||600;
+    this.render();
+  },
+
+  buildToolbar(){
+    const tb=document.getElementById('schToolbar');
+    if(!tb)return;
+    let otOpts='';
+    Object.entries(OUTLET_TYPES).forEach(function(pair){
+      otOpts+='<div class="outlet-opt" data-type="'+pair[0]+'" style="padding:5px 12px;cursor:pointer;font-size:0.72rem;color:var(--accent)" onmouseover="this.style.background=\'rgba(37,99,176,.08)\'" onmouseout="this.style.background=\'\'">'+pair[1].label+' \u2014 '+pair[1].desc+'</div>';
+    });
+    tb.innerHTML='<span class="tb-sep-lbl">Add:</span>'
+      +'<button class="stb" id="sbRack">🗄 Rack</button>'
+      +'<button class="stb" id="sbFloor">━ Floor</button>'
+      +'<button class="stb" id="sbRoom">🚪 Room</button>'
+      +'<div style="position:relative;display:inline-block"><button class="stb" id="sbOutletBtn">⬤ Outlet ▾</button>'
+      +'<div id="outletDropdown" style="display:none;position:absolute;top:100%;left:0;z-index:300;background:#fff;border:1px solid var(--border2);border-radius:6px;min-width:200px;padding:4px 0;box-shadow:0 4px 16px rgba(0,0,0,.12)">'+otOpts+'</div></div>'
+      +'<button class="stb" id="sbLabel">✏ Label</button>'
+      +'<span style="width:1px;height:26px;background:var(--border);flex-shrink:0"></span>'
+      +'<button class="stb" id="sbImport" style="color:var(--accent)">⟳ Import</button>'
+      +'<button class="stb" id="sbAutoLayout">⊞ Layout</button>'
+      +'<button class="stb" id="sbConnect">🔗 Connect</button>'
+      +'<button class="stb" id="sbPan">✋ Pan</button>'
+      +'<button class="stb" id="sbSnap" title="Snap dragged items to a grid (PlotScale-style)">🧲 Snap</button>'
+      +'<button class="stb" id="sbUndo">↩ Undo</button>'
+      +'<button class="stb" id="sbDelete" style="color:var(--danger)">🗑 Del</button>'
+      +'<button class="stb" id="sbClear" style="color:var(--danger)">✕ Clear</button>'
+      +'<span style="width:1px;height:26px;background:var(--border);flex-shrink:0"></span>'
+      +'<button class="stb" id="sbExport" style="color:var(--accent)">📸 PNG</button>'
+      +'<span id="schStatus" style="margin-left:auto;font-size:0.68rem;color:var(--text2);font-family:\'Share Tech Mono\',monospace;white-space:nowrap"></span>'
+      +'<span id="schModeLabel" style="font-size:0.68rem;font-weight:700;color:var(--accent);padding:2px 8px;background:rgba(37,99,176,.08);border:1px solid rgba(37,99,176,.2);border-radius:5px;white-space:nowrap">NORMAL</span>';
+    const on=(id,fn)=>document.getElementById(id)?.addEventListener('click',fn);
+    on('sbRack',   ()=>this.addAndPlace('rack'));
+    on('sbFloor',  ()=>this.addAndPlace('floor_sep'));
+    on('sbRoom',   ()=>this.addAndPlace('room'));
+    on('sbLabel',  ()=>this.addAndPlace('label'));
+    on('sbImport', ()=>this.importFromRoom());
+    on('sbAutoLayout',()=>this.autoLayout());
+    on('sbConnect',()=>this.toggleConnect());
+    on('sbPan',    ()=>this.togglePan());
+    on('sbSnap',   ()=>{this.snapEnabled=!this.snapEnabled;document.getElementById('sbSnap')?.classList.toggle('active',this.snapEnabled);});
+    on('sbUndo',   ()=>this.undo());
+    on('sbDelete', ()=>this.deleteSelected());
+    on('sbClear',  ()=>{if(confirm('Clear schematic?')){this.nodes=[];this.edges=[];this.selected=new Set();this.saveHistory();this.render();this.updateSummary();}});
+    on('sbExport', ()=>{const a=document.createElement('a');a.download='Schematic.png';a.href=this.canvas.toDataURL('image/png',1);a.click();});
+    document.getElementById('sbOutletBtn')?.addEventListener('click',function(e){e.stopPropagation();const dd=document.getElementById('outletDropdown');if(dd)dd.style.display=dd.style.display==='none'?'block':'none';});
+    document.addEventListener('click',()=>{const dd=document.getElementById('outletDropdown');if(dd)dd.style.display='none';});
+    document.querySelectorAll('.outlet-opt').forEach(el=>{el.addEventListener('click',e=>{e.stopPropagation();document.getElementById('outletDropdown').style.display='none';this.addAndPlace(el.dataset.type);});});
+  },
+
+  addAndPlace(type){
+    this.saveHistory();
+    const cx=(this.canvas.width/2-this.panX)/this.scale;
+    const cy=(this.canvas.height/2-this.panY)/this.scale;
+    const n=this.addNode(type,cx-40,cy-20);
+    this.selected=new Set([n.id]);
+    this.render(); this.showProps(); this.updateSummary();
+  },
+
+  toggleConnect(){
+    this.connectMode=!this.connectMode; this.connectFrom=null;
+    document.getElementById('sbConnect')?.classList.toggle('active',this.connectMode);
+    document.getElementById('schModeLabel').textContent=this.connectMode?'CONNECT':'NORMAL';
+  },
+
+  togglePan(){
+    this.panMode=!this.panMode;
+    document.getElementById('sbPan')?.classList.toggle('active',this.panMode);
+    this.canvas.style.cursor=this.panMode?'grab':'default';
+    document.getElementById('schModeLabel').textContent=this.panMode?'PAN':'NORMAL';
+  },
+
+  deleteSelected(){
+    if(this.selected.size===0)return;
+    this.saveHistory();
+    this.nodes=this.nodes.filter(n=>!this.selected.has(n.id));
+    this.edges=this.edges.filter(e=>!this.selected.has(e.from)&&!this.selected.has(e.to));
+    this.selected=new Set(); this.render(); this.updateSummary(); this.updateSelCount();
+    document.getElementById('schPropsContent').innerHTML='Select a node to edit.';
+  },
+
+  // ══ RENDER ══
+  render(){
+    const c=this.ctx; if(!c)return;
+    const W=this.canvas.width,H=this.canvas.height;
+    c.clearRect(0,0,W,H);
+    c.fillStyle=this.C.bg; c.fillRect(0,0,W,H);
+    c.save(); c.translate(this.panX,this.panY); c.scale(this.scale,this.scale);
+    this.drawGrid(c,W,H);
+    this.nodes.filter(n=>n.type==='floor_sep').forEach(n=>this.drawFloorLine(c,n));
+    this.edges.forEach(e=>this.drawEdge(c,e));
+    this.nodes.filter(n=>n.type!=='floor_sep').forEach(n=>this.drawNode(c,n,this.selected.has(n.id)));
+    if(this.selectBox){
+      const {x1,y1,x2,y2}=this.selectBox;
+      c.strokeStyle='rgba(28,108,225,.7)'; c.lineWidth=1; c.setLineDash([4,3]);
+      c.strokeRect(Math.min(x1,x2),Math.min(y1,y2),Math.abs(x2-x1),Math.abs(y2-y1));
+      c.setLineDash([]);
+    }
+    c.restore();
+    // Screen-space professional drawing frame + title block (not affected by pan/zoom)
+    this.drawSheetFrame(c,W,H);
+  },
+
+  // ══ PROFESSIONAL DRAWING SHEET FRAME + TITLE BLOCK ══
+  drawSheetFrame(c,W,H){
+    const m=10; // outer margin
+    c.save();
+    // Outer border (thin) + inner border (thick) — classic drafting sheet look
+    c.strokeStyle='rgba(60,90,130,.55)'; c.lineWidth=1;
+    c.strokeRect(m,m,W-2*m,H-2*m);
+    c.strokeStyle='rgba(30,60,100,.8)'; c.lineWidth=2;
+    c.strokeRect(m+4,m+4,W-2*m-8,H-2*m-8);
+
+    // Title block (bottom-right)
+    const tbW=Math.min(300,W-2*m-16), tbH=70;
+    const tbX=W-m-4-tbW, tbY=H-m-4-tbH;
+    c.fillStyle='rgba(255,255,255,.96)';
+    c.fillRect(tbX,tbY,tbW,tbH);
+    c.strokeStyle='rgba(30,60,100,.8)'; c.lineWidth=1.5;
+    c.strokeRect(tbX,tbY,tbW,tbH);
+    // internal grid lines
+    c.strokeStyle='rgba(30,60,100,.35)'; c.lineWidth=1;
+    c.beginPath(); c.moveTo(tbX,tbY+22); c.lineTo(tbX+tbW,tbY+22); c.stroke();
+    c.beginPath(); c.moveTo(tbX+tbW*0.62,tbY+22); c.lineTo(tbX+tbW*0.62,tbY+tbH); c.stroke();
+    c.beginPath(); c.moveTo(tbX+tbW*0.62,tbY+46); c.lineTo(tbX+tbW,tbY+46); c.stroke();
+
+    const projName=(document.getElementById('proj-name')?.value||'TELECOM PROJECT').toUpperCase();
+    const layout=(typeof getRoomLayout==='function')?getRoomLayout():{type:'FD ROOM'};
+    const today=new Date(); const dateStr=today.toISOString().slice(0,10);
+
+    c.textAlign='left'; c.textBaseline='middle';
+    c.fillStyle='#12324f'; c.font='bold 10px "Share Tech Mono",monospace';
+    c.fillText(projName.slice(0,34), tbX+8, tbY+11);
+    c.fillStyle='#3a5a7a'; c.font='9px "Share Tech Mono",monospace';
+    c.fillText('SINGLE LINE / RISER SCHEMATIC — '+(layout.type||'FD ROOM'), tbX+8, tbY+34);
+
+    c.font='8px "Share Tech Mono",monospace'; c.fillStyle='#5a7a9a';
+    c.fillText('SCALE', tbX+8, tbY+56); c.fillStyle='#12324f'; c.fillText('NTS', tbX+50, tbY+56);
+    c.fillStyle='#5a7a9a'; c.fillText('DATE', tbX+tbW*0.62+6, tbY+34); c.fillStyle='#12324f'; c.fillText(dateStr, tbX+tbW*0.62+42, tbY+34);
+    c.fillStyle='#5a7a9a'; c.fillText('SHEET', tbX+tbW*0.62+6, tbY+56); c.fillStyle='#12324f'; c.fillText('1 OF 1', tbX+tbW*0.62+42, tbY+56);
+
+    // Reference standard note (top-left)
+    c.textAlign='left'; c.textBaseline='top';
+    c.font='8px "Share Tech Mono",monospace'; c.fillStyle='rgba(60,90,130,.7)';
+    c.fillText('REF: BICSI TDMM / ANSI-TIA-568 — Telecommunications Riser Diagram', m+14, m+12);
+    c.restore();
+  },
+
+  drawGrid(c,W,H){
+    const s=this.scale,step=50;
+    const ox=-this.panX/s,oy=-this.panY/s,ex=ox+W/s,ey=oy+H/s;
+    const sx=Math.floor(ox/step)*step,sy=Math.floor(oy/step)*step;
+    for(let x=sx;x<=ex;x+=step){c.strokeStyle=x%250===0?this.C.gridMaj:this.C.grid;c.lineWidth=x%250===0?0.5:0.2;c.beginPath();c.moveTo(x,oy);c.lineTo(x,ey);c.stroke();}
+    for(let y=sy;y<=ey;y+=step){c.strokeStyle=y%250===0?this.C.gridMaj:this.C.grid;c.lineWidth=y%250===0?0.5:0.2;c.beginPath();c.moveTo(ox,y);c.lineTo(ex,y);c.stroke();}
+  },
+
+  drawFloorLine(c,n){
+    const lineY=n.y,lineX=n.x,fl=n.data?.level||0;
+    const items=this.nodes.filter(nd=>OUTLET_TYPES[nd.type]&&nd.data?.floor===fl);
+    const canvasRight=(this.canvas.width-this.panX)/this.scale+100;
+    const rightX=items.length>0?Math.max(canvasRight,...items.map(nd=>nd.x+nd.w/2+10)):lineX+400;
+    const sel=this.selected.has(n.id);
+    c.strokeStyle=sel?this.C.sel:this.C.floorLine; c.lineWidth=sel?2:1;
+    c.beginPath();c.moveTo(lineX,lineY);c.lineTo(rightX,lineY);c.stroke();
+    // Floor name triangle + label at right
+    c.beginPath();c.moveTo(rightX+8,lineY-7);c.lineTo(rightX+18,lineY-7);c.lineTo(rightX+13,lineY);c.closePath();
+    c.fillStyle=this.C.floorTxt; c.fill();
+    c.font='bold 11px "Share Tech Mono",monospace';
+    c.fillStyle=this.C.floorTxt; c.textAlign='left'; c.textBaseline='middle';
+    c.fillText(n.label||'GR',rightX+22,lineY-3);
+    c.font='9px "Share Tech Mono",monospace'; c.fillStyle='#6a90b8';
+    c.textAlign='right'; c.fillText('FL.'+fl,lineX-4,lineY);
+    c.textAlign='left'; c.textBaseline='alphabetic';
+  },
+
+  drawNode(c,n,sel){
+    switch(n.type){
+      case 'rack':   this.drawRack(c,n,sel); break;
+      case 'room':   this.drawRoom(c,n,sel); break;
+      case 'label':  this.drawLabel(c,n,sel); break;
+      default:       if(OUTLET_TYPES[n.type])this.drawOutlet(c,n,sel); else this.drawGeneric(c,n,sel);
+    }
+  },
+
+  drawRack(c,n,sel){
+    const {x,y,w,h}=n,rw=6,uSize=n.data?.uSize||42,rIdx=n.data?.rackIdx||0;
+    c.fillStyle=this.C.rack; c.fillRect(x,y,w,h);
+    c.fillStyle='#b0c4dc'; c.fillRect(x,y,rw,h); c.fillRect(x+w-rw,y,rw,h);
+    for(let hy=y+8;hy<y+h-4;hy+=8){c.fillStyle='#8090a8';c.beginPath();c.arc(x+rw/2,hy,1,0,Math.PI*2);c.fill();c.beginPath();c.arc(x+w-rw/2,hy,1,0,Math.PI*2);c.fill();}
+    c.fillStyle=this.C.rackHdr; c.fillRect(x+rw,y,w-2*rw,16);
+    c.fillStyle='#1a3a6a'; c.font='bold 10px "Share Tech Mono",monospace';
+    c.textAlign='center'; c.textBaseline='middle';
+    c.fillText((n.data?.rackId||'ICT-B01')+' | '+uSize+'U',x+w/2,y+8);
+    const bY=y+16,bH=h-16,uPx=bH/uSize;
+    const eq = n.data?.equipment || [];
+    const EC={fiber:'#cceee8',patch:'#ccdcf0',switch:'#cce8cc',server:'#dccce8',ups:'#eed8c0',firewall:'#eec8c8',cable_mgr:'#dcdcdc',router:'#ccd8e8',media_cvt:'#cce0cc',pdu:'#e8d8c0',kvm:'#d0d0ec',generic:'#d0d8e8'};
+    const EB={fiber:'#0a6050',patch:'#0a4070',switch:'#1a6010',server:'#4a1a78',ups:'#904010',firewall:'#801010',cable_mgr:'#505050',router:'#1a3860',media_cvt:'#1a4a1a',pdu:'#705010',kvm:'#2020a0',generic:'#1a3050'};
+    if(eq&&eq.length>0){
+      eq.slice().sort((a,b)=>a.startU-b.startU).forEach(d=>{
+        const ey=bY+(d.startU-1)*uPx,eh=d.uHeight*uPx;
+        if(ey+eh<bY||ey>bY+bH)return;
+        c.fillStyle=EC[d.type]||'#d0d8e8'; c.fillRect(x+rw,ey,w-2*rw,Math.max(0,eh-0.4));
+        c.strokeStyle=EB[d.type]||'#1a3050'; c.lineWidth=0.5; c.strokeRect(x+rw,ey,w-2*rw,Math.max(0,eh-0.4));
+        if(eh>7){c.fillStyle=EB[d.type];c.font='9px "Inter",sans-serif';c.textAlign='left';c.textBaseline='middle';let lbl=d.name;const mW=w-2*rw-8;while(c.measureText(lbl).width>mW&&lbl.length>3)lbl=lbl.slice(0,-1);if(lbl!==d.name)lbl+='\u2026';c.fillText(lbl,x+rw+3,ey+eh/2);c.fillStyle='#6a8aa8';c.font='8px "Inter",sans-serif';c.textAlign='right';c.fillText(d.uHeight+'U',x+w-rw-2,ey+eh/2);}
+      });
+    }else{
+      for(let i=0;i<uSize;i++){c.fillStyle=i%4===0?'#dde8f4':'#e8f0fa';c.fillRect(x+rw,bY+i*uPx,w-2*rw,uPx-0.3);}
+      c.font='10px "Share Tech Mono",monospace';c.fillStyle='#8aaac8';c.textAlign='center';c.textBaseline='middle';
+      c.fillText('Add items in',x+w/2,y+h/2-8);c.fillText('Rack Layout tab, then',x+w/2,y+h/2+8);c.fillText('Import from Room',x+w/2,y+h/2+22);
+    }
+    c.strokeStyle=sel?this.C.sel:this.C.rackBdr;c.lineWidth=sel?2:1;c.strokeRect(x,y,w,h);
+    if(sel){c.strokeStyle='rgba(37,99,176,.2)';c.lineWidth=5;c.setLineDash([4,4]);c.strokeRect(x,y,w,h);c.setLineDash([]);}
+    const lines=n.label.split('\n');
+    c.textAlign='center';c.textBaseline='top';c.font='bold 10px "Share Tech Mono",monospace';c.fillStyle='#1a3a6a';c.fillText(lines[0]||'RACK',x+w/2,y+h+5);
+    if(lines[1]){c.font='9px "Share Tech Mono",monospace';c.fillStyle='#3a6090';c.fillText(lines[1],x+w/2,y+h+18);}
+    const cc=n.data?.cableCount||0,ct=n.data?.cableType||'U/UTP CAT6A';
+    if(cc>0){
+      const eX=x+w,eY=y+h*0.35;
+      c.strokeStyle='#1a3a7a';c.lineWidth=1.5;c.beginPath();c.moveTo(eX,eY);c.lineTo(eX+25,eY);c.stroke();
+      c.font='9px "Share Tech Mono",monospace';
+      const tag=cc+'\u00d7'+ct,tw=c.measureText(tag).width+8;
+      c.fillStyle='rgba(235,243,255,.97)';c.fillRect(eX+26,eY-7,tw,13);
+      c.strokeStyle='rgba(37,99,176,.3)';c.lineWidth=0.5;c.strokeRect(eX+26,eY-7,tw,13);
+      c.fillStyle='#1a3a68';c.textAlign='left';c.textBaseline='middle';c.fillText(tag,eX+30,eY);
+    }
+    c.textAlign='left';c.textBaseline='alphabetic';
+  },
+
+  drawRoom(c,n,sel){
+    const {x,y,w,h}=n,lines=n.label.split('\n');
+    c.fillStyle=this.C.room;c.fillRect(x,y,w,h);
+    c.strokeStyle=sel?this.C.sel:this.C.roomBdr;c.lineWidth=sel?1.5:0.8;c.strokeRect(x,y,w,h);
+    c.font='8px "Share Tech Mono",monospace';c.fillStyle=this.C.roomTxt;c.textAlign='center';c.textBaseline='middle';
+    c.fillText(lines[0]||'ROOM',x+w/2,lines[1]?y+h*0.35:y+h/2);
+    if(lines[1]){c.font='bold 7px "Share Tech Mono",monospace';c.fillText(lines[1],x+w/2,y+h*0.65);}
+    c.textAlign='left';c.textBaseline='alphabetic';
+  },
+
+  drawOutlet(c,n,sel){
+    const {x,y,w,h}=n,ot=OUTLET_TYPES[n.type]||OUTLET_TYPES.do_data,cx2=x+w/2;
+    const TRI=14,triTop=y+14,stemBot=y+h-2;
+    const qty=n.data?.qty||1;
+    c.font='bold 9px "Share Tech Mono",monospace';c.fillStyle='#1a3a6a';c.textAlign='center';c.textBaseline='bottom';
+    c.fillText('NO.'+String(qty).padStart(2,'0'),cx2,triTop-2);
+    const filled=['do_bms','do_acs','do_cam','do_wap_wall','do_wap_ceil','do_facp'].includes(n.type);
+    const hW=TRI/2;
+    c.beginPath();c.moveTo(cx2-hW,triTop);c.lineTo(cx2+hW,triTop);c.lineTo(cx2,triTop+TRI);c.closePath();
+    if(filled){c.fillStyle=ot.color;c.fill();}else{c.fillStyle='#fff';c.fill();c.strokeStyle=sel?this.C.sel:ot.color;c.lineWidth=1.5;c.stroke();}
+    const triLbl=n.type==='do_bms'?'B':n.type==='do_acs'?'A':n.type==='do_tel'?'T':n.type==='do_wap_wall'||n.type==='do_wap_ceil'?'WP':n.type==='do_cam'?'C':n.type==='do_facp'?'F':n.type==='do_iptv'?'TV':n.type==='do_dual'?'D':'';
+    if(triLbl){c.fillStyle=filled?'#fff':'#1a3a6a';c.font=(triLbl.length>1?'bold 5px':'bold 7px')+' "Inter",sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText(triLbl,cx2,triTop+TRI*0.48);}
+    const stemTop=triTop+TRI;
+    c.strokeStyle=sel?this.C.sel:'#1a3a7a';c.lineWidth=1;c.beginPath();c.moveTo(cx2,stemTop);c.lineTo(cx2,stemBot);c.stroke();
+    c.fillStyle=sel?this.C.sel:'#1a3a7a';c.beginPath();c.moveTo(cx2,stemBot+5);c.lineTo(cx2-3.5,stemBot);c.lineTo(cx2+3.5,stemBot);c.closePath();c.fill();
+    const cables=n.data?.cables||2,ctype=n.data?.cableType||'CAT.6A';
+    c.save();c.translate(cx2+10,stemTop+(stemBot-stemTop)*0.45);c.rotate(-Math.PI/2);
+    c.font='8px "Share Tech Mono",monospace';c.fillStyle='#4a6a9a';c.textAlign='center';c.textBaseline='middle';
+    c.fillText(cables+'\u00d7'+ctype,0,0);c.restore();
+    c.font='8px "Share Tech Mono",monospace';c.fillStyle='#2a5080';c.textAlign='center';c.textBaseline='top';
+    c.fillText(ot.label,cx2,stemBot+7);
+    c.textAlign='left';c.textBaseline='alphabetic';
+  },
+
+  drawLabel(c,n,sel){
+    const {x,y,w,h}=n;
+    if(sel){c.strokeStyle='rgba(28,108,225,.5)';c.lineWidth=0.8;c.setLineDash([3,3]);c.strokeRect(x-2,y-2,w+4,h+4);c.setLineDash([]);}
+    c.fillStyle=this.C.label;c.font=(n.data?.fontSize||9)+'px "Share Tech Mono",monospace';
+    c.textAlign='left';c.textBaseline='middle';c.fillText(n.label||'Label',x,y+h/2);
+  },
+
+  drawGeneric(c,n,sel){
+    const {x,y,w,h}=n;
+    c.fillStyle='#eef2f8';c.fillRect(x,y,w,h);
+    c.strokeStyle=sel?this.C.sel:'#5a80b0';c.lineWidth=0.8;c.strokeRect(x,y,w,h);
+    c.fillStyle='#1a3a6a';c.font='9px "Inter",sans-serif';c.textAlign='center';c.textBaseline='middle';
+    c.fillText(n.label.split('\n')[0],x+w/2,y+h/2);c.textAlign='left';
+  },
+
+  drawEdge(c,e){
+    const from=this.nodes.find(n=>n.id===e.from),to=this.nodes.find(n=>n.id===e.to);
+    if(!from||!to)return;
+    const sel=this.selected.has(e.id)||this.selected.has(e.from)||this.selected.has(e.to);
+    const x1=from.x+from.w,y1=from.y+from.h/2,x2=to.x,y2=to.y+to.h/2,midX=(x1+x2)/2;
+    c.strokeStyle=sel?this.C.wireSel:this.C.wire;c.lineWidth=sel?2:1;
+    c.beginPath();c.moveTo(x1,y1);c.lineTo(midX,y1);c.lineTo(midX,y2);c.lineTo(x2,y2);c.stroke();
+    c.fillStyle=sel?this.C.wireSel:this.C.wire;c.beginPath();c.moveTo(x2,y2);c.lineTo(x2-6,y2-3);c.lineTo(x2-6,y2+3);c.closePath();c.fill();
+    if(e.count>0){
+      c.font='9px "Share Tech Mono",monospace';
+      const tag=e.count+'\u00d7'+(e.cableType||'CAT.6A'),tw=c.measureText(tag).width+8;
+      c.fillStyle='rgba(248,251,255,.97)';c.strokeStyle='rgba(37,99,176,.3)';c.lineWidth=0.4;
+      c.fillRect(midX-tw/2,y1-6,tw,12);c.strokeRect(midX-tw/2,y1-6,tw,12);
+      c.fillStyle='#2a5080';c.textAlign='center';c.textBaseline='middle';c.fillText(tag,midX,y1);
+    }
+    c.textAlign='left';c.textBaseline='alphabetic';
+  },
+
+  nodeAt(mx,my){
+    for(let i=this.nodes.length-1;i>=0;i--){
+      const n=this.nodes[i];
+      if(n.type==='floor_sep'){if(my>=n.y-8&&my<=n.y+8)return n;}
+      else{const pad=OUTLET_TYPES[n.type]?8:0;if(mx>=n.x-pad&&mx<=n.x+n.w+pad&&my>=n.y-pad&&my<=n.y+n.h+pad)return n;}
+    }
+    return null;
+  },
+
+  nodesInBox(x1,y1,x2,y2){
+    const lx=Math.min(x1,x2),rx=Math.max(x1,x2),ty=Math.min(y1,y2),by=Math.max(y1,y2);
+    return this.nodes.filter(n=>n.x+n.w>lx&&n.x<rx&&n.y+n.h>ty&&n.y<by);
+  },
+
+  cw(cx,cy){return{x:(cx-this.panX)/this.scale,y:(cy-this.panY)/this.scale};},
+
+  bindEvents(){
+    const cvs=this.canvas;
+    cvs.addEventListener('mousedown',e=>{
+      const {x,y}=this.cw(e.offsetX,e.offsetY);const hit=this.nodeAt(x,y);e.preventDefault();
+      if(this.panMode||e.altKey||e.button===1){this.panning=true;this.panStartX=e.clientX;this.panStartY=e.clientY;this.panStartPX=this.panX;this.panStartPY=this.panY;cvs.style.cursor='grabbing';return;}
+      if(this.connectMode){
+        if(hit){if(!this.connectFrom){this.connectFrom=hit;document.getElementById('schStatus').textContent='Source: '+hit.label.split('\n')[0];}else if(hit.id!==this.connectFrom.id){this.saveHistory();const cc=parseInt(prompt('Cable count?','1'))||1;const ct=prompt('Cable type?','U/UTP CAT6A')||'U/UTP CAT6A';this.addEdge(this.connectFrom.id,hit.id,ct,cc);this.connectFrom=null;this.render();this.updateSummary();}else{this.connectFrom=null;}}
+        return;
+      }
+      if(hit){
+        if(e.shiftKey||e.ctrlKey||e.metaKey){if(this.selected.has(hit.id))this.selected.delete(hit.id);else this.selected.add(hit.id);}
+        else{if(!this.selected.has(hit.id))this.selected=new Set([hit.id]);}
+        this.saveHistory();this.dragging=true;
+        this.dragNodes=this.nodes.filter(n=>this.selected.has(n.id));
+        this.dragStartPositions=this.dragNodes.map(n=>({x:n.x,y:n.y}));
+        this.dragOX=x;this.dragOY=y;this.showProps();this.updateSelCount();this.render();
+      }else{
+        this.selected=new Set();this.selectBox={x1:x,y1:y,x2:x,y2:y};this.showProps();this.updateSelCount();this.render();
+      }
+    });
+    cvs.addEventListener('mousemove',e=>{
+      const {x,y}=this.cw(e.offsetX,e.offsetY);
+      const xEl=document.getElementById('schX'), yEl=document.getElementById('schY');
+      if(xEl) xEl.textContent=Math.round(x);
+      if(yEl) yEl.textContent=Math.round(y);
+      if(this.dragging&&this.dragNodes.length>0){let dx=x-this.dragOX,dy=y-this.dragOY;if(this.snapEnabled){const sz=this.snapSize;dx=Math.round(dx/sz)*sz;dy=Math.round(dy/sz)*sz;}this.dragNodes.forEach((n,i)=>{n.x=this.dragStartPositions[i].x+dx;n.y=this.dragStartPositions[i].y+dy;});this.render();}
+      else if(this.panning){this.panX=this.panStartPX+(e.clientX-this.panStartX);this.panY=this.panStartPY+(e.clientY-this.panStartY);this.render();}
+      else if(this.selectBox){this.selectBox.x2=x;this.selectBox.y2=y;this.render();}
+    });
+    cvs.addEventListener('mouseup',()=>{
+      cvs.style.cursor=this.panMode?'grab':'default';
+      if(this.selectBox){const {x1,y1,x2,y2}=this.selectBox;if(Math.abs(x2-x1)>5||Math.abs(y2-y1)>5){const inBox=this.nodesInBox(x1,y1,x2,y2);this.selected=new Set(inBox.map(n=>n.id));if(this.selected.size>0)this.showProps();this.updateSelCount();}this.selectBox=null;}
+      this.dragging=false;this.panning=false;this.dragNodes=[];this.dragStartPositions=[];this.render();
+    });
+    cvs.addEventListener('mouseleave',()=>{this.dragging=false;this.panning=false;this.selectBox=null;this.dragNodes=[];this.render();});
+    cvs.addEventListener('wheel',e=>{e.preventDefault();const f=e.deltaY>0?0.85:1.18;const {x,y}=this.cw(e.offsetX,e.offsetY);this.scale=Math.max(0.08,Math.min(8,this.scale*f));this.panX=e.offsetX-x*this.scale;this.panY=e.offsetY-y*this.scale;this.render();this.updateZoomLabel();},{passive:false});
+    cvs.addEventListener('dblclick',e=>{const {x,y}=this.cw(e.offsetX,e.offsetY);const hit=this.nodeAt(x,y);if(!hit)return;if(hit.type==='label'||hit.type==='floor_sep'){const v=prompt('Edit label:',hit.label);if(v!==null){this.saveHistory();hit.label=v;this.render();}}});
+    cvs.addEventListener('contextmenu',e=>e.preventDefault());
+    window.addEventListener('resize',()=>this.resize());
+    window.addEventListener('keydown',e=>{
+      const onSch=document.getElementById('main-schematic')?.style.display==='flex';if(!onSch)return;
+      if(e.key==='Delete'&&this.selected.size>0)this.deleteSelected();
+      if(e.key==='Escape'){this.connectMode=false;this.panMode=false;document.getElementById('sbConnect')?.classList.remove('active');document.getElementById('sbPan')?.classList.remove('active');document.getElementById('schModeLabel').textContent='NORMAL';}
+      if((e.ctrlKey||e.metaKey)&&e.key==='z')this.undo();
+      if((e.ctrlKey||e.metaKey)&&e.key==='a'){e.preventDefault();this.selected=new Set(this.nodes.map(n=>n.id));this.render();}
+    });
+  },
+
+  showProps(){
+    const div=document.getElementById('schPropsContent');if(!div)return;
+    const selArr=[...this.selected].map(id=>this.nodes.find(n=>n.id===id)).filter(Boolean);
+    if(selArr.length===0){div.innerHTML='<span style="color:var(--text2);font-size:0.72rem">Click to select<br>Shift+click = multi-select<br>Del = delete · Ctrl+Z = undo</span>';return;}
+    if(selArr.length>1){
+      let h='<div style="color:var(--accent);font-size:0.72rem;font-weight:700;margin-bottom:8px">'+selArr.length+' NODES</div>';
+      h+='<div style="font-size:0.7rem;color:var(--text2);margin-bottom:8px">Drag any one to move all.</div>';
+      h+='<div style="font-size:0.68rem;font-weight:600;color:var(--text2);margin-bottom:5px">Bulk Floor:</div>';
+      h+='<div style="display:flex;gap:5px"><input type="number" id="groupFloor" value="0" min="0" style="width:55px;background:#fff;border:1px solid var(--border2);color:var(--text);border-radius:5px;padding:3px 5px;font-size:0.74rem"><button class="stb" onclick="SCH._bulkSetFloor()">Apply</button></div>';
+      h+='<button onclick="SCH.deleteSelected()" style="margin-top:8px;width:100%;padding:5px;background:rgba(192,32,32,.06);border:1px solid rgba(192,32,32,.2);border-radius:5px;color:var(--danger);font-size:0.72rem;cursor:pointer">Delete All</button>';
+      div.innerHTML=h;return;
+    }
+    const n=selArr[0];
+    let h='<div style="color:var(--accent);font-size:0.72rem;font-weight:700;margin-bottom:8px;text-transform:uppercase">'+n.type.replace(/_/g,' ')+'</div>';
+    h+='<div class="spr"><label>Label</label><textarea id="ep_label" rows="2" style="width:100%;background:#fff;border:1px solid var(--border2);color:var(--text);border-radius:5px;padding:4px 6px;font-size:0.74rem;resize:vertical">'+n.label+'</textarea></div>';
+    function sprN(l,id,v){return '<div class="spr"><label>'+l+'</label><input type="number" id="'+id+'" value="'+v+'" style="width:100%;background:#fff;border:1px solid var(--border2);color:var(--text);border-radius:5px;padding:3px 6px;font-size:0.74rem"></div>';}
+    function sprT(l,id,v){return '<div class="spr"><label>'+l+'</label><input type="text" id="'+id+'" value="'+v+'" style="width:100%;background:#fff;border:1px solid var(--border2);color:var(--text);border-radius:5px;padding:3px 6px;font-size:0.74rem"></div>';}
+    if(n.type==='rack'){h+=sprT('Rack ID','ep_rackId',n.data.rackId||'ICT-B01');h+=sprN('Rack U','ep_uSize',n.data.uSize||42);h+=sprN('Cable Count','ep_cableCount',n.data.cableCount||48);h+=sprT('Cable Type','ep_cableType',n.data.cableType||'U/UTP CAT6A');h+=sprN('Floor Level','ep_rackFloor',n.data.floor||0);h+=sprN('Rack Index','ep_rackIdx',n.data.rackIdx||0);}
+    if(n.type==='floor_sep'){h+=sprN('Floor Level','ep_level',n.data.level||0);}
+    if(n.type==='room'){h+=sprT('Room ID','ep_roomId',n.data.roomId||'');h+=sprN('Floor Level','ep_floor',n.data.floor||0);}
+    if(OUTLET_TYPES[n.type]){
+      let os='<div class="spr"><label>Outlet Type</label><select id="ep_outletType" style="width:100%;background:#fff;border:1px solid var(--border2);color:var(--text);border-radius:5px;padding:3px 6px;font-size:0.74rem">';
+      Object.entries(OUTLET_TYPES).forEach(function(pair){os+='<option value="'+pair[0]+'"'+(n.type===pair[0]?' selected':'')+'>'+pair[1].label+' \u2014 '+pair[1].desc+'</option>';});
+      os+='</select></div>';h+=os;
+      h+=sprN('Qty (NO.XX)','ep_qty',n.data.qty||1);
+      h+=sprN('Cables','ep_cables',n.data.cables||2);
+      h+=sprT('Cable Type','ep_cableType2',n.data.cableType||'CAT.6A');
+      h+=sprN('Floor Level','ep_outFloor',n.data.floor||0);
+    }
+    if(n.type==='label')h+=sprN('Font Size','ep_fontSize',n.data.fontSize||9);
+    h+='<div style="margin-top:6px;display:grid;grid-template-columns:1fr 1fr;gap:5px">'+sprN('Width','ep_w',Math.round(n.w))+sprN('Height','ep_h',Math.round(n.h))+'</div>';
+    h+='<button onclick="SCH.deleteSelected()" style="margin-top:8px;width:100%;padding:5px;background:rgba(192,32,32,.06);border:1px solid rgba(192,32,32,.2);border-radius:5px;color:var(--danger);font-size:0.72rem;cursor:pointer">Delete</button>';
+    div.innerHTML=h;
+    setTimeout(()=>{
+      const w=(id,cb)=>{const el=document.getElementById(id);if(el)el.addEventListener('input',()=>{SCH.saveHistory();cb(el.value);SCH.render();SCH.updateSummary();});};
+      w('ep_label',v=>{n.label=v.replace(/\\n/g,'\n');});
+      w('ep_rackId',v=>{n.data.rackId=v;});w('ep_uSize',v=>{n.data.uSize=parseInt(v)||42;});
+      w('ep_cableCount',v=>{n.data.cableCount=parseInt(v)||0;});w('ep_cableType',v=>{n.data.cableType=v;});
+      w('ep_rackFloor',v=>{n.data.floor=parseInt(v)||0;});w('ep_rackIdx',v=>{n.data.rackIdx=parseInt(v)||0;});
+      w('ep_level',v=>{n.data.level=parseInt(v)||0;});
+      w('ep_roomId',v=>{n.data.roomId=v;});w('ep_floor',v=>{n.data.floor=parseInt(v)||0;});
+      w('ep_outletType',v=>{n.type=v;const ot=OUTLET_TYPES[v];if(ot)n.label=ot.label;SCH.render();SCH.showProps();});
+      w('ep_qty',v=>{n.data.qty=parseInt(v)||1;});w('ep_cables',v=>{n.data.cables=parseInt(v)||2;});
+      w('ep_cableType2',v=>{n.data.cableType=v;});w('ep_outFloor',v=>{n.data.floor=parseInt(v)||0;});
+      w('ep_fontSize',v=>{n.data.fontSize=parseInt(v)||9;});
+      w('ep_w',v=>{n.w=Math.max(10,parseInt(v)||60);});w('ep_h',v=>{n.h=Math.max(10,parseInt(v)||28);});
+    },40);
+  },
+
+  updateSummary(){
+    const div=document.getElementById('schCableSummary');if(!div)return;
+    const totals={};
+    this.edges.forEach(function(e){const k=e.cableType||'CAT.6A';totals[k]=(totals[k]||0)+e.count;});
+    this.nodes.filter(function(n){return n.type==='rack'&&n.data.cableCount>0;}).forEach(function(n){const k=n.data.cableType||'CAT.6A';totals[k]=(totals[k]||0)+n.data.cableCount;});
+    const racks=this.nodes.filter(function(n){return n.type==='rack';}).length;
+    const floors=this.nodes.filter(function(n){return n.type==='floor_sep';}).length;
+    const outlets=this.nodes.filter(function(n){return OUTLET_TYPES[n.type];}).length;
+    let h='<div style="font-size:0.7rem;color:var(--text2);margin-bottom:6px;line-height:1.8">Racks: '+racks+' &nbsp; Floors: '+floors+'<br>Outlets: '+outlets+'</div>';
+    const keys=Object.keys(totals);
+    if(keys.length===0){h+='<div style="color:var(--text2);font-size:0.7rem;font-style:italic">No cables yet</div>';}
+    else{keys.forEach(function(k){h+='<div style="display:flex;justify-content:space-between"><span>'+k+'</span><span style="color:var(--accent);font-weight:700">'+totals[k]+' runs</span></div>';});}
+    div.innerHTML=h;
+  },
+
+  _bulkSetFloor(){
+    const fl=parseInt(document.getElementById('groupFloor')?.value)||0;
+    this.selected.forEach(id=>{const n=this.nodes.find(nd=>nd.id===id);if(n&&n.data){n.data.floor=fl;if(n.type==='floor_sep')n.data.level=fl;}});
+    this.render();
+  },
+
+importFromRoom(){
+    if(!confirm('Import from Room Design + Rack Layout? Replaces current schematic.'))return;
+    this.saveHistory();this.nodes=[];this.edges=[];
+    const layout=(typeof getRoomLayoutRM==='function')?getRoomLayoutRM():{racks:1,type:'FD'};
+    const numRacks=Math.max(1,layout.racks||1);
+    const projName=(document.getElementById('proj-name')?.value||'IDF ROOM').toUpperCase();
+    const rackU=parseInt(document.getElementById('rm-rackHeight')?.value)||42;
+    const totalPorts=(typeof devices!=='undefined'?devices.reduce((s,d)=>s+(d.qty||0),0):0)||24;
+    const floors=Math.max(1,Math.ceil(totalPorts/12));
+    const perFloor=Math.ceil(totalPorts/floors);
+    const RACK_W=130,RACK_H=Math.max(200,rackU*3.8);
+
+    // Bin-pack the Rack Layout tab's equipment (`items`) across the room's racks,
+    // so the schematic always mirrors what was actually built there.
+    const CAT_TO_SCHTYPE={patch:'patch',cable:'cable_mgr',switch:'switch',router:'router',server:'server',wireless:'generic',ups:'ups',other:'generic'};
+    const unitPool=[];
+    (typeof items!=='undefined'?items:[]).forEach(it=>{ for(let k=0;k<(it.qty||0);k++) unitPool.push({name:it.name||'Item',cat:it.cat,u:it.u||1}); });
+    const perRack=Array.from({length:numRacks},()=>[]);
+    const capLeft=Array(numRacks).fill(rackU);
+    let ri=0;
+    unitPool.forEach(u=>{
+      let placed=false;
+      for(let tries=0;tries<numRacks;tries++){
+        const idx=(ri+tries)%numRacks;
+        if(capLeft[idx]>=u.u){ perRack[idx].push(u); capLeft[idx]-=u.u; placed=true; ri=idx+1; break; }
+      }
+      if(!placed) perRack[0].push(u);
+    });
+
+    for(let i=0;i<numRacks;i++){
+      const r=this.addNode('rack',40,60+i*(RACK_H+20));
+      r.w=RACK_W;r.h=RACK_H;r.label='ICT-'+(layout.type||'FD').toUpperCase()+'-B0'+(i+1)+'\n'+projName;
+      r.data.uSize=rackU;r.data.rackIdx=i;r.data.rackId='ICT-B0'+(i+1);
+      r.data.cableCount=Math.ceil(totalPorts/numRacks);r.data.cableType='U/UTP CAT6A';r.data.floor=0;
+      let cursor=1;
+      r.data.equipment = perRack[i].map(u=>{
+        const e={type:CAT_TO_SCHTYPE[u.cat]||'generic', startU:cursor, uHeight:u.u, name:u.name};
+        cursor+=u.u; return e;
+      });
+    }
+    const busLbl=this.addNode('label',RACK_W+60,60+RACK_H*0.35-6);
+    busLbl.label='U/UTP CAT6A CABLE';busLbl.data.fontSize=9;
+    const FLOOR_X=RACK_W+55,OUTLET_GAP=36,FLOOR_Y_STEP=100;
+    const OUTLET_SEQ=['do_data','do_data','do_data','do_bms','do_data','do_wap_wall','do_data','do_cam'];
+    for(let f=0;f<floors;f++){
+      const flY=60+f*FLOOR_Y_STEP+RACK_H*0.35;
+      const fn=this.addNode('floor_sep',FLOOR_X-10,flY);
+      fn.label=f===0?'GR':'B'+String(f).padStart(2,'0');fn.data.level=f;fn.data.autoWidth=true;
+      const oc=Math.min(8,Math.ceil(perFloor/2));
+      for(let oi=0;oi<oc;oi++){
+        const ov=this.addNode(OUTLET_SEQ[oi%OUTLET_SEQ.length],FLOOR_X+oi*OUTLET_GAP,flY+10);
+        ov.w=28;ov.h=55;ov.data.cables=2;ov.data.qty=Math.max(1,Math.ceil(perFloor/(oc*2)));
+        ov.data.cableType='CAT.6A';ov.data.floor=f;
+      }
+    }
+    this.selected=new Set();this.panX=30;this.panY=30;this.scale=1;
+    this.render();this.updateSummary();
+    document.getElementById('schStatus').textContent='Imported: '+numRacks+' rack(s), '+floors+' floor(s)'; this.updateProjInfo(); this.fitToDrawing();
+  },
+
+  autoLayout(){
+    this.saveHistory();
+    const racks=this.nodes.filter(n=>n.type==='rack');
+    const floors=this.nodes.filter(n=>n.type==='floor_sep').sort((a,b)=>(a.data?.level||0)-(b.data?.level||0));
+    const outlets=this.nodes.filter(n=>OUTLET_TYPES[n.type]);
+    const labels=this.nodes.filter(n=>n.type==='label');
+    let ry=60;racks.forEach(r=>{r.x=40;r.y=ry;ry+=r.h+20;});
+    const oXS=(racks[0]?.w||130)+55,FYS=100;
+    floors.forEach((f,i)=>{f.x=oXS-10;f.y=60+i*FYS+(racks[0]?.h||220)*0.35;f.data.autoWidth=true;});
+    labels.forEach((lb,i)=>{lb.x=oXS+10;lb.y=30+i*16;});
+    const byFloor={};outlets.forEach(o=>{const k=o.data?.floor??0;(byFloor[k]=byFloor[k]||[]).push(o);});
+    Object.entries(byFloor).forEach(([fl,outs])=>{
+      const fn=floors.find(f=>(f.data?.level||0)===parseInt(fl))||floors[0];
+      const bY=fn?fn.y+10:100;let ox=oXS;
+      outs.forEach(o=>{o.x=ox;o.y=bY;o.w=o.w||28;o.h=o.h||55;ox+=36;});
+    });
+    this.render();
+  }
+};
+
+// ══════════════════════════════════════════════════════════
+
+
+/* ── Activate the schematic engine the first time its tab is opened,
+   and resize/redraw on every subsequent visit. ── */
+function initSchematicEngine(){
+  if (!_schInited){ _schInited = true; SCH.init(); }
+  else { SCH.resize(); }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,2361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Control Room Design Calculator — Pro Edition</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+:root {
+  /* ── MEP Platform Identity — LIGHT MODE ── */
+  --accent:  #C8293D;          /* coral-red primary (darkened for light bg) */
+  --accent2: rgba(200,41,61,0.12);
+  --accent3: rgba(200,41,61,0.07);
+  --accent4: rgba(200,41,61,0.25);
+
+  /* ── Backgrounds ── */
+  --navy:  #F4F5F7;   /* page bg — light grey */
+  --navy2: #FFFFFF;   /* card bg — white */
+  --navy3: #F0F1F3;   /* input / secondary bg */
+  --navy4: #E8E9EC;   /* elevated / pressed */
+
+  /* ── Functional colours ── */
+  --blue:  #1456A8; --blue2:#1A6FD4; --blue3:#3D8FE8;
+  --cyan:  #C8293D;          /* maps to accent in SVGs */
+  --cyan2: rgba(200,41,61,0.12);
+  --cyan3: rgba(200,41,61,0.06);
+  --amber: #D97706; --amber2:rgba(217,119,6,0.12);
+  --green: #059669; --green2:rgba(5,150,105,0.12);
+  --red:   #DC2626; --red2:rgba(220,38,38,0.10);
+
+  /* ── Typography ── */
+  --tx:  #111111;
+  --tx2: #4B4B55;
+  --tx3: #9A9AA8;
+
+  /* ── Borders ── */
+  --bd:  rgba(0,0,0,0.09);
+  --bd2: rgba(200,41,61,0.20);
+
+  /* ── Geometry ── */
+  --r:  10px;
+  --r2: 14px;
+  --glow: 0 2px 16px rgba(200,41,61,0.10);
+
+  /* ── Fonts ── */
+  --font-head: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);background:var(--navy);color:var(--tx);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body::before{content:'';position:fixed;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);z-index:100;opacity:0.6}
+
+/* SCANLINES */
+body::after{content:'';position:fixed;inset:0;background:none;pointer-events:none;z-index:999}
+
+.page{max-width:980px;margin:0 auto;padding:1.5rem 1rem 3rem}
+
+/* HEADER */
+.hdr{position:relative;background:linear-gradient(135deg,var(--navy2) 0%,var(--navy3) 100%);border:0.5px solid var(--bd2);border-radius:var(--r2);padding:1.8rem 2rem;margin-bottom:1.2rem;overflow:hidden}
+.hdr::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(0,194,255,0.08) 0%,transparent 70%);pointer-events:none}
+.hdr-inner{display:flex;align-items:center;justify-content:space-between;gap:1rem;position:relative;z-index:1}
+.hdr-left{display:flex;align-items:center;gap:1.2rem}
+.hdr-icon{width:46px;height:46px;background:var(--accent3);border:1.5px solid var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--accent);box-shadow:0 0 18px rgba(232,68,90,0.2);flex-shrink:0}
+.hdr-title{font-family:var(--font-head);font-size:18px;font-weight:700;color:var(--tx);letter-spacing:-.01em;line-height:1.2;text-transform:uppercase}
+.hdr-sub{font-size:11px;color:var(--tx3);margin-top:4px;letter-spacing:.08em;text-transform:uppercase;font-family:var(--font-mono)}
+.hdr-right{display:flex;gap:6px;flex-wrap:wrap}
+
+.hdr-status{font-size:10px;color:var(--tx3);margin-top:.6rem;font-family:var(--font-mono);letter-spacing:.08em;border-top:0.5px solid var(--bd);padding-top:.6rem;position:relative;z-index:1}
+.pulse{display:inline-block;width:5px;height:5px;background:var(--accent);border-radius:50%;margin-right:6px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(232,68,90,0.4)}50%{opacity:.8;box-shadow:0 0 0 4px rgba(232,68,90,0)}}
+
+/* TABS */
+.tabbar{display:flex;gap:2px;background:#EDEEEF;border:0.5px solid rgba(0,0,0,0.08);border-radius:var(--r);padding:3px;margin-bottom:1.2rem;overflow-x:auto;border-bottom:1px solid rgba(200,41,61,0.12)}
+.tabbar::-webkit-scrollbar{height:3px}
+.tabbar::-webkit-scrollbar-thumb{background:rgba(232,68,90,0.3);border-radius:2px}
+.tab{flex:1;min-width:100px;padding:8px 10px;font-size:11px;font-weight:400;border:none;background:transparent;color:var(--tx3);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;transition:all .15s;font-family:var(--font-mono);letter-spacing:.03em;text-transform:uppercase}
+.tab i{font-size:14px}
+.tab:hover:not(.on){background:rgba(232,68,90,0.06);color:rgba(232,68,90,0.7)}
+.tab.on{background:var(--accent);color:#fff;font-weight:600;box-shadow:0 2px 8px rgba(200,41,61,0.30);letter-spacing:.04em}
+.panel{display:none}.panel.on{display:block;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* GRID LAYOUTS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px}
+@media(max-width:700px){.g2,.g3,.g4,.g5{grid-template-columns:1fr 1fr}}
+@media(max-width:450px){.g2,.g3,.g4,.g5{grid-template-columns:1fr}}
+
+/* CARD */
+.card{background:#FFFFFF;border:0.5px solid rgba(0,0,0,0.08);border-radius:var(--r2);padding:1.2rem 1.3rem;transition:border-color .2s,box-shadow .2s;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.card:hover{border-color:rgba(200,41,61,0.25);box-shadow:0 2px 8px rgba(200,41,61,0.08)}
+.ct{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--tx3);margin-bottom:1rem;display:flex;align-items:center;gap:7px;border-bottom:0.5px solid var(--bd);padding-bottom:.6rem}
+.ct i{font-size:14px;color:var(--accent)}
+
+/* FIELDS */
+.f{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.f label{font-size:11px;color:var(--tx3);letter-spacing:.02em;font-family:var(--font-mono)}
+.f input,.f select{font-size:13px;padding:7px 10px;border-radius:var(--r);border:1px solid rgba(0,0,0,0.12);background:#FAFBFC;color:var(--tx);width:100%;font-family:var(--font-body);transition:border-color .15s,box-shadow .15s}
+.f input:focus,.f select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(232,68,90,0.10)}
+.f select option{background:#FFFFFF}
+
+/* METRIC CARDS */
+.met{background:var(--navy3);border:0.5px solid var(--bd);border-radius:var(--r);padding:13px 15px;position:relative;overflow:hidden;transition:border-color .2s}
+.met::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(232,68,90,0.35),transparent)}
+.met .ml{font-size:11px;color:var(--tx3);font-family:var(--font-mono);margin-bottom:4px;display:flex;align-items:center;gap:5px}
+.met .mv{font-size:22px;font-weight:600;font-family:var(--font-head);color:var(--tx)}
+.met .mu{font-size:11px;color:var(--tx3);margin-top:2px;font-family:var(--font-mono)}
+.met.accent{background:linear-gradient(135deg,rgba(232,68,90,0.15),rgba(232,68,90,0.06));border-color:rgba(232,68,90,0.40);box-shadow:var(--glow)}
+.met.accent::before{background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+.met.accent .ml{color:var(--cyan)}
+.met.accent .mv{font-size:28px;color:var(--cyan)}
+.met.grn{background:rgba(16,185,129,0.08);border-color:rgba(16,185,129,0.25)}
+.met.grn::before{background:linear-gradient(90deg,transparent,rgba(16,185,129,0.4),transparent)}
+.met.grn .ml{color:var(--green)}.met.grn .mv{color:#34D399}
+.met.amb{background:rgba(245,158,11,0.08);border-color:rgba(245,158,11,0.25)}
+.met.amb::before{background:linear-gradient(90deg,transparent,rgba(245,158,11,0.4),transparent)}
+.met.amb .ml{color:var(--amber)}.met.amb .mv{color:#FCD34D}
+.met.err{background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.25)}
+.met.err::before{background:linear-gradient(90deg,transparent,rgba(239,68,68,0.4),transparent)}
+.met.err .ml{color:var(--red)}.met.err .mv{color:#FCA5A5}
+
+/* FORMULA BOX */
+.frm{background:#FFF5F6;border-left:2px solid var(--accent);border-radius:0 var(--r) var(--r) 0;padding:10px 14px;font-size:11px;color:var(--tx2);line-height:1.9;margin-top:10px;font-family:var(--font-mono)}
+.frm b{color:var(--tx);font-weight:500}
+.frm .calc{color:var(--accent)}
+.frm .res{color:var(--amber)}
+
+/* DIVIDER */
+.dvd{border:none;border-top:1px solid rgba(0,0,0,0.08);margin:.7rem 0}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 9px;border-radius:20px;font-family:var(--font-mono);margin-top:5px}
+.badge.ok{background:rgba(16,185,129,0.10);color:#34D399;border:0.5px solid rgba(16,185,129,0.3)}
+.badge.warn{background:var(--amber2);color:#FCD34D;border:0.5px solid rgba(245,158,11,0.3)}
+.badge.err{background:rgba(239,68,68,0.10);color:#FCA5A5;border:0.5px solid rgba(239,68,68,0.3)}
+
+/* BARS */
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:12px}
+.bar-lbl{width:120px;color:var(--tx3);flex-shrink:0;font-family:var(--font-mono);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{flex:1;height:6px;background:#E8E9EC;border-radius:3px;overflow:hidden;border:0.5px solid rgba(0,0,0,0.08)}
+.bar-fill{height:100%;border-radius:3px;transition:.5s ease}
+.bar-val{width:65px;text-align:right;font-weight:500;color:var(--tx);font-family:var(--font-mono);font-size:11px;flex-shrink:0}
+
+/* DONUT */
+.donut-wrap{display:flex;align-items:center;gap:1.2rem}
+.leg{display:flex;flex-direction:column;gap:7px}
+.leg-row{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--tx2)}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.leg-val{font-weight:600;margin-left:auto;padding-left:12px;font-family:var(--font-mono);color:var(--cyan)}
+
+/* OPERATOR ICONS */
+.op-icons{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.op-unit{display:flex;flex-direction:column;align-items:center;gap:3px}
+.op-head{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .3s}
+.op-body{width:34px;height:22px;border-radius:8px 8px 4px 4px;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .3s;border:1px solid rgba(0,0,0,0.05)}
+.op-lbl{font-size:10px;color:var(--tx3);font-family:var(--font-mono)}
+
+/* GRID PREVIEW */
+.gprev{display:inline-grid;gap:2px;padding:8px;background:#F0F1F3;border-radius:var(--r);border:1px solid rgba(0,0,0,0.08)}
+.gcell{width:11px;height:11px;border-radius:1px;background:var(--blue);opacity:.35;transition:all .3s}
+.gcell.crit{background:var(--cyan);opacity:.9}
+
+/* SCREEN TILE */
+.scr-tile{width:52px;height:37px;background:#EEF0F2;border-radius:5px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(0,0,0,0.10);transition:all .3s}
+.scr-tile:hover{border-color:var(--accent);box-shadow:0 2px 6px rgba(200,41,61,0.12)}
+
+/* ARC BAR */
+.arc-vis{display:flex;align-items:center;gap:8px;margin:6px 0}
+.arc-track{flex:1;height:10px;background:#E8E9EC;border-radius:5px;overflow:hidden;border:1px solid rgba(0,0,0,0.08)}
+.arc-fill{height:100%;border-radius:5px;transition:.5s ease}
+.arc-num{font-size:13px;font-weight:600;min-width:36px;text-align:right;font-family:var(--font-mono);color:var(--tx)}
+
+/* REFERENCE TABLE */
+.ref-table{width:100%;font-size:12px;border-collapse:collapse;font-family:var(--font-mono)}
+.ref-table th{font-weight:500;color:var(--tx3);text-align:left;padding:5px 8px;border-bottom:1px solid rgba(0,0,0,0.10);font-size:11px;letter-spacing:.04em;background:#F0F1F3}
+.ref-table td{padding:5px 8px;border-bottom:0.5px solid rgba(0,0,0,0.06);color:var(--tx2)}
+.ref-table tr:last-child td{border:none}
+.ref-table tr.hl td{background:rgba(200,41,61,0.07);color:var(--accent);font-weight:600}
+
+/* INFO ROWS */
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid var(--bd);font-size:12px}
+.info-row:last-child{border:none}
+.info-key{color:var(--tx3);font-family:var(--font-mono);font-size:11px}
+.info-val{color:var(--tx);font-weight:500;font-family:var(--font-mono)}
+
+/* SECTION LABEL */
+.sec-lbl{font-size:10px;color:var(--tx3);font-family:var(--font-mono);letter-spacing:.08em;margin-bottom:8px;text-transform:uppercase}
+
+/* COMPLIANCE BOX */
+.compliance{background:var(--navy3);border-radius:var(--r);padding:10px 12px;margin-top:8px}
+.comp-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:0.5px solid var(--bd)}
+.comp-row:last-child{border:none}
+.comp-label{color:var(--tx2);font-family:var(--font-mono);font-size:11px}
+.comp-val{font-weight:500;font-family:var(--font-mono);font-size:11px}
+
+/* GRID ZONE VIZ */
+.zone-viz{display:grid;gap:2px;padding:6px;background:#020810;border-radius:var(--r);border:0.5px solid var(--bd2)}
+.zone-cell{height:16px;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:600;font-family:var(--font-mono);transition:all .3s}
+.zone-cell.crit{background:rgba(0,194,255,0.25);color:var(--cyan);border:0.5px solid rgba(0,194,255,0.3)}
+.zone-cell.rot{background:rgba(20,86,168,0.2);color:var(--tx3);border:0.5px solid rgba(20,86,168,0.2)}
+
+/* ROOM SIZE */
+.room-card{background:linear-gradient(135deg,var(--navy2),var(--navy3));border:0.5px solid var(--bd2);border-radius:var(--r2);padding:1.2rem;position:relative;overflow:hidden}
+.room-card::after{content:'';position:absolute;bottom:-20px;right:-20px;width:100px;height:100px;background:radial-gradient(circle,rgba(0,194,255,0.06) 0%,transparent 70%)}
+
+footer{text-align:center;font-size:10px;color:var(--tx3);margin-top:2rem;font-family:var(--font-mono);letter-spacing:.08em;padding-bottom:1.5rem;text-transform:uppercase;border-top:1px solid rgba(0,0,0,0.08);padding-top:1rem}
+footer span{color:var(--accent)}
+
+/* ── DRAWING STYLES ── */
+.dwg-wrap{background:#F6F7F9;border:1px solid rgba(0,0,0,0.10);border-radius:var(--r2);padding:0;overflow:hidden;margin-top:12px;border-top:2px solid var(--accent);box-shadow:0 1px 4px rgba(0,0,0,0.05)}
+.dwg-titlebar{background:#FFFFFF;border-bottom:1px solid rgba(0,0,0,0.08);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.dwg-title{font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--accent);letter-spacing:.08em;text-transform:uppercase}
+.dwg-meta{display:flex;gap:12px;font-family:var(--font-mono);font-size:11px;color:var(--tx3)}
+.dwg-meta span{display:flex;align-items:center;gap:5px}
+.dwg-meta b{color:var(--tx)}
+.dwg-views{display:grid;grid-template-columns:1.4fr 1fr;gap:1px;background:rgba(0,194,255,0.08)}
+.dwg-view{background:#020810;padding:14px;position:relative}
+.dwg-view-label{font-family:var(--font-mono);font-size:9.5px;font-weight:600;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.dwg-view-label::after{content:'';flex:1;height:0.5px;background:rgba(232,68,90,0.2)}
+.dwg-section-row{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(0,194,255,0.08)}
+.dwg-legend{background:#FFFFFF;border-top:1px solid rgba(0,0,0,0.08);padding:10px 16px;display:flex;gap:16px;flex-wrap:wrap}
+.dwg-leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx3);font-family:var(--font-mono)}
+.dwg-leg-swatch{width:14px;height:10px;border-radius:2px}
+.dwg-compliance-bar{display:flex;gap:0;margin-top:8px;border-radius:4px;overflow:hidden;height:8px}
+.dwg-comp-seg{height:100%;transition:.4s}
+.dim-label{font-family:var(--font-mono);font-size:9px;fill:#8BA3C7}
+.dim-value{font-family:var(--font-mono);font-size:10px;font-weight:600;fill:var(--cyan)}
+.room-label{font-family:Syne,sans-serif;font-size:11px;font-weight:600;fill:#E8F0FE}
+.eq-label{font-family:DM Mono,monospace;font-size:9px;fill:#8BA3C7}
+.comp-pass{fill:#34D399}.comp-warn{fill:#FCD34D}.comp-fail{fill:#FCA5A5}
+@media(max-width:700px){.dwg-views,.dwg-section-row{grid-template-columns:1fr}}
+
+/* ── MEP Platform Additional Tokens ── */
+body::before{background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.5}
+
+/* Scoped operator icon accent */
+.op-head,.op-body{transition:background .3s,box-shadow .3s}
+
+/* Card title icon hover */
+.card:hover .ct i{color:var(--accent);transition:color .2s}
+
+/* Active met card glow */
+.met.accent:hover{box-shadow:0 0 20px rgba(232,68,90,0.25)}
+
+/* Compliance section */
+.compliance{background:#F6F7F9;border:1px solid rgba(0,0,0,0.06);border-radius:var(--r);padding:8px 12px;margin-top:4px}
+.comp-row{border-bottom:0.5px solid rgba(0,0,0,0.06);padding:4px 0}
+
+/* Section label accent dot */
+.sec-lbl::before{content:'▪ ';color:var(--accent);opacity:0.6}
+
+/* DWG view backgrounds */
+.dwg-view{background:#FAFBFC}
+
+/* Tab icon accent on hover */
+.tab:hover i{color:rgba(232,68,90,0.8)}
+.tab.on i{color:rgba(255,255,255,0.9)}
+
+/* Formula box accent line */
+.frm{background:linear-gradient(90deg,rgba(232,68,90,0.04) 0%,transparent 60%)}
+
+/* Ref table header */
+.ref-table th{border-bottom:0.5px solid rgba(232,68,90,0.2)}
+.ref-table tr.hl td{background:rgba(232,68,90,0.08);color:var(--accent)}
+
+/* Info row */
+.info-key{color:var(--tx3);font-family:var(--font-mono);font-size:10.5px}
+.info-val{color:var(--tx);font-weight:500;font-family:var(--font-mono);font-size:10.5px}
+
+/* Page title inside panel */
+.page-section-title{font-family:var(--font-mono);font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--accent);margin-bottom:.5rem;
+  display:flex;align-items:center;gap:6px}
+.page-section-title::before{content:'';width:20px;height:1px;background:var(--accent);opacity:.5}
+
+/* Scrollbars */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:#F0F1F3}
+::-webkit-scrollbar-thumb{background:rgba(232,68,90,0.3);border-radius:2px}
+::-webkit-scrollbar-thumb:hover{background:rgba(232,68,90,0.5)}
+
+/* Selection */
+::selection{background:rgba(200,41,61,0.18);color:#111}
+
+/* ══════════════════════════════════════════════════════
+   LIGHT MODE OVERRIDES — injected block
+   Overrides all remaining dark canvas colours
+   ══════════════════════════════════════════════════════ */
+
+/* Page */
+body { background:#F4F5F7 !important; color:#111111 !important; }
+body::after { background:none !important; }
+
+/* Header */
+.hdr { background:#FFFFFF !important; border-color:rgba(0,0,0,0.08) !important;
+       box-shadow:0 1px 6px rgba(0,0,0,0.07) !important; }
+
+/* Tabs */
+.tabbar { background:#EDEEEF !important; border-color:rgba(0,0,0,0.08) !important; }
+.tab { color:#6B6B75 !important; }
+.tab:hover:not(.on) { background:rgba(200,41,61,0.06) !important; color:var(--accent) !important; }
+.tab.on { background:var(--accent) !important; color:#fff !important;
+           box-shadow:0 2px 8px rgba(200,41,61,0.28) !important; }
+
+/* Cards */
+.card { background:#FFFFFF !important; border-color:rgba(0,0,0,0.08) !important;
+        box-shadow:0 1px 4px rgba(0,0,0,0.05) !important; }
+.card:hover { border-color:rgba(200,41,61,0.22) !important;
+              box-shadow:0 3px 12px rgba(200,41,61,0.08) !important; }
+
+/* Inputs */
+.f input, .f select {
+  background:#FAFBFC !important;
+  border-color:rgba(0,0,0,0.12) !important;
+  color:#111111 !important;
+}
+.f input:focus, .f select:focus {
+  border-color:var(--accent) !important;
+  box-shadow:0 0 0 2px rgba(200,41,61,0.10) !important;
+}
+.f select option { background:#FFFFFF !important; color:#111111 !important; }
+
+/* Metric cards */
+.met { background:#F6F7F9 !important; border-color:rgba(0,0,0,0.07) !important; }
+.met::before { background:linear-gradient(90deg,transparent,rgba(200,41,61,0.30),transparent) !important; }
+.met .ml { color:#6B6B75 !important; }
+.met .mv { color:#111111 !important; }
+.met .mu { color:#9A9AA8 !important; }
+.met.accent {
+  background:linear-gradient(135deg,rgba(200,41,61,0.10),rgba(200,41,61,0.04)) !important;
+  border-color:rgba(200,41,61,0.30) !important;
+}
+.met.accent .ml, .met.accent .mu { color:var(--accent) !important; }
+.met.accent .mv { color:var(--accent) !important; }
+.met.grn  { background:rgba(5,150,105,0.07)  !important; border-color:rgba(5,150,105,0.20)  !important; }
+.met.grn  .mv { color:#047857 !important; }
+.met.amb  { background:rgba(217,119,6,0.07)  !important; border-color:rgba(217,119,6,0.20)  !important; }
+.met.amb  .mv { color:#B45309 !important; }
+.met.err  { background:rgba(220,38,38,0.07)  !important; border-color:rgba(220,38,38,0.20)  !important; }
+.met.err  .mv { color:#B91C1C !important; }
+
+/* Formula boxes */
+.frm { background:#FFF5F6 !important; color:#4B4B55 !important; }
+.frm b { color:#111111 !important; }
+
+/* Compliance / std-ref panels */
+.compliance, .std-ref {
+  background:#F6F7F9 !important;
+  border:1px solid rgba(0,0,0,0.07) !important;
+}
+.comp-row, .std-row, .dvd {
+  border-color:rgba(0,0,0,0.07) !important;
+}
+.comp-label, .std-label, .info-key { color:#6B6B75 !important; }
+.comp-val,   .std-val,   .info-val  { color:#111111 !important; }
+
+/* Badges */
+.badge.ok   { background:rgba(5,150,105,0.10) !important; color:#047857 !important; border-color:rgba(5,150,105,0.25) !important; }
+.badge.warn { background:rgba(217,119,6,0.10) !important; color:#B45309 !important; border-color:rgba(217,119,6,0.25) !important; }
+.badge.err  { background:rgba(220,38,38,0.10) !important; color:#B91C1C !important; border-color:rgba(220,38,38,0.25) !important; }
+
+/* Tables */
+.ref-table th, .ppi-table th {
+  background:#F0F1F3 !important; color:#6B6B75 !important;
+  border-bottom-color:rgba(0,0,0,0.10) !important;
+}
+.ref-table td, .ppi-table td { border-color:rgba(0,0,0,0.06) !important; color:#4B4B55 !important; }
+.ref-table tr.hl td, .ppi-table tr.hl td {
+  background:rgba(200,41,61,0.07) !important; color:var(--accent) !important;
+}
+.ref-table tr:hover td, .ppi-table tr:hover td { background:rgba(0,0,0,0.025) !important; }
+
+/* Bars */
+.bar-track, .arc-track { background:#E4E5E8 !important; border-color:rgba(0,0,0,0.08) !important; }
+
+/* Grid preview */
+.gprev { background:#ECEDF0 !important; border-color:rgba(0,0,0,0.08) !important; }
+.gcell { opacity:.30 !important; }
+
+/* Scr tiles */
+.scr-tile { background:#ECEDF0 !important; border-color:rgba(0,0,0,0.10) !important; }
+.scr-tile:hover { border-color:var(--accent) !important; box-shadow:0 2px 6px rgba(200,41,61,0.12) !important; }
+
+/* Drawing wrap */
+.dwg-wrap { background:#F6F7F9 !important; border-color:rgba(0,0,0,0.09) !important; }
+.dwg-titlebar { background:#FFFFFF !important; border-color:rgba(0,0,0,0.08) !important; }
+.dwg-view { background:#FAFBFC !important; }
+.dwg-legend { background:#FFFFFF !important; border-color:rgba(0,0,0,0.08) !important; }
+.dwg-leg-item { color:#4B4B55 !important; }
+.dwg-view-label { color:var(--accent) !important; }
+.dwg-view-label::after { background:rgba(200,41,61,0.18) !important; }
+.dwg-meta { color:#6B6B75 !important; }
+.dwg-title { color:var(--accent) !important; }
+
+/* Ergo svg */
+.ergo-svg-wrap { background:#ECEDF0 !important; }
+
+/* Op icons */
+.op-unit .op-n { color:#9A9AA8 !important; }
+.op-lbl { color:#9A9AA8 !important; }
+
+/* Scrollbars */
+::-webkit-scrollbar-track { background:#EDEEEF !important; }
+::-webkit-scrollbar-thumb { background:rgba(200,41,61,0.25) !important; }
+::-webkit-scrollbar-thumb:hover { background:rgba(200,41,61,0.45) !important; }
+
+/* Selection */
+::selection { background:rgba(200,41,61,0.18) !important; color:#111 !important; }
+
+/* Donut SVG text colours */
+#d-total { fill:#111111 !important; }
+
+/* Legend dots */
+.leg-val { color:var(--accent) !important; }
+
+/* Sec-lbl */
+.sec-lbl { color:#6B6B75 !important; }
+.sec-lbl::before { color:var(--accent) !important; opacity:.7 !important; }
+
+/* Info rows */
+.info-row { border-color:rgba(0,0,0,0.07) !important; }
+
+/* Active panel fade-in stays the same */
+
+/* Zone viz and SVG drawing backgrounds — forced via JS (see below) */
+/* Force rotating cells light in zone viz (overrides any remaining dark fills) */
+#zone-viz-svg rect[fill*='rgba(8,'] { fill:rgba(238,240,244,0.95) !important; }
+#zone-viz-svg rect[fill*='rgba(10,'] { fill:rgba(238,240,244,0.95) !important; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- HEADER -->
+<div class="hdr">
+  <div style="font-family:var(--font-mono);font-size:9.5px;color:var(--tx3);letter-spacing:.08em;margin-bottom:.85rem;text-transform:uppercase">
+    MEP PLATFORM &nbsp;›&nbsp; ICT DESIGN TOOLS &nbsp;›&nbsp; SECURITY TOOLS &nbsp;›&nbsp;<span style="color:var(--accent)">CONTROL ROOM DESIGN</span>
+  </div>
+  <div class="hdr-inner">
+    <div class="hdr-left">
+      <div class="hdr-icon"><i class="ti ti-shield-check"></i></div>
+      <div>
+        <div class="hdr-title">Control Room Design Tool</div>
+        <div class="hdr-sub">7 modules available &nbsp;·&nbsp; all inputs editable</div>
+      </div>
+    </div>
+
+  </div>
+  <div class="hdr-status">
+    <span class="pulse"></span>
+    LIVE CALCULATION &nbsp;·&nbsp; 7 MODULES &nbsp;·&nbsp; ALL INPUTS EDITABLE
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabbar">
+  <button class="tab on" onclick="goTab('screens',this)"><i class="ti ti-layout-grid"></i> Screens</button>
+  <button class="tab" onclick="goTab('crit',this)"><i class="ti ti-shield-check"></i> Critical Grid</button>
+  <button class="tab" onclick="goTab('operators',this)"><i class="ti ti-users"></i> Operators</button>
+  <button class="tab" onclick="goTab('ergo',this)"><i class="ti ti-ruler-measure"></i> Ergonomics</button>
+  <button class="tab" onclick="goTab('pixel',this)"><i class="ti ti-zoom-in"></i> Pixel / PPI</button>
+  <button class="tab" onclick="goTab('font',this)"><i class="ti ti-typography"></i> Font Legibility</button>
+  <button class="tab" onclick="goTab('room',this)"><i class="ti ti-building"></i> Room Sizing</button>
+</div>
+
+<!-- ═══ SCREENS ═══ -->
+<div class="panel on" id="tab-screens">
+  <div class="g2">
+    <div class="card">
+      <div class="ct"><i class="ti ti-adjustments-horizontal"></i>Camera parameters</div>
+      <div class="f"><label>Total cameras</label><input type="number" id="s-tot" value="400" oninput="calcS()"></div>
+      <div class="f"><label>Critical cameras (auto = 20%)</label><input type="number" id="s-crit" value="100" oninput="calcS()"></div>
+      <div class="f"><label>Scene interpretation time Ts (s) — ISO rec. 5s</label><input type="number" id="s-ts" value="5" oninput="calcS()"></div>
+      <div class="g2" style="gap:8px;margin-bottom:0">
+        <div class="f" style="margin-bottom:0"><label>Grid rows</label><input type="number" id="s-rows" value="4" oninput="calcS()"></div>
+        <div class="f" style="margin-bottom:0"><label>Grid cols</label><input type="number" id="s-cols" value="4" oninput="calcS()"></div>
+      </div>
+      <div class="dvd"></div>
+      <div class="f"><label>Scenes/min override (ISO auto = 60/Ts)</label><input type="number" id="s-spm" value="12" oninput="calcS()"></div>
+      <div class="f" style="margin-bottom:0"><label>Screen size (diagonal, inches)</label>
+        <select id="s-size" onchange="document.getElementById('cg-size').value=this.value; calcS();">
+          <option value="55">55″</option><option value="27">27″</option><option value="32">32″</option>
+          <option value="43">43″</option><option value="50">50″</option><option value="65">65″</option>
+        </select>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct"><i class="ti ti-chart-donut"></i>Camera breakdown</div>
+      <div class="donut-wrap">
+        <svg width="108" height="108" viewBox="0 0 108 108">
+          <circle cx="54" cy="54" r="43" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="14"/>
+          <circle id="d-rot" cx="54" cy="54" r="43" fill="none" stroke="#1A6FD4" stroke-width="14" stroke-dasharray="270.2 0" stroke-dashoffset="67.5"/>
+          <circle id="d-crit" cx="54" cy="54" r="43" fill="none" stroke="#00C2FF" stroke-width="14" stroke-dasharray="0 270.2" stroke-dashoffset="0"/>
+          <text x="54" y="48" text-anchor="middle" font-size="16" font-weight="700" fill="#E8F0FE" id="d-total" font-family="Syne,sans-serif">400</text>
+          <text x="54" y="63" text-anchor="middle" font-size="10" fill="#8BA3C7" font-family="DM Mono,monospace">cameras</text>
+        </svg>
+        <div class="leg">
+          <div class="leg-row"><div class="leg-dot" style="background:#1A6FD4"></div>Rotating<span class="leg-val" id="l-rot">300</span></div>
+          <div class="leg-row"><div class="leg-dot" style="background:#00C2FF"></div>Critical<span class="leg-val" id="l-crit">100</span></div>
+        </div>
+      </div>
+      <div class="dvd"></div>
+      <div class="sec-lbl">Grid preview — per screen</div>
+      <div id="gprev" class="gprev" style="grid-template-columns:repeat(4,1fr)"></div>
+      <div style="font-size:11px;color:var(--tx3);margin-top:5px;font-family:var(--font-mono)" id="glabel">4 × 4 = 16 cameras/screen</div>
+    </div>
+  </div>
+
+  <!-- Screen preview -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct"><i class="ti ti-device-tv"></i>Video wall configuration</div>
+    <div style="display:flex;gap:1.5rem;align-items:flex-start;flex-wrap:wrap">
+      <div>
+        <div class="sec-lbl">Required screens — <span id="scr-arrangement-label" style="color:var(--cyan)">3C × 2R</span></div>
+        <div id="scr-wall" style="display:inline-block"></div>
+        <div style="font-size:11px;color:var(--tx3);margin-top:8px;font-family:var(--font-mono)" id="scr-util"></div>
+      </div>
+      <div style="flex:1;min-width:200px">
+        <div class="sec-lbl">Screen dimensions</div>
+        <div class="compliance">
+          <div class="comp-row"><span class="comp-label">Width</span><span class="comp-val" id="s-sw">—</span></div>
+          <div class="comp-row"><span class="comp-label">Height</span><span class="comp-val" id="s-sh">—</span></div>
+          <div class="comp-row"><span class="comp-label">Cell width (px)</span><span class="comp-val" id="s-cw">—</span></div>
+          <div class="comp-row"><span class="comp-label">Cell height (px)</span><span class="comp-val" id="s-ch">—</span></div>
+          <div class="comp-row"><span class="comp-label">Cell width (mm / MOI)</span><span class="comp-val" id="s-cwmm">—</span></div>
+          <div class="comp-row"><span class="comp-label">Cell height (mm / MOI)</span><span class="comp-val" id="s-chmm">—</span></div>
+          <div class="comp-row"><span class="comp-label">Max MOI-compliant grid</span><span class="comp-val" id="s-maxgrid">—</span></div>
+        </div>
+      </div>
+    </div>
+    <div id="feed-verdict" style="margin-top:12px"></div>
+  </div>
+
+  <div class="g4">
+    <div class="met"><div class="ml">Rotating</div><div class="mv" id="r-rot">300</div></div>
+    <div class="met"><div class="ml">Cams/screen</div><div class="mv" id="r-cps">16</div></div>
+    <div class="met"><div class="ml">Cams shown/min</div><div class="mv" id="r-cpm">192</div></div>
+    <div class="met accent"><div class="ml"><i class="ti ti-device-tv"></i> Screens required</div><div class="mv" id="r-scr">8</div><div class="mu">screens</div></div>
+  </div>
+  <div class="frm">
+    <b>Screens</b> = (Total + Critical × (SPM−1)) / (SPM × cams/screen)<br>
+    <span class="calc" id="f-scr"></span>
+  </div>
+</div>
+
+<!-- ═══ CRITICAL GRID ═══ -->
+<div class="panel" id="tab-crit">
+  <div class="g2">
+    <div class="card">
+      <div class="ct"><i class="ti ti-adjustments-horizontal"></i>Screen & camera parameters</div>
+      <div class="f"><label>Screen size</label>
+        <select id="cg-size" onchange="document.getElementById('s-size').value=this.value; calcS();">
+          <option value="27">27″ (QHD 2560×1440)</option>
+          <option value="32">32″ (QHD 2560×1440)</option>
+          <option value="43">43″ (UHD 3840×2160)</option>
+          <option value="50">50″ (UHD 3840×2160)</option>
+          <option value="55">55″ (UHD 3840×2160)</option>
+          <option value="65">65″ (UHD 3840×2160)</option>
+        </select>
+      </div>
+      <div class="f"><label>Camera resolution</label>
+        <select id="cg-camres" onchange="calcCG()">
+          <option value="1920,1080,250">2MP (1920×1080) — 250 PPM</option>
+          <option value="2560,1440,300">4MP (2560×1440) — 300 PPM</option>
+          <option value="2592,1944,300">5MP (2592×1944) — 300 PPM</option>
+          <option value="3840,2160,350">8MP UHD (3840×2160) — 350 PPM</option>
+        </select>
+      </div>
+      <div class="f"><label>Distance to video wall (mm)</label><input type="number" id="cg-dist" value="2975" oninput="document.getElementById('rm-dist').value=this.value; calcCG();"></div>
+      <div class="g2" style="gap:8px">
+        <div class="f"><label>Horizontal angle θH (°)</label><input type="number" id="cg-angH" value="15" step="1" oninput="calcCG()"></div>
+        <div class="f"><label>Vertical angle θV (°)</label><input type="number" id="cg-angV" value="15" step="1" oninput="calcCG()"></div>
+      </div>
+      <div class="g2" style="gap:8px">
+        <div class="f"><label>Number of operators / consoles</label><input type="number" id="cg-nops" value="3" oninput="document.getElementById('rm-ops').value=this.value; calcCG();"></div>
+        <div class="f"><label>Console spacing (mm)</label><input type="number" id="cg-cspacing" value="650" oninput="calcCG()"></div>
+      </div>
+      <div class="g2" style="gap:8px;margin-bottom:0">
+        <div class="f" style="margin-bottom:0"><label>Wall bottom height AFF (mm)</label><input type="number" id="cg-hwall" value="1100" oninput="calcCG()"></div>
+        <div class="f" style="margin-bottom:0"><label>Required PPM (min identification = 125)</label><input type="number" id="cg-ppm" value="125" oninput="calcCG()"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct"><i class="ti ti-layout-grid"></i>Three-constraint analysis</div>
+      <div class="compliance">
+        <div class="comp-row"><span class="comp-label">MOI physical limit</span><span class="comp-val" id="cg-moi">—</span></div>
+        <div class="comp-row"><span class="comp-label">PPM/Resolution limit</span><span class="comp-val" id="cg-ppmlim">—</span></div>
+        <div class="comp-row"><span class="comp-label">ISO 11064 viewing limit</span><span class="comp-val" id="cg-iso">—</span></div>
+        <div class="comp-row"><span class="comp-label" style="color:var(--cyan)">→ Recommended grid</span><span class="comp-val" style="color:var(--cyan)" id="cg-rec">—</span></div>
+      </div>
+      <div class="dvd"></div>
+      <div class="sec-lbl">Angle-based critical zone</div>
+      <div class="compliance" style="margin-bottom:8px">
+        <div class="comp-row"><span class="comp-label">Critical width  (2D·tanθH)</span><span class="comp-val" id="cg-critW">—</span></div>
+        <div class="comp-row"><span class="comp-label">Critical height (wall H-aware)</span><span class="comp-val" id="cg-critH">—</span></div>
+        <div class="comp-row"><span class="comp-label">Critical columns on wall</span><span class="comp-val" id="cg-critCols">—</span></div>
+        <div class="comp-row"><span class="comp-label">Critical rows on wall</span><span class="comp-val" id="cg-critRows">—</span></div>
+        <div class="comp-row"><span class="comp-label">Critical screens (area A)</span><span class="comp-val" style="color:var(--cyan)" id="cg-critScr">—</span></div>
+        <div class="comp-row"><span class="comp-label">Wall AFF range</span><span class="comp-val" id="cg-wallAFF">—</span></div>
+        <div class="comp-row"><span class="comp-label">Eye vs wall bottom angle</span><span class="comp-val" id="cg-eyeAng">—</span></div>
+      </div>
+      <div id="cg-satwarn" style="margin-bottom:8px"></div>
+      <div class="sec-lbl">Zone visualizer — video wall layout</div>
+      <div id="zone-viz-svg" style="width:100%;margin-top:4px"></div>
+      <div style="display:flex;gap:12px;margin-top:6px;flex-wrap:wrap">
+        <span style="font-size:11px;color:var(--cyan);font-family:var(--font-mono)">■ Critical (C)</span>
+        <span style="font-size:11px;color:var(--tx2);font-family:var(--font-mono)">■ Rotating (N)</span>
+        <span style="font-size:11px;color:var(--tx3);font-family:var(--font-mono)">□ Empty</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="g4">
+    <div class="met"><div class="ml">Screen W × H (mm)</div><div class="mv" id="cg-wh" style="font-size:14px">—</div></div>
+    <div class="met"><div class="ml">MOI cols × rows</div><div class="mv" id="cg-moirc">—</div></div>
+    <div class="met"><div class="ml">PPM at 2×2 grid</div><div class="mv" id="cg-ppm22">—</div></div>
+    <div class="met accent"><div class="ml"><i class="ti ti-check"></i> Critical grid</div><div class="mv" id="cg-final">2×2</div><div class="mu">max per screen</div></div>
+  </div>
+
+  <div class="frm">
+    <b>MOI</b>: cols = Ws/120, rows = Hs/67<br>
+    <b>PPM</b>: Downscale = Display_res / (Cam_res × cols) → Effective PPM = Original × Downscale<br>
+    <b>ISO angle</b>: θ = arctan(Ws/2 ÷ dist) — full screen angle ÷ columns must be ≤ 15° per feed<br>
+    <span class="calc" id="f-cg"></span>
+  </div>
+</div>
+
+<!-- ═══ OPERATORS ═══ -->
+<div class="panel" id="tab-operators">
+  <div class="g2">
+    <div class="card">
+      <div class="ct"><i class="ti ti-adjustments-horizontal"></i>Workload parameters</div>
+      <div class="f"><label>Critical cameras (Nc)</label><input type="number" id="o-crit" value="100" oninput="calcO()"></div>
+      <div class="f"><label>Secondary cameras (Ns)</label><input type="number" id="o-sec" value="0" oninput="calcO()"></div>
+      <div class="f"><label>Non-critical cameras (Nn)</label><input type="number" id="o-non" value="300" oninput="calcO()"></div>
+      <div class="f"><label>Scene interpretation time Ts (s)</label><input type="number" id="o-ts" value="5" oninput="calcO()"></div>
+      <div class="dvd"></div>
+      <div class="sec-lbl">Weighting factors (ISO 11064)</div>
+      <div class="g2" style="gap:8px;margin-bottom:0">
+        <div class="f" style="margin-bottom:0"><label>Critical weight</label><input type="number" id="o-wc" value="1.0" step="0.1" oninput="calcO()"></div>
+        <div class="f" style="margin-bottom:0"><label>Secondary weight</label><input type="number" id="o-ws" value="0.5" step="0.1" oninput="calcO()"></div>
+      </div>
+      <div class="f" style="margin-bottom:0;margin-top:10px"><label>Non-critical weight</label><input type="number" id="o-wn" value="0.25" step="0.05" oninput="calcO()"></div>
+    </div>
+    <div class="card">
+      <div class="ct"><i class="ti ti-users"></i>Operator assignment</div>
+      <div id="op-icons" class="op-icons"></div>
+      <div class="dvd"></div>
+      <div class="compliance">
+        <div class="comp-row"><span class="comp-label">Neff (weighted scenes)</span><span class="comp-val" id="o-neff">175</span></div>
+        <div class="comp-row"><span class="comp-label">SPM system</span><span class="comp-val" id="o-spmsys">14.6</span></div>
+        <div class="comp-row"><span class="comp-label">SPM per operator (≤12 rec.)</span><span class="comp-val" id="o-spmop">12</span></div>
+        <div class="comp-row"><span class="comp-label">Raw operator count</span><span class="comp-val" id="o-raw">1.22</span></div>
+      </div>
+      <div class="dvd"></div>
+      <div class="sec-lbl">ISO capacity limits</div>
+      <div class="compliance">
+        <div class="comp-row"><span class="comp-label">Recommended max SPM</span><span class="comp-val">12 scenes/min</span></div>
+        <div class="comp-row"><span class="comp-label">Upper acceptable SPM</span><span class="comp-val">15 scenes/min</span></div>
+        <div class="comp-row"><span class="comp-label">Supervisors needed</span><span class="comp-val" id="o-sup">1</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="g3">
+    <div class="met"><div class="ml">SPM system</div><div class="mv" id="o-m1">14.6</div><div class="mu">scenes/min</div></div>
+    <div class="met"><div class="ml">SPM per operator</div><div class="mv" id="o-m2">12</div><div class="mu">max recommended</div></div>
+    <div class="met accent"><div class="ml"><i class="ti ti-user-check"></i>Operators required</div><div class="mv" id="o-m3">2</div><div class="mu">operators</div></div>
+  </div>
+  <div class="frm">
+    <b>Neff</b> = Nc×wc + Ns×ws + Nn×wn &nbsp;|&nbsp; <b>SPM sys</b> = Neff × Ts / 60<br>
+    <b>SPM op</b> = 60 / Ts &nbsp;|&nbsp; <b>Operators</b> = ceil(SPM sys / SPM op)<br>
+    <span class="calc" id="f-ops"></span>
+  </div>
+</div>
+
+<!-- ═══ ERGONOMICS ═══ -->
+<div class="panel" id="tab-ergo">
+  <div class="g2">
+    <div class="card">
+      <div class="ct"><i class="ti ti-ruler-measure"></i>Room geometry (mm)</div>
+      <div class="g2" style="gap:8px">
+        <div class="f"><label>Seated eye height He</label><input type="number" id="e-He" value="1200" oninput="calcE()"></div>
+        <div class="f"><label>Console height Hc</label><input type="number" id="e-Hc" value="750" oninput="calcE()"></div>
+        <div class="f"><label>Console depth Dc</label><input type="number" id="e-Dc" value="800" oninput="calcE()"></div>
+        <div class="f"><label>Eye-to-console D</label><input type="number" id="e-D" value="600" oninput="calcE()"></div>
+        <div class="f"><label>Console-to-wall d</label><input type="number" id="e-d" value="4000" oninput="calcE()"></div>
+        <div class="f"><label>Screen height per panel (mm)</label><input type="number" id="e-sh" value="685" oninput="calcE()"></div>
+      </div>
+      <div class="f" style="margin-bottom:0"><label>Panels stacked vertically</label><input type="number" id="e-ns" value="2" oninput="calcE()"></div>
+    </div>
+    <div class="card">
+      <div class="ct"><i class="ti ti-chart-bar"></i>Distance comparison</div>
+      <div id="e-bars"></div>
+      <div class="dvd"></div>
+      <div class="sec-lbl">Extron / ISO 11064 viewing standards</div>
+      <div class="compliance">
+        <div class="comp-row"><span class="comp-label">Optimal vertical angle</span><span class="comp-val">0° to −15°</span></div>
+        <div class="comp-row"><span class="comp-label">Acceptable vertical</span><span class="comp-val">−30°</span></div>
+        <div class="comp-label" style="padding-top:4px">Optimal horizontal ±15° / Max ±35°</div>
+        <div class="comp-row" style="margin-top:4px"><span class="comp-label">Control room luminance</span><span class="comp-val">300–750 lux</span></div>
+        <div class="comp-row"><span class="comp-label">Monitor brightness</span><span class="comp-val">450–700 nits</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="g4">
+    <div class="met"><div class="ml">Lowest point Hl</div><div class="mv" id="e-Hl">320</div><div class="mu">mm min AFF</div><div id="e-hl-badge"></div></div>
+    <div class="met"><div class="ml">Wall height total</div><div class="mv" id="e-wh">1370</div><div class="mu">mm</div></div>
+    <div class="met"><div class="ml">Workstation dist.</div><div class="mv" id="e-wsd">820</div><div class="mu">mm (VAD)</div></div>
+    <div class="met accent"><div class="ml"><i class="ti ti-arrows-horizontal"></i>Max view dist.</div><div class="mv" id="e-mvd">5892</div><div class="mu">mm</div></div>
+  </div>
+  <div class="g2" style="margin-top:0">
+    <div class="card">
+      <div class="ct"><i class="ti ti-monitor"></i>Workstation display (ISO 11064-4)</div>
+      <div class="f"><label>Monitor diagonal (inches)</label>
+        <select id="e-mon" onchange="calcE()">
+          <option value="27">27″</option><option value="32">32″</option>
+          <option value="24">24″</option><option value="43">43″</option>
+        </select>
+      </div>
+      <div class="f" style="margin-bottom:0"><label>Horizontal viewing angle θh (°)</label><input type="number" id="e-theta" value="20" oninput="calcE()"></div>
+      <div class="dvd"></div>
+      <div class="compliance">
+        <div class="comp-row"><span class="comp-label">Monitor width</span><span class="comp-val" id="e-mw">—</span></div>
+        <div class="comp-row"><span class="comp-label">Recommended viewing dist.</span><span class="comp-val" id="e-vd">—</span></div>
+        <div class="comp-row"><span class="comp-label">Screen center height</span><span class="comp-val" id="e-sc">—</span></div>
+        <div class="comp-row"><span class="comp-label">ISO min viewing dist.</span><span class="comp-val">≥ 700 mm</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct"><i class="ti ti-eye"></i>Video wall sightlines</div>
+      <div class="compliance">
+        <div class="comp-row"><span class="comp-label">VAD (pixel pitch method)</span><span class="comp-val" id="e-vad">—</span></div>
+        <div class="comp-row"><span class="comp-label">Top of wall Htop (max)</span><span class="comp-val" id="e-htop">—</span></div>
+        <div class="comp-row"><span class="comp-label">Bottom clearance used</span><span class="comp-val">1100 mm AFF</span></div>
+        <div class="comp-row"><span class="comp-label">Desk-to-wall gap (typical)</span><span class="comp-val" id="e-dtw">—</span></div>
+        <div class="comp-row"><span class="comp-label">LoS clearance height</span><span class="comp-val">1238 mm</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="frm">
+    <b>Hl</b> = Hc − (D+d)/(Dc+d) × (He−Hc) &nbsp;|&nbsp; <b>Max dist</b> = WallH / (0.00465 × 50)<br>
+    <b>Monitor Vdist</b> = 11.07 × Diag(in) / tan(θh) &nbsp;|&nbsp; <b>Screen center</b> = He − Vdist × tan(15°)<br>
+    <b>Htop</b> = He + d × tan(10°) &nbsp;|&nbsp; <b>VAD</b> = 3.438 × pixel_pitch(mm)<br>
+    <span class="calc" id="f-ergo"></span>
+  </div>
+</div>
+
+<!-- ═══ PIXEL / PPI ═══ -->
+<div class="panel" id="tab-pixel">
+  <div class="g2">
+    <div class="card">
+      <div class="ct"><i class="ti ti-zoom-in"></i>Display parameters</div>
+      <div class="f"><label>Closest viewer distance (mm)</label><input type="number" id="p-dist" value="2975" oninput="calcP()"></div>
+      <div class="f"><label>Display technology</label>
+        <select id="p-tech" onchange="calcP()">
+          <option value="lcd">LCD flat panel</option>
+          <option value="led">Direct-view LED</option>
+          <option value="proj">Rear projection</option>
+        </select>
+      </div>
+      <div class="f"><label>Screen diagonal (inches)</label><input type="number" id="p-diag" value="55" oninput="calcP()"></div>
+      <div class="g2" style="gap:8px;margin-bottom:0">
+        <div class="f" style="margin-bottom:0"><label>Horizontal pixels</label><input type="number" id="p-hpx" value="1920" oninput="calcP()"></div>
+        <div class="f" style="margin-bottom:0"><label>Vertical pixels</label><input type="number" id="p-vpx" value="1080" oninput="calcP()"></div>
+      </div>
+      <div class="dvd"></div>
+      <div class="f" style="margin-bottom:0"><label>LED pixel pitch (mm) — LED only</label><input type="number" id="p-pitch" value="1.27" step="0.1" oninput="calcP()"></div>
+    </div>
+    <div class="card">
+      <div class="ct"><i class="ti ti-table"></i>Extron PPI reference</div>
+      <div class="sec-lbl">Min PPI vs viewing distance (1 arc min = 0.0167°)</div>
+      <table class="ref-table">
+        <tr><th>Distance</th><th>Min PPI</th><th>Status</th></tr>
+        <tr id="ppi-r1"><td>5 ft / 1.5 m</td><td>57 PPI</td><td></td></tr>
+        <tr id="ppi-r2"><td>10 ft / 3 m</td><td>28 PPI</td><td></td></tr>
+        <tr id="ppi-r3"><td>15 ft / 4.5 m</td><td>19 PPI</td><td></td></tr>
+        <tr id="ppi-r4"><td>20 ft / 6 m</td><td>14 PPI</td><td></td></tr>
+      </table>
+      <div class="dvd"></div>
+      <div class="sec-lbl">Brightness reference</div>
+      <div class="compliance">
+        <div class="comp-row"><span class="comp-label">LED outdoor</span><span class="comp-val">2000–14000 nits</span></div>
+        <div class="comp-row"><span class="comp-label">Rear proj. cube</span><span class="comp-val">300–1000 nits</span></div>
+        <div class="comp-row"><span class="comp-label">LCD panel</span><span class="comp-val">450–700 nits</span></div>
+        <div class="comp-row"><span class="comp-label">Control room lux</span><span class="comp-val">300–750 lux</span></div>
+      </div>
+    </div>
+  </div>
+  <div id="led-section" style="display:none;margin-bottom:12px">
+    <div class="card">
+      <div class="ct"><i class="ti ti-circuit-diode"></i>LED min & optimum viewing distances</div>
+      <table class="ref-table">
+        <tr><th>Pixel pitch</th><th>Min distance</th><th>Optimum</th><th>Your distance</th></tr>
+        <tr id="led-r1"><td>10 mm</td><td>34.4 m</td><td>57.2 m</td><td></td></tr>
+        <tr id="led-r2"><td>5 mm</td><td>17.2 m</td><td>28.7 m</td><td></td></tr>
+        <tr id="led-r3"><td>2.5 mm</td><td>8.6 m</td><td>14.3 m</td><td></td></tr>
+        <tr id="led-r4"><td>1.5 mm</td><td>5.1 m</td><td>8.6 m</td><td></td></tr>
+        <tr id="led-r5"><td>0.9 mm</td><td>3.1 m</td><td>5.1 m</td><td></td></tr>
+        <tr id="led-r6"><td>0.6 mm</td><td>2.1 m</td><td>3.4 m</td><td></td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="g4">
+    <div class="met"><div class="ml">Display PPI</div><div class="mv" id="p-ppi">42</div><div class="mu">pixels/inch</div></div>
+    <div class="met"><div class="ml">Min PPI required</div><div class="mv" id="p-minppi">19</div><div class="mu">at this distance</div></div>
+    <div class="met"><div class="ml">Pixel pitch</div><div class="mv" id="p-pp">0.63</div><div class="mu">mm/pixel</div></div>
+    <div class="met accent"><div class="ml"><i class="ti ti-zoom-check"></i>PPI verdict</div><div class="mv" id="p-verdict">—</div><div id="p-badge"></div></div>
+  </div>
+  <div class="frm">
+    <b>PPI</b> = √(H²+V²) / diagonal(in) &nbsp;|&nbsp; <b>Min PPI</b> = 1 / (dist_in × 0.000291)<br>
+    <b>VAD</b> = pixel_pitch(mm) × 3438 &nbsp;|&nbsp; <b>Pixel pitch</b> = 25.4 / PPI<br>
+    <span class="calc" id="f-ppi"></span>
+  </div>
+</div>
+
+<!-- ═══ FONT LEGIBILITY ═══ -->
+<div class="panel" id="tab-font">
+  <div class="g2">
+    <div class="card">
+      <div class="ct"><i class="ti ti-typography"></i>Font & viewing parameters</div>
+      <div class="f"><label>Text height on screen (mm)</label><input type="number" id="fn-th" value="25" oninput="calcF()"></div>
+      <div class="f"><label>Nearest viewer distance (mm)</label><input type="number" id="fn-near" value="2975" oninput="calcF()"></div>
+      <div class="f"><label>Furthest viewer distance (mm)</label><input type="number" id="fn-far" value="5892" oninput="calcF()"></div>
+      <div class="f"><label>Display PPI</label><input type="number" id="fn-ppi" value="42" oninput="calcF()"></div>
+      <div class="f" style="margin-bottom:0"><label>Videowall array (no. of screens)</label><input type="number" id="fn-arr" value="1" oninput="calcF()"></div>
+      <div class="dvd"></div>
+      <div class="compliance">
+        <div class="comp-row"><span class="comp-label">Min arc minutes (legible)</span><span class="comp-val">10 arc min</span></div>
+        <div class="comp-row"><span class="comp-label">Recommended comfortable</span><span class="comp-val">15–20 arc min</span></div>
+        <div class="comp-row"><span class="comp-label">Rule of thumb</span><span class="comp-val">25 mm / 4.5 m dist</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct"><i class="ti ti-eye"></i>Arc minute visualiser</div>
+      <div style="margin-bottom:12px">
+        <div class="sec-lbl">Nearest viewer</div>
+        <div class="arc-vis">
+          <div class="arc-track"><div class="arc-fill" id="arc-near" style="background:var(--cyan);width:50%"></div></div>
+          <div class="arc-num" id="arc-near-v">—</div>
+          <span style="font-size:11px;color:var(--tx3);font-family:var(--font-mono)">arc min</span>
+        </div>
+        <div id="fn-nbadge"></div>
+      </div>
+      <div style="margin-bottom:12px">
+        <div class="sec-lbl">Furthest viewer</div>
+        <div class="arc-vis">
+          <div class="arc-track"><div class="arc-fill" id="arc-far" style="background:#F59E0B;width:25%"></div></div>
+          <div class="arc-num" id="arc-far-v">—</div>
+          <span style="font-size:11px;color:var(--tx3);font-family:var(--font-mono)">arc min</span>
+        </div>
+        <div id="fn-fbadge"></div>
+      </div>
+      <div class="dvd"></div>
+      <div class="sec-lbl">Recommended font specification</div>
+      <div class="compliance">
+        <div class="comp-row"><span class="comp-label">Recommended text height</span><span class="comp-val" id="fn-recth">—</span></div>
+        <div class="comp-row"><span class="comp-label">Pixel height required</span><span class="comp-val" id="fn-px">—</span></div>
+        <div class="comp-row"><span class="comp-label">Approx. point size</span><span class="comp-val" id="fn-pt">—</span></div>
+        <div class="comp-row"><span class="comp-label">Array scaling factor</span><span class="comp-val" id="fn-arr-s">1×</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="g4">
+    <div class="met"><div class="ml">Nearest arc min</div><div class="mv" id="fn-m1">—</div><div class="mu">arc minutes</div></div>
+    <div class="met"><div class="ml">Furthest arc min</div><div class="mv" id="fn-m2">—</div><div class="mu">arc minutes</div></div>
+    <div class="met grn" id="fn-m3c"><div class="ml">Nearest verdict</div><div class="mv" id="fn-m3">—</div></div>
+    <div class="met" id="fn-m4c"><div class="ml">Furthest verdict</div><div class="mv" id="fn-m4">—</div></div>
+  </div>
+  <div class="frm">
+    <b>Arc min</b> = 60 × arctan(text_height_mm / dist_mm)<br>
+    <b>Rec. text height</b> = 25 mm × (max_dist / 4500) &nbsp;|&nbsp; <b>Pixel height</b> = text_mm × PPI / 25.4<br>
+    <span class="calc" id="f-font"></span>
+  </div>
+</div>
+
+<!-- ═══ ROOM SIZING ═══ -->
+<div class="panel" id="tab-room">
+
+  <!-- INPUT ROW -->
+  <div class="g2">
+    <div class="card">
+      <div class="ct"><i class="ti ti-adjustments-horizontal"></i>Control room parameters</div>
+      <div class="g2" style="gap:8px">
+        <div class="f"><label>Room width W (m)</label><input type="number" id="rm-W" value="7" step="0.5" oninput="calcR()"></div>
+        <div class="f"><label>Room depth D (m)</label><input type="number" id="rm-D" value="8" step="0.5" oninput="calcR()"></div>
+      </div>
+      <div class="f"><label>Number of operators / consoles</label><input type="number" id="rm-ops" value="3" oninput="document.getElementById('cg-nops').value=this.value; calcCG();"></div>
+      <div class="f"><label>Distance to video wall (mm)</label><input type="number" id="rm-dist" value="2975" oninput="document.getElementById('cg-dist').value=this.value; calcCG();"></div>
+      <div class="f"><label>Number of equipment racks</label><input type="number" id="rm-racks" value="4" oninput="calcR()"></div>
+      <div class="f"><label>Video wall screens (from Screens tab)</label><input type="number" id="rm-screens" value="6" oninput="calcR()"></div>
+      <div class="f" style="margin-bottom:0"><label>Total cameras (for room category)</label><input type="number" id="rm-cams" value="400" oninput="calcR()"></div>
+    </div>
+    <div class="card">
+      <div class="ct"><i class="ti ti-building"></i>Room category & area breakdown</div>
+      <div id="rm-category" class="met accent" style="margin-bottom:10px">
+        <div class="ml">Room category</div>
+        <div class="mv" id="rm-cat" style="font-size:15px">—</div>
+      </div>
+      <div class="compliance">
+        <div class="comp-row"><span class="comp-label">Room area (W×D)</span><span class="comp-val" id="rm-area-actual">—</span></div>
+        <div class="comp-row"><span class="comp-label">Recommended area</span><span class="comp-val" id="rm-area">—</span></div>
+        <div class="comp-row"><span class="comp-label">Calculated min area</span><span class="comp-val" id="rm-calc-area">—</span></div>
+        <div class="comp-row"><span class="comp-label">Operator zone</span><span class="comp-val" id="rm-opzone">—</span></div>
+        <div class="comp-row"><span class="comp-label">Equipment zone</span><span class="comp-val" id="rm-eqzone">—</span></div>
+        <div class="comp-row"><span class="comp-label">Circulation (35%)</span><span class="comp-val" id="rm-circ">—</span></div>
+        <div class="comp-row"><span class="comp-label">Supervisors needed</span><span class="comp-val" id="rm-sup">—</span></div>
+      </div>
+      <div class="dvd"></div>
+      <div class="sec-lbl">ISO 11064-2 clearances</div>
+      <div class="compliance">
+        <div class="comp-row"><span class="comp-label">Behind workstations</span><span class="comp-val">≥ 1200 mm</span></div>
+        <div class="comp-row"><span class="comp-label">Main aisle</span><span class="comp-val">≥ 1400 mm</span></div>
+        <div class="comp-row"><span class="comp-label">Between console rows</span><span class="comp-val">≥ 1500 mm</span></div>
+        <div class="comp-row"><span class="comp-label">Door width</span><span class="comp-val">≥ 900 mm</span></div>
+        <div class="comp-row"><span class="comp-label">Ceiling height</span><span class="comp-val">≥ 2400 mm</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="g5" style="margin-bottom:12px">
+    <div class="met"><div class="ml">Operator area</div><div class="mv" id="rm-m1">—</div><div class="mu">m²/op</div></div>
+    <div class="met"><div class="ml">Console area</div><div class="mv" id="rm-m2">—</div><div class="mu">m²</div></div>
+    <div class="met"><div class="ml">Rack zone</div><div class="mv" id="rm-m3">—</div><div class="mu">m²</div></div>
+    <div class="met"><div class="ml">Total calc.</div><div class="mv" id="rm-m4">—</div><div class="mu">m²</div></div>
+    <div class="met accent"><div class="ml"><i class="ti ti-building"></i>Actual room</div><div class="mv" id="rm-m5">—</div><div class="mu">m²</div></div>
+  </div>
+
+  <!-- LIVE DRAWING BLOCK -->
+  <div class="dwg-wrap">
+
+    <!-- TITLE BAR -->
+    <div class="dwg-titlebar">
+      <div class="dwg-title"><i class="ti ti-ruler-2"></i> SECURITY CONTROL ROOM — LIVE LAYOUT DRAWING</div>
+      <div class="dwg-meta">
+        <span><b id="dwg-dim">7.0 × 8.0 m</b> Room</span>
+        <span><b id="dwg-area-m">56.0 m²</b></span>
+        <span id="dwg-comp-badge" style="color:var(--green)">■ COMPLIANT</span>
+        
+      </div>
+    </div>
+
+    <!-- PLAN + ELEVATION row -->
+    <div class="dwg-views">
+
+      <!-- PLAN VIEW -->
+      <div class="dwg-view">
+        <div class="dwg-view-label"><i class="ti ti-layout-2"></i> PLAN VIEW — TOP</div>
+        <svg id="svg-plan" width="100%" viewBox="0 0 500 360" style="display:block"></svg>
+      </div>
+
+      <!-- ELEVATION -->
+      <div class="dwg-view">
+        <div class="dwg-view-label"><i class="ti ti-wall"></i> ELEVATION — FRONT WALL</div>
+        <svg id="svg-elev" width="100%" viewBox="0 0 420 300" style="display:block"></svg>
+      </div>
+
+    </div>
+
+    <!-- SECTION row -->
+    <div class="dwg-section-row">
+
+      <!-- SECTION A-A -->
+      <div class="dwg-view">
+        <div class="dwg-view-label"><i class="ti ti-scissors"></i> SECTION A–A — SIDE VIEW</div>
+        <svg id="svg-sect" width="100%" viewBox="0 0 380 240" style="display:block"></svg>
+      </div>
+
+      <!-- COMPLIANCE SUMMARY -->
+      <div class="dwg-view">
+        <div class="dwg-view-label"><i class="ti ti-clipboard-check"></i> COMPLIANCE CHECK</div>
+        <div id="dwg-checks" style="display:flex;flex-direction:column;gap:6px;padding:4px 0"></div>
+        <div class="dvd"></div>
+        <div class="sec-lbl">Area utilisation</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px" id="dwg-util-grid"></div>
+        <div class="dvd"></div>
+        <div class="sec-lbl">Technical specs</div>
+        <div class="compliance">
+          <div class="comp-row"><span class="comp-label">Temperature</span><span class="comp-val">20–24 °C</span></div>
+          <div class="comp-row"><span class="comp-label">Humidity</span><span class="comp-val">40–60 %</span></div>
+          <div class="comp-row"><span class="comp-label">UPS autonomy</span><span class="comp-val">≥ 30 min</span></div>
+          <div class="comp-row"><span class="comp-label">Recording</span><span class="comp-val">≥ 31 days</span></div>
+          <div class="comp-row"><span class="comp-label">Fire suppression</span><span class="comp-val">FM-200/NOVEC</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- LEGEND -->
+    <div class="dwg-legend">
+      <div class="dwg-leg-item"><div class="dwg-leg-swatch" style="background:#1A6FD4;border:0.5px solid #3D8FE8"></div> Operator console</div>
+      <div class="dwg-leg-item"><div class="dwg-leg-swatch" style="background:#0B3A2A;border:0.5px solid #10B981"></div> Equipment rack</div>
+      <div class="dwg-leg-item"><div class="dwg-leg-swatch" style="background:#0C447C;border:0.5px solid #00C2FF"></div> Video wall</div>
+      <div class="dwg-leg-item"><div class="dwg-leg-swatch" style="background:#2A1A00;border:0.5px solid #F59E0B"></div> Supervisor station</div>
+      <div class="dwg-leg-item"><div class="dwg-leg-swatch" style="background:rgba(239,68,68,0.15);border:0.5px dashed #EF4444"></div> Circulation / clearance</div>
+      <div class="dwg-leg-item"><div class="dwg-leg-swatch" style="background:none;border:0.5px dashed #00C2FF"></div> Dim. line</div>
+    </div>
+
+  </div>
+
+  <!-- ENV specs card -->
+  <div class="card" style="margin-top:12px">
+    <div class="ct"><i class="ti ti-checklist"></i>Full technical specification</div>
+    <div class="g2" style="margin-bottom:0">
+      <div>
+        <div class="sec-lbl">Environment & comfort</div>
+        <div class="compliance">
+          <div class="comp-row"><span class="comp-label">Temperature</span><span class="comp-val">20–24 °C</span></div>
+          <div class="comp-row"><span class="comp-label">Relative Humidity</span><span class="comp-val">40–60 %</span></div>
+          <div class="comp-row"><span class="comp-label">Lighting level</span><span class="comp-val">200–300 lux</span></div>
+          <div class="comp-row"><span class="comp-label">Noise level</span><span class="comp-val">≤ 50 dB(A)</span></div>
+          <div class="comp-row"><span class="comp-label">Glare control</span><span class="comp-val">Anti-glare blinds req.</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="sec-lbl">Power, data & storage</div>
+        <div class="compliance">
+          <div class="comp-row"><span class="comp-label">UPS autonomy</span><span class="comp-val">≥ 30 min full load</span></div>
+          <div class="comp-row"><span class="comp-label">Recording retention</span><span class="comp-val">≥ 31 days</span></div>
+          <div class="comp-row"><span class="comp-label">Rack spare capacity</span><span class="comp-val">≥ 20 %</span></div>
+          <div class="comp-row"><span class="comp-label">Fire suppression</span><span class="comp-val">FM-200 / NOVEC 1230</span></div>
+          <div class="comp-row"><span class="comp-label">Floor loading</span><span class="comp-val">≥ 5 kN/m²</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</div><!-- /page -->
+
+<footer>
+  Control Room Design Calculator
+</footer>
+
+<script>
+// ─── UTILS ─────────────────────────────────────────────────────────
+function goTab(n,btn){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('tab-'+n).classList.add('on');
+}
+const r=(v,d=1)=>parseFloat(v.toFixed(d));
+const ri=v=>Math.round(v);
+const rc=v=>Math.ceil(v);
+const badge=(t,c)=>`<span class="badge ${c}">${t}</span>`;
+const screenDims={27:{w:598,h:337},32:{w:708,h:398},43:{w:952,h:535},50:{w:1107,h:623},55:{w:1219,h:685},65:{w:1438,h:808}};
+const monDims={24:{w:531,h:299},27:{w:598,h:337},32:{w:708,h:398},43:{w:952,h:535}};
+
+// ─── SCREENS ───────────────────────────────────────────────────────
+function calcS(){
+  const tot=+document.getElementById('s-tot').value||0;
+  const crit=+document.getElementById('s-crit').value||0;
+  const ts=+document.getElementById('s-ts').value||5;
+  const rows=+document.getElementById('s-rows').value||4;
+  const cols=+document.getElementById('s-cols').value||4;
+  const spmOv=+document.getElementById('s-spm').value;
+  const size=+document.getElementById('s-size').value||55;
+  const spm=spmOv>0?spmOv:(60/ts);
+  const rot=tot-crit,cps=rows*cols,cpm=spm*cps;
+  const raw=(tot+crit*(spm-1))/cpm;
+  const rawScr=rc(raw);
+  // ── Symmetric distribution: raise to fill the arrangement rectangle exactly ──
+  const [arrCols,arrRows]=screenArrangement(rawScr);
+  const scr=arrCols*arrRows; // always a full rectangle — no empty/grey slots
+  const wasRaised = scr>rawScr;
+  const dim=screenDims[size]||screenDims[55];
+  const cwpx=ri(1920/cols),chpx=ri(1080/rows);
+  const cwmm=r(dim.w/cols,1),chmm=r(dim.h/rows,1);
+  document.getElementById('r-rot').textContent=rot;
+  document.getElementById('r-cps').textContent=cps;
+  document.getElementById('r-cpm').textContent=r(cpm);
+  document.getElementById('r-scr').textContent=scr;
+  document.getElementById('s-sw').textContent=dim.w+' mm';
+  document.getElementById('s-sh').textContent=dim.h+' mm';
+  document.getElementById('s-cw').textContent=cwpx+' px';
+  document.getElementById('s-ch').textContent=chpx+' px';
+  document.getElementById('s-cwmm').textContent=cwmm+' mm '+(cwmm>=120?'✓ MOI ok':'⚠ < 120mm');
+  document.getElementById('s-chmm').textContent=chmm+' mm '+(chmm>=67?'✓ MOI ok':'⚠ < 67mm');
+
+  // ── FEED-SIZE VALIDATION — ties grid choice directly to the selected screen size ──
+  // MOI minimum recognisable cell size = 120×67mm. This gives an absolute
+  // MAXIMUM grid (cols×rows) that a given screen diagonal can support.
+  const maxCols = Math.max(1, Math.floor(dim.w/120));
+  const maxRows = Math.max(1, Math.floor(dim.h/67));
+  const gridIsValid = (cols<=maxCols) && (rows<=maxRows);
+  document.getElementById('s-maxgrid').textContent = maxCols+'×'+maxRows+' cells max ('+size+'″ screen)';
+  const fv = document.getElementById('feed-verdict');
+  if(fv){
+    if(gridIsValid){
+      fv.innerHTML = '<span class="badge ok" style="font-size:12px;padding:6px 12px">'+
+        '✓ VALID — '+cols+'×'+rows+' fits within the '+maxCols+'×'+maxRows+' MOI-compliant max for a '+size+'″ screen</span>';
+    } else {
+      const failCols = cols>maxCols, failRows = rows>maxRows;
+      let reason = failCols && failRows ? 'both columns and rows exceed'
+                 : failCols ? 'columns exceed'
+                 : 'rows exceed';
+      fv.innerHTML = '<span class="badge err" style="font-size:12px;padding:6px 12px">'+
+        '✗ INVALID — '+cols+'×'+rows+' grid on a '+size+'″ screen exceeds the MOI-compliant max of '+maxCols+'×'+maxRows+
+        ' ('+reason+' the limit). Reduce the grid or choose a larger screen.</span>';
+    }
+  }
+  document.getElementById('f-scr').textContent=`(${tot}+${crit}×${r(spm-1,0)})/(${r(spm,0)}×${cps}) = ${r(raw,2)} → ${rawScr}`+
+    (wasRaised?` → raised to ${scr} (${arrCols}×${arrRows}) for a symmetric wall`:``);
+  buildDonut(tot,crit);buildGrid(rows,cols);buildScrWall(scr,cps,tot);
+  // Chain: refreshing the Critical Grid tab also redraws Plan/Elevation/Section
+  if(typeof calcCG==='function') calcCG();
+}
+function buildDonut(tot,crit){
+  const C=2*Math.PI*43,rf=crit/tot,rtf=1-rf;
+  const rotLen=C*rtf,critLen=C*rf,qo=-C*0.25;
+  document.getElementById('d-rot').setAttribute('stroke-dasharray',rotLen+' '+(C-rotLen));
+  document.getElementById('d-rot').setAttribute('stroke-dashoffset',-qo);
+  document.getElementById('d-crit').setAttribute('stroke-dasharray',critLen+' '+(C-critLen));
+  document.getElementById('d-crit').setAttribute('stroke-dashoffset',-(qo+rotLen));
+  document.getElementById('d-total').textContent=tot;
+  document.getElementById('l-rot').textContent=tot-crit;
+  document.getElementById('l-crit').textContent=crit;
+}
+function buildGrid(rows,cols){
+  const g=document.getElementById('gprev');
+  const sz=Math.min(13,Math.floor(140/(cols+1)));
+  g.style.gridTemplateColumns=`repeat(${cols},1fr)`;g.innerHTML='';
+  for(let i=0;i<rows*cols;i++){const c=document.createElement('div');c.className='gcell';c.style.width=sz+'px';c.style.height=sz+'px';g.appendChild(c);}
+  document.getElementById('glabel').textContent=`${rows} × ${cols} = ${rows*cols} cameras/screen`;
+}
+// ─── SCREEN ARRANGEMENT TABLE ─────────────────────────────────────
+// Rule: arrange n screens into cols×rows (landscape-first, square-ish)
+function screenArrangement(n){
+  const table={1:[1,1],2:[2,1],3:[3,1],4:[2,2],5:[3,2],6:[3,2],7:[4,2],8:[4,2],9:[3,3],10:[5,2],11:[4,3],12:[4,3],13:[5,3],14:[5,3],15:[5,3],16:[4,4]};
+  if(table[n]) return table[n];
+  // fallback: ceil(sqrt) cols, ceil(n/cols) rows
+  const cols=Math.ceil(Math.sqrt(n));
+  const rows=Math.ceil(n/cols);
+  return [cols,rows];
+}
+
+function buildScrWall(n,cps,tot){
+  const [cols,rows]=screenArrangement(n);
+  const actualScreens=cols*rows; // may be >= n (some slots empty)
+
+  // Update arrangement label — format: "8 screen (4 x 2)"
+  const lbl=document.getElementById('scr-arrangement-label');
+  if(lbl) lbl.textContent=n+' screen'+(n!==1?'s':'')+' ('+cols+' x '+rows+')';
+
+  const w=document.getElementById('scr-wall');
+  w.innerHTML='';
+
+  // Build SVG grid wall
+  const TW=62, TH=44, GAP=4, PX=8, PY=8;
+  const svgW=cols*(TW+GAP)-GAP+PX*2;
+  const svgH=rows*(TH+GAP)-GAP+PY*2;
+
+  const ns='http://www.w3.org/2000/svg';
+  const svg=document.createElementNS(ns,'svg');
+  svg.setAttribute('width',svgW);
+  svg.setAttribute('height',svgH);
+  svg.setAttribute('viewBox',`0 0 ${svgW} ${svgH}`);
+
+  // wall background
+  const bg=document.createElementNS(ns,'rect');
+  Object.entries({x:0,y:0,width:svgW,height:svgH,fill:'#FAFBFC',rx:4}).forEach(([k,v])=>bg.setAttribute(k,v));
+  svg.appendChild(bg);
+
+  // border
+  const brd=document.createElementNS(ns,'rect');
+  Object.entries({x:0.5,y:0.5,width:svgW-1,height:svgH-1,fill:'none',stroke:'rgba(232,68,90,0.45)','stroke-width':'1',rx:3}).forEach(([k,v])=>brd.setAttribute(k,v));
+  svg.appendChild(brd);
+
+  let idx=0;
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const x=PX+c*(TW+GAP);
+      const y=PY+r*(TH+GAP);
+      const active=idx<n;
+      idx++;
+
+      // screen body
+      const rect=document.createElementNS(ns,'rect');
+      Object.entries({
+        x,y,width:TW,height:TH,rx:3,
+        fill:active?'rgba(12,68,124,0.85)':'rgba(20,20,30,0.4)',
+        stroke:active?'rgba(0,194,255,0.7)':'rgba(255,255,255,0.08)',
+        'stroke-width':'0.7'
+      }).forEach(([k,v])=>rect.setAttribute(k,v));
+      svg.appendChild(rect);
+
+      if(active){
+        // bezel inner
+        const inner=document.createElementNS(ns,'rect');
+        Object.entries({x:x+3,y:y+3,width:TW-6,height:TH-6,rx:1,fill:'rgba(200,41,61,0.08)',stroke:'rgba(200,41,61,0.20)','stroke-width':'0.4'}).forEach(([k,v])=>inner.setAttribute(k,v));
+        svg.appendChild(inner);
+
+        // screen number
+        const num=document.createElementNS(ns,'text');
+        Object.entries({x:x+TW/2,y:y+TH/2+4,'text-anchor':'middle','font-size':'12','font-weight':'600','font-family':'DM Mono,monospace',fill:'rgba(0,194,255,0.9)'}).forEach(([k,v])=>num.setAttribute(k,v));
+        num.textContent='S'+(c+r*cols+1>n?'':c+r*cols+1);
+        svg.appendChild(num);
+
+        // grid lines inside (mini camera grid hint)
+        for(let gi=1;gi<3;gi++){
+          const gl=document.createElementNS(ns,'line');
+          Object.entries({x1:x+3+gi*(TW-6)/3,y1:y+3,x2:x+3+gi*(TW-6)/3,y2:y+TH-3,stroke:'rgba(200,41,61,0.12)','stroke-width':'0.4'}).forEach(([k,v])=>gl.setAttribute(k,v));
+          svg.appendChild(gl);
+        }
+        for(let gi=1;gi<2;gi++){
+          const gl=document.createElementNS(ns,'line');
+          Object.entries({x1:x+3,y1:y+3+gi*(TH-6)/2,x2:x+TW-3,y2:y+3+gi*(TH-6)/2,stroke:'rgba(200,41,61,0.12)','stroke-width':'0.4'}).forEach(([k,v])=>gl.setAttribute(k,v));
+          svg.appendChild(gl);
+        }
+      } else {
+        // empty slot
+        const cross1=document.createElementNS(ns,'line');
+        Object.entries({x1:x+6,y1:y+6,x2:x+TW-6,y2:y+TH-6,stroke:'rgba(0,0,0,0.08)','stroke-width':'0.6'}).forEach(([k,v])=>cross1.setAttribute(k,v));
+        svg.appendChild(cross1);
+        const cross2=document.createElementNS(ns,'line');
+        Object.entries({x1:x+TW-6,y1:y+6,x2:x+6,y2:y+TH-6,stroke:'rgba(0,0,0,0.08)','stroke-width':'0.6'}).forEach(([k,v])=>cross2.setAttribute(k,v));
+        svg.appendChild(cross2);
+      }
+    }
+  }
+
+  // col/row labels
+  for(let c=0;c<cols;c++){
+    const t=document.createElementNS(ns,'text');
+    Object.entries({x:PX+c*(TW+GAP)+TW/2,y:svgH-1,'text-anchor':'middle','font-size':'7','font-family':'DM Mono,monospace',fill:'rgba(200,41,61,0.30)'}).forEach(([k,v])=>t.setAttribute(k,v));
+    t.textContent='C'+(c+1);
+    svg.appendChild(t);
+  }
+  for(let r=0;r<rows;r++){
+    const t=document.createElementNS(ns,'text');
+    Object.entries({x:2,y:PY+r*(TH+GAP)+TH/2+3,'text-anchor':'start','font-size':'7','font-family':'DM Mono,monospace',fill:'rgba(200,41,61,0.30)'}).forEach(([k,v])=>t.setAttribute(k,v));
+    t.textContent='R'+(r+1);
+    svg.appendChild(t);
+  }
+
+  w.appendChild(svg);
+
+  const pct=ri(tot/(n*cps)*100);
+  document.getElementById('scr-util').textContent=
+    `${n} screens (${cols}×${rows}) — ${cps} Cells (${Math.sqrt(cps)|0}×${Math.sqrt(cps)|0}) — ${n*cps} camera slots — utilisation ${pct}%`;
+}
+
+// ─── CRITICAL GRID ─────────────────────────────────────────────────
+const cgScreens={27:{w:598,h:337,rw:2560,rh:1440},32:{w:708,h:398,rw:2560,rh:1440},43:{w:952,h:535,rw:3840,rh:2160},50:{w:1107,h:623,rw:3840,rh:2160},55:{w:1219,h:685,rw:3840,rh:2160},65:{w:1438,h:808,rw:3840,rh:2160}};
+function calcCG(){
+  const sz=document.getElementById('cg-size').value;
+  const sc=cgScreens[sz]||cgScreens['27'];
+  const camStr=document.getElementById('cg-camres').value;
+  const [cw,ch,ppm]=camStr.split(',').map(Number);
+  const dist=+document.getElementById('cg-dist').value||2975;
+  const angH=+document.getElementById('cg-angH').value||15;
+  const angV=+document.getElementById('cg-angV').value||15;
+  const minPpm=+document.getElementById('cg-ppm').value||125;
+
+  // MOI physical limit
+  const moiC=Math.floor(sc.w/120),moiR=Math.floor(sc.h/67);
+
+  // PPM check 2×2
+  const ds22=sc.rw/(cw*2),ePPM22=ri(ppm*ds22);
+  const ds44=sc.rw/(cw*4),ePPM44=ri(ppm*ds44);
+  const ppmGrid=ePPM22>=minPpm?'2×2':(ePPM44>=minPpm?'4×4':'1×1');
+
+  // ISO angle limit
+  const thetaFull=Math.atan((sc.w/2)/dist)*(180/Math.PI)*2;
+  const isoGrid=thetaFull/2<=30?'4×4':thetaFull/2<=15?'2×2':'1×1';
+
+  // Final recommended grid
+  const order={'1×1':1,'2×2':2,'4×4':3};
+  const grids=[moiC+'×'+moiR,ppmGrid,isoGrid];
+  let final='4×4',finalScore=99;
+  ['2×2','1×1'].forEach(g=>{if(grids.some(x=>x===g)&&order[g]<finalScore){final=g;finalScore=order[g];}});
+  if(grids.every(g=>g==='4×4'))final='4×4';
+
+  // ── ANGLE-BASED CRITICAL ZONE ──
+  // Critical zone dimensions at the wall = 2 × D × tan(θ)
+  const critWmm = r(2*dist*Math.tan(angH*Math.PI/180),1);
+  const critHmm = r(2*dist*Math.tan(angV*Math.PI/180),1);
+
+  // Wall total dimensions from screen count
+  const scrns=+document.getElementById('r-scr').textContent||6;
+  const [wCols,wRows]=screenArrangement(scrns);
+  const wallWmm=wCols*sc.w;
+  const wallHmm=wRows*sc.h;
+
+  // How many screen columns/rows fall within the critical zone
+  const critScrCols=Math.min(wCols,Math.max(1,Math.round(critWmm/sc.w)));
+  const critScrRows=Math.min(wRows,Math.max(1,Math.round(critHmm/sc.h)));
+  const critScrCount=critScrCols*critScrRows;
+
+  // Update outputs
+  const Hwall_bot_val = +document.getElementById('cg-hwall').value || 1100;
+  const He_val        = +(document.getElementById('e-He') ? document.getElementById('e-He').value : 1200) || 1200;
+  const Hwall_top_val = Hwall_bot_val + wRows * sc.h;
+  const angDown       = r(Math.atan((He_val - Hwall_bot_val) / dist) * 180 / Math.PI, 1);
+  const angUp         = r(Math.atan((Hwall_top_val - He_val) / dist) * 180 / Math.PI, 1);
+  const nConsVal      = +(document.getElementById('cg-nops') ? document.getElementById('cg-nops').value : 0) || +(document.getElementById('rm-ops') ? document.getElementById('rm-ops').value : 3) || 3;
+  const cspacingVal   = +(document.getElementById('cg-cspacing') ? document.getElementById('cg-cspacing').value : 650) || 650;
+  const consSpanVal   = Math.max(0,(nConsVal-1)*cspacingVal);
+  const critW_horiz   = r(consSpanVal + 2*dist*Math.tan(angH*Math.PI/180),1);
+  const cone_V_val    = dist*Math.tan(angV*Math.PI/180);
+  const critTop_AFF   = Math.min(He_val+cone_V_val, Hwall_top_val);
+  const critBot_AFF   = Math.max(He_val-cone_V_val, Hwall_bot_val);
+  const critV_H       = r(Math.max(0,critTop_AFF-critBot_AFF),1);
+
+  document.getElementById('cg-wh').textContent     = sc.w+'×'+sc.h+' mm';
+  document.getElementById('cg-moirc').textContent  = moiC+'×'+moiR;
+  document.getElementById('cg-moi').textContent    = moiC+'×'+moiR+' (physical max)';
+  document.getElementById('cg-ppmlim').textContent = ppmGrid+' ('+ePPM22+' PPM at 2×2)';
+  document.getElementById('cg-iso').textContent    = isoGrid+' (full angle '+r(thetaFull,1)+'°)';
+  document.getElementById('cg-rec').textContent    = final;
+  document.getElementById('cg-final').textContent  = final;
+  document.getElementById('cg-ppm22').textContent  = ePPM22+' PPM';
+  // Note: cg-critW / cg-critH / cg-critCols / cg-critRows / cg-critScr are the
+  // authoritative shared-engine values — written by buildZoneViz() below,
+  // which correctly clamps to the actual wall size (matches the drawings exactly).
+  if(document.getElementById('cg-wallAFF'))
+    document.getElementById('cg-wallAFF').textContent = Hwall_bot_val+'mm → '+Hwall_top_val+'mm AFF  (H='+r(Hwall_top_val-Hwall_bot_val,0)+'mm)';
+  if(document.getElementById('cg-eyeAng'))
+    document.getElementById('cg-eyeAng').textContent = '↓'+angDown+'° to bottom  |  ↑'+angUp+'° to top';
+  document.getElementById('f-cg').textContent = 'Horiz crit='+critW_horiz+'mm (span+2×cone, pre-clamp) | Vert crit='+critV_H+'mm (clamp ['+r(critBot_AFF,0)+','+r(critTop_AFF,0)+'] to wall)';
+  buildZoneViz(final, scrns);
+  if(typeof calcR==='function') calcR();
+}
+// ════════════════════════════════════════════════════════════════
+// SHARED CRITICAL ZONE ENGINE
+// Used by buildZoneViz (Critical Grid tab) AND drawElevation (Room tab)
+// so both always show the exact same critical/rotating cell map.
+// ════════════════════════════════════════════════════════════════
+function getCriticalZoneEngine(scrnsOverride){
+  const rd = id => { const el=document.getElementById(id); return el?+(el.value)||0:0; };
+
+  // Wall arrangement
+  const scrns = scrnsOverride || +document.getElementById('r-scr').textContent || 6;
+  const [wCols, wRows] = screenArrangement(scrns);
+
+  // Screen physical size (mm)
+  const szEl  = document.getElementById('cg-size');
+  const sz    = szEl ? szEl.value : '55';
+  const sdims = {27:{w:598,h:337},32:{w:708,h:398},43:{w:952,h:535},50:{w:1107,h:623},55:{w:1219,h:685},65:{w:1438,h:808}};
+  const sd    = sdims[sz] || sdims['55'];
+
+  // Camera grid per screen
+  const gCols = rd('s-cols') || 4;
+  const gRows = rd('s-rows') || 4;
+
+  // Viewing & room parameters
+  const D         = rd('cg-dist')     || 2975;
+  const angH      = rd('cg-angH')     || 15;
+  const angV      = rd('cg-angV')     || 15;
+  const He        = rd('e-He')        || 1200;
+  const Hwall_bot = rd('cg-hwall')    || 1100;
+
+  // Number of operators — prefer the Critical Grid tab's own input,
+  // fall back to the Room tab's operator count.
+  const nOps      = rd('cg-nops') || rd('rm-ops') || 2;
+  const cspacing  = rd('cg-cspacing') || 650;
+  const cons_span = Math.max(0, (nOps - 1) * cspacing);
+
+  // Wall extent (AFF mm)
+  const Hwall_top = Hwall_bot + wRows * sd.h;
+  const wallH_mm  = Hwall_top - Hwall_bot;
+  const wallW_mm  = wCols * sd.w;
+
+  // VERTICAL critical zone (wall-height-aware)
+  const cone_V      = D * Math.tan(angV * Math.PI / 180);
+  const critTop_AFF = Math.min(He + cone_V, Hwall_top);
+  const critBot_AFF = Math.max(He - cone_V, Hwall_bot);
+  const critV_top_offset = Math.min(wallH_mm, critTop_AFF - Hwall_bot);
+  const critV_bot_offset = Math.max(0, critBot_AFF - Hwall_bot);
+  const critV_height_mm  = Math.max(0, critV_top_offset - critV_bot_offset);
+
+  // HORIZONTAL critical zone (sum of all operator cones)
+  const cone_H   = D * Math.tan(angH * Math.PI / 180);
+  const critW_mm = Math.min(wallW_mm, cons_span + 2 * cone_H);
+  const critW_left_offset  = Math.max(0, (wallW_mm - critW_mm) / 2);
+  const critW_right_offset = critW_left_offset + critW_mm;
+
+  // Cell geometry
+  const cellW_mm = sd.w / gCols;
+  const cellH_mm = sd.h / gRows;
+  const totalCW  = wCols * gCols;
+  const totalCH  = wRows * gRows;
+
+  function isCritCell(col, row){
+    const cx_mm = (col + 0.5) * cellW_mm;
+    const cy_mm = wallH_mm - (row + 0.5) * cellH_mm;
+    const inH = cx_mm > critW_left_offset  && cx_mm < critW_right_offset;
+    const inV = cy_mm > critV_bot_offset   && cy_mm < critV_top_offset;
+    return inH && inV;
+  }
+
+  return {
+    wCols, wRows, sd, gCols, gRows, D, angH, angV, He, Hwall_bot, Hwall_top,
+    nOps, cspacing, cons_span, wallH_mm, wallW_mm,
+    critV_height_mm, critV_top_offset, critV_bot_offset,
+    critW_mm, critW_left_offset, critW_right_offset,
+    cellW_mm, cellH_mm, totalCW, totalCH, isCritCell, scrns
+  };
+}
+
+// ════════════════════════════════════════════════════════════════
+// ZONE VISUALIZER — CAMERA-CELL LEVEL  (shared engine, ISO 11064 logic)
+// ════════════════════════════════════════════════════════════════
+function buildZoneViz(critGrid, scrns){
+  const E = getCriticalZoneEngine(scrns);
+  const { wCols, wRows, sd, gCols, gRows, D, angH, angV, He, Hwall_bot,
+          Hwall_top, nOps, cons_span, wallH_mm, wallW_mm,
+          critV_height_mm, critW_mm, cellW_mm, cellH_mm,
+          totalCW, totalCH, isCritCell } = E;
+
+  let critCount = 0, totalCells = totalCW * totalCH;
+  for(let rr=0; rr<totalCH; rr++)
+    for(let cc=0; cc<totalCW; cc++)
+      if(isCritCell(cc,rr)) critCount++;
+
+  // ── Update info panel ────────────────────────────────────────────
+  const el = id => document.getElementById(id);
+  if(el('cg-critW'))    el('cg-critW').textContent    = Math.round(critW_mm)+' mm  ('+nOps+' op'+(nOps!==1?'s':'')+' × span+2×cone)';
+  if(el('cg-critH'))    el('cg-critH').textContent    = Math.round(critV_height_mm)+' mm  (wall H-aware, clamped)';
+  if(el('cg-critCols')) el('cg-critCols').textContent = Math.round(critW_mm/cellW_mm)+' cells  ('+Math.round(critW_mm)+'/'+Math.round(cellW_mm)+'mm)';
+  if(el('cg-critRows')) el('cg-critRows').textContent = Math.round(critV_height_mm/cellH_mm)+' cells  ('+Math.round(critV_height_mm)+'/'+Math.round(cellH_mm)+'mm)';
+  if(el('cg-critScr'))  el('cg-critScr').textContent  = critCount+' cells  ('+Math.round(critCount/totalCells*100)+'% of '+totalCells+' total)';
+
+  // ── Wall-saturation notice ──
+  // If the critical zone already fills the entire wall width, changing the
+  // operator count or console spacing won't visibly shrink it any further —
+  // the viewing angle / distance alone already saturates the wall.
+  if(el('cg-satwarn')){
+    const isSaturated = E.critW_mm >= E.wallW_mm - 0.5;
+    el('cg-satwarn').innerHTML = isSaturated
+      ? '<span class="badge warn">⚠ Critical zone fills 100% of wall width — reducing operators won\'t shrink it further. Increase wall width or reduce viewing distance/angle to see a difference.</span>'
+      : '';
+  }
+
+  // ── SVG LAYOUT ───────────────────────────────────────────────────
+  const MAX_W = 530, MAX_H = 210;
+  let cellPX = Math.min(Math.floor(MAX_W / totalCW), Math.floor(MAX_H / totalCH));
+  cellPX = Math.max(cellPX, 3);
+  const GAP  = cellPX > 7 ? 1 : 0;
+
+  const ns = 'http://www.w3.org/2000/svg';
+  const PX=30, PY=22, RIGHT_ANN=48, BOT_ANN=32;
+  const gridW = totalCW*(cellPX+GAP)-GAP;
+  const gridH = totalCH*(cellPX+GAP)-GAP;
+  const svgW  = PX + gridW + RIGHT_ANN;
+  const svgH  = PY + gridH + BOT_ANN;
+
+  const svg = document.createElementNS(ns,'svg');
+  svg.setAttribute('width','100%');
+  svg.setAttribute('viewBox','0 0 '+svgW+' '+svgH);
+  svg.style.display='block';
+
+  const mk = (tag,attrs,txt)=>{
+    const e=document.createElementNS(ns,tag);
+    Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));
+    if(txt!==undefined) e.textContent=txt;
+    return e;
+  };
+  svg.appendChild(mk('rect',{x:0,y:0,width:svgW,height:svgH,fill:'#FAFBFC',rx:4}));
+
+  svg.appendChild(mk('text',{x:PX,y:13,'font-size':'8','font-family':'DM Mono,monospace',
+    fill:'rgba(200,41,61,0.55)','letter-spacing':'0.06em'},
+    'ZONE VISUALIZER — VIDEO WALL LAYOUT  ('+wCols+'×'+wRows+' screens, '+
+    gCols+'×'+gRows+' cells each = '+totalCW+'×'+totalCH+' total, '+nOps+' operator'+(nOps!==1?'s':'')+')'));
+
+  // ── Draw every camera cell ────────────────────────────────────────
+  for(let rr=0; rr<totalCH; rr++){
+    for(let cc=0; cc<totalCW; cc++){
+      const crit = isCritCell(cc, rr);
+      const x = PX + cc*(cellPX+GAP);
+      const y = PY + rr*(cellPX+GAP);
+      svg.appendChild(mk('rect',{
+        x, y, width:cellPX, height:cellPX,
+        rx: cellPX>6 ? 1 : 0,
+        fill:   crit ? 'rgba(200,41,61,0.78)' : 'rgba(238,240,244,0.95)',
+        stroke: crit ? 'rgba(200,41,61,0.80)'  : 'rgba(0,0,0,0.12)',
+        'stroke-width': crit ? (cellPX>6?'0.6':'0.3') : (cellPX>6?'0.35':'0.18')
+      }));
+      if(cellPX >= 13){
+        svg.appendChild(mk('text',{
+          x:x+cellPX/2, y:y+cellPX/2+Math.max(4,cellPX*0.35),
+          'text-anchor':'middle','font-size':Math.max(7,cellPX*0.52),
+          'font-weight':'700','font-family':'DM Mono,monospace',
+          fill: crit?'rgba(200,41,61,1.0)':'rgba(0,0,0,0.25)'
+        }, crit?'C':'N'));
+      }
+    }
+  }
+
+  // ── Screen separator lines ────────────────────────────────────────
+  for(let sc=1; sc<wCols; sc++){
+    const sx = PX + sc*gCols*(cellPX+GAP) - (GAP>0?GAP/2:0) - 0.5;
+    svg.appendChild(mk('line',{x1:sx,y1:PY-1,x2:sx,y2:PY+gridH+1,
+      stroke:'rgba(200,41,61,0.45)','stroke-width':'1.5'}));
+  }
+  for(let sr=1; sr<wRows; sr++){
+    const sy2 = PY + sr*gRows*(cellPX+GAP) - (GAP>0?GAP/2:0) - 0.5;
+    svg.appendChild(mk('line',{x1:PX-1,y1:sy2,x2:PX+gridW+1,y2:sy2,
+      stroke:'rgba(200,41,61,0.45)','stroke-width':'1.5'}));
+  }
+
+  // ── Critical zone bounding box (dashed) ──────────────────────────
+  const critW_left_offset  = E.critW_left_offset;
+  const critV_top_offset   = E.critV_top_offset;
+  const czX_px = PX + (critW_left_offset / wallW_mm) * gridW;
+  const czW_px = (critW_mm / wallW_mm) * gridW;
+  const czY_px = PY + ((wallH_mm - critV_top_offset) / wallH_mm) * gridH;
+  const czH_px = (critV_height_mm / wallH_mm) * gridH;
+
+  svg.appendChild(mk('rect',{
+    x:czX_px, y:czY_px, width:czW_px, height:czH_px,
+    fill:'none', stroke:'rgba(200,41,61,0.90)',
+    'stroke-width':'1.6','stroke-dasharray':'5 3', rx:2
+  }));
+
+  // ── Dimension annotations ─────────────────────────────────────────
+  const dimTopY = czY_px - 4;
+  svg.appendChild(mk('line',{x1:czX_px,y1:dimTopY,x2:czX_px+czW_px,y2:dimTopY,
+    stroke:'rgba(200,41,61,0.55)','stroke-width':'0.7'}));
+  svg.appendChild(mk('polygon',{
+    points:`${czX_px},${dimTopY} ${czX_px+5},${dimTopY-3} ${czX_px+5},${dimTopY+3}`,
+    fill:'rgba(200,41,61,0.60)'}));
+  svg.appendChild(mk('polygon',{
+    points:`${czX_px+czW_px},${dimTopY} ${czX_px+czW_px-5},${dimTopY-3} ${czX_px+czW_px-5},${dimTopY+3}`,
+    fill:'rgba(200,41,61,0.60)'}));
+  svg.appendChild(mk('text',{
+    x:czX_px+czW_px/2, y:dimTopY-3,
+    'text-anchor':'middle','font-size':'8','font-family':'DM Mono,monospace',
+    fill:'rgba(200,41,61,0.90)'},Math.round(critW_mm)+'mm'));
+
+  const dimRX = czX_px + czW_px + 4;
+  svg.appendChild(mk('line',{x1:dimRX,y1:czY_px,x2:dimRX,y2:czY_px+czH_px,
+    stroke:'rgba(200,41,61,0.55)','stroke-width':'0.7'}));
+  svg.appendChild(mk('polygon',{
+    points:`${dimRX},${czY_px} ${dimRX-3},${czY_px+5} ${dimRX+3},${czY_px+5}`,
+    fill:'rgba(200,41,61,0.60)'}));
+  svg.appendChild(mk('polygon',{
+    points:`${dimRX},${czY_px+czH_px} ${dimRX-3},${czY_px+czH_px-5} ${dimRX+3},${czY_px+czH_px-5}`,
+    fill:'rgba(200,41,61,0.60)'}));
+  svg.appendChild(mk('text',{
+    x:dimRX+4, y:czY_px+czH_px/2+3,
+    'font-size':'8','font-family':'DM Mono,monospace',
+    fill:'rgba(200,41,61,0.90)'},Math.round(critV_height_mm)+'mm'));
+
+  // ── AFF reference ticks on right side ────────────────────────────
+  const hPts = [
+    {aff: Hwall_top, label:'Top '+Hwall_top+'mm', col:'rgba(200,41,61,0.50)'},
+    {aff: He,        label:'Eye '+He+'mm',         col:'rgba(5,150,105,0.75)'},
+    {aff: Hwall_bot, label:'Bot '+Hwall_bot+'mm',  col:'rgba(217,119,6,0.70)'},
+  ];
+  const annX = PX + gridW + 5;
+  hPts.forEach(hp=>{
+    const yPx = PY + ((Hwall_top - hp.aff) / wallH_mm) * gridH;
+    if(yPx<PY-2 || yPx>PY+gridH+2) return;
+    svg.appendChild(mk('line',{x1:PX+gridW,y1:yPx,x2:annX+3,y2:yPx,
+      stroke:hp.col,'stroke-width':'0.7','stroke-dasharray':'3 2'}));
+    svg.appendChild(mk('text',{x:annX+5,y:yPx+3,'font-size':'7',
+      'font-family':'DM Mono,monospace',fill:hp.col},hp.label));
+  });
+
+  // ── Legend ────────────────────────────────────────────────────────
+  const legY = PY + gridH + 8;
+  [
+    {x:PX,    fill:'rgba(200,41,61,0.78)',   stroke:'rgba(200,41,61,0.80)', txt:' Critical (C)', tc:'rgba(200,41,61,0.90)'},
+    {x:PX+76, fill:'rgba(238,240,244,0.95)', stroke:'rgba(0,0,0,0.12)',     txt:' Rotating (N)',  tc:'rgba(0,0,0,0.55)'}
+  ].forEach(leg=>{
+    svg.appendChild(mk('rect',{x:leg.x,y:legY,width:10,height:8,rx:1,
+      fill:leg.fill,stroke:leg.stroke,'stroke-width':'0.7'}));
+    svg.appendChild(mk('text',{x:leg.x+12,y:legY+7,'font-size':'8.5',
+      'font-family':'DM Mono,monospace',fill:leg.tc},leg.txt));
+  });
+  svg.appendChild(mk('text',{x:PX+160,y:legY+7,'font-size':'7.5',
+    'font-family':'DM Mono,monospace',fill:'rgba(200,41,61,0.30)'},
+    'W=span('+nOps+'op)+2×cone  |  H=clamp([He±D·tanθV], wall)'));
+
+  // ── Inject ────────────────────────────────────────────────────────
+  const container = document.getElementById('zone-viz-svg');
+  container.innerHTML = '';
+  container.appendChild(svg);
+}
+
+// ─── OPERATORS ─────────────────────────────────────────────────────
+function calcO(){
+  const nc=+document.getElementById('o-crit').value||0;
+  const ns=+document.getElementById('o-sec').value||0;
+  const nn=+document.getElementById('o-non').value||0;
+  const ts=+document.getElementById('o-ts').value||5;
+  const wc=+document.getElementById('o-wc').value||1;
+  const ws=+document.getElementById('o-ws').value||0.5;
+  const wn=+document.getElementById('o-wn').value||0.25;
+  const neff=nc*wc+ns*ws+nn*wn;
+  const spmsys=r(neff*ts/60,2),spmop=r(60/ts,1);
+  const rawOps=spmsys/spmop,ops=rc(rawOps),sup=Math.max(1,Math.floor(ops/3));
+  document.getElementById('o-neff').textContent=r(neff,1);
+  document.getElementById('o-spmsys').textContent=spmsys;
+  document.getElementById('o-spmop').textContent=spmop;
+  document.getElementById('o-raw').textContent=r(rawOps,2);
+  document.getElementById('o-m1').textContent=spmsys;
+  document.getElementById('o-m2').textContent=spmop;
+  document.getElementById('o-m3').textContent=ops;
+  document.getElementById('o-sup').textContent=sup;
+  document.getElementById('f-ops').textContent=`Neff=${r(neff,1)} | SPMsys=${spmsys} | SPMop=${spmop} | ${r(rawOps,2)} → ${ops} operators`;
+  buildOpIcons(ops,rawOps);
+}
+function buildOpIcons(n,raw){
+  const w=document.getElementById('op-icons');w.innerHTML='';
+  for(let i=1;i<=n;i++){
+    const f=i===n?(raw-(n-1)):1,a=Math.min(1,f),op=0.3+a*0.6;
+    const d=document.createElement('div');d.className='op-unit';
+    d.innerHTML=`<div class="op-head" style="background:rgba(20,86,168,${op})"><i class="ti ti-user" style="font-size:13px;color:#E8F0FE"></i></div><div class="op-body" style="background:rgba(20,86,168,${op*0.8})"><i class="ti ti-briefcase" style="font-size:10px;color:#8BA3C7"></i></div><div class="op-lbl">Op ${i}</div>`;
+    w.appendChild(d);
+  }
+}
+
+// ─── ERGONOMICS ─────────────────────────────────────────────────────
+function calcE(){
+  const He=+document.getElementById('e-He').value||1200;
+  const Hc=+document.getElementById('e-Hc').value||750;
+  const Dc=+document.getElementById('e-Dc').value||800;
+  const D=+document.getElementById('e-D').value||600;
+  const d=+document.getElementById('e-d').value||4000;
+  const sh=+document.getElementById('e-sh').value||685;
+  const ns=+document.getElementById('e-ns').value||2;
+  const monSz=+document.getElementById('e-mon').value||27;
+  const theta=+document.getElementById('e-theta').value||20;
+  const Hl=Hc-((D+d)/(Dc+d))*(He-Hc);
+  const wallH=sh*ns,mvd=ri(wallH/(0.00465*50));
+  const htop=ri(He+d*Math.tan(10*Math.PI/180));
+  const monDim=monDims[monSz]||monDims[27];
+  const vd=ri(11.07*monSz/Math.tan(theta*Math.PI/180));
+  const sc=ri(He-vd*Math.tan(15*Math.PI/180));
+  const wallUsed=1100;
+  document.getElementById('e-Hl').textContent=ri(Hl);
+  document.getElementById('e-wh').textContent=wallH;
+  document.getElementById('e-mvd').textContent=mvd;
+  document.getElementById('e-wsd').textContent=vd;
+  document.getElementById('e-mw').textContent=monDim.w+' mm';
+  document.getElementById('e-vd').textContent=vd+' mm '+(vd>=700?'✓':'⚠ < 700mm');
+  document.getElementById('e-sc').textContent=sc+' mm AFF';
+  document.getElementById('e-htop').textContent=htop+' mm';
+  document.getElementById('e-vad').textContent='3.438 × pitch mm';
+  document.getElementById('e-dtw').textContent=ri(d-900)+' mm (d − desk depth)';
+  document.getElementById('e-hl-badge').innerHTML=wallUsed>=Hl?badge(`${wallUsed}mm AFF ✓`,'ok'):badge(`${wallUsed}mm < Hl min`,'err');
+  const bars=[{l:'Console-to-wall (d)',v:d,c:'#1A6FD4'},{l:'Operator position',v:2975,c:'#3D8FE8'},{l:'Supervisor position',v:4975,c:'#C8293D'},{l:'Max view distance',v:mvd,c:'#F59E0B'}];
+  const mx=Math.max(...bars.map(b=>b.v))*1.08;
+  document.getElementById('e-bars').innerHTML=bars.map(b=>`<div class="bar-row"><div class="bar-lbl" title="${b.l}">${b.l}</div><div class="bar-track"><div class="bar-fill" style="width:${ri(b.v/mx*100)}%;background:${b.c}"></div></div><div class="bar-val">${b.v.toLocaleString()}</div></div>`).join('');
+  document.getElementById('f-ergo').textContent=`Hl=${Hc}−(${D}+${d})/(${Dc}+${d})×${He-Hc}=${ri(Hl)}mm | MaxDist=${mvd}mm | MonitorVd=${vd}mm | ScreenCenter=${sc}mm`;
+  // He, Hc, Dc feed the shared critical-zone engine and the Section/Elevation drawings
+  if(typeof calcCG==='function') calcCG();
+}
+
+// ─── PIXEL / PPI ────────────────────────────────────────────────────
+function calcP(){
+  const distMm=+document.getElementById('p-dist').value||2975;
+  const diag=+document.getElementById('p-diag').value||55;
+  const hpx=+document.getElementById('p-hpx').value||1920;
+  const vpx=+document.getElementById('p-vpx').value||1080;
+  const pitch=+document.getElementById('p-pitch').value||1.27;
+  const tech=document.getElementById('p-tech').value;
+  const distIn=distMm/25.4,minPI=ri(1/(distIn*0.000291));
+  const diagPx=Math.sqrt(hpx*hpx+vpx*vpx),dPPI=r(diagPx/diag,1),pp=r(25.4/dPPI,3);
+  const ok=dPPI>=minPI;
+  document.getElementById('p-ppi').textContent=r(dPPI,0);
+  document.getElementById('p-minppi').textContent=minPI;
+  document.getElementById('p-pp').textContent=pp;
+  document.getElementById('p-verdict').textContent=ok?'PASS':'FAIL';
+  document.getElementById('p-verdict').style.color=ok?'#34D399':'#FCA5A5';
+  document.getElementById('p-badge').innerHTML=ok?badge(`${r(dPPI,0)} ≥ ${minPI} PPI ✓`,'ok'):badge(`${r(dPPI,0)} < ${minPI} required`,'err');
+  document.getElementById('f-ppi').textContent=`√(${hpx}²+${vpx}²)/${diag}" = ${r(dPPI,0)} PPI | Min: ${minPI} PPI | Pitch: ${pp}mm`;
+  [{id:'ppi-r1',mp:57,d:5},{id:'ppi-r2',mp:28,d:10},{id:'ppi-r3',mp:19,d:15},{id:'ppi-r4',mp:14,d:20}].forEach(x=>{
+    const tr=document.getElementById(x.id),td=tr.querySelectorAll('td');
+    tr.className=Math.abs(distMm/304.8-x.d)<3?'hl':'';
+    td[2].innerHTML=dPPI>=x.mp?'<span style="color:#34D399">✓</span>':'<span style="color:#FCA5A5">✗</span>';
+  });
+  document.getElementById('led-section').style.display=tech==='led'?'block':'none';
+  if(tech==='led'){
+    const dm=distMm/1000;
+    [{id:'led-r1',pp:10,mn:34.4,op:57.2},{id:'led-r2',pp:5,mn:17.2,op:28.7},{id:'led-r3',pp:2.5,mn:8.6,op:14.3},{id:'led-r4',pp:1.5,mn:5.1,op:8.6},{id:'led-r5',pp:0.9,mn:3.1,op:5.1},{id:'led-r6',pp:0.6,mn:2.1,op:3.4}].forEach(x=>{
+      const tr=document.getElementById(x.id),td=tr.querySelectorAll('td');
+      tr.className=Math.abs(pitch-x.pp)<0.3?'hl':'';
+      let s=dm<x.mn?'<span style="color:#FCA5A5">Too close</span>':dm<x.op?'<span style="color:#FCD34D">Acceptable</span>':'<span style="color:#34D399">Optimum</span>';
+      td[3].innerHTML=Math.abs(pitch-x.pp)<0.3?s:'—';
+    });
+  }
+}
+
+// ─── FONT ────────────────────────────────────────────────────────────
+function calcF(){
+  const th=+document.getElementById('fn-th').value||25;
+  const near=+document.getElementById('fn-near').value||2975;
+  const far=+document.getElementById('fn-far').value||5892;
+  const ppi=+document.getElementById('fn-ppi').value||42;
+  const arr=+document.getElementById('fn-arr').value||1;
+  const an=60*Math.atan(th/near)*(180/Math.PI);
+  const af=60*Math.atan(th/far)*(180/Math.PI);
+  const vN=an>=20?'Excellent':an>=15?'Good':an>=10?'Acceptable':'Too small';
+  const vF=af>=20?'Excellent':af>=15?'Good':af>=10?'Acceptable':'Too small';
+  document.getElementById('arc-near').style.width=ri(Math.min(100,an/40*100))+'%';
+  document.getElementById('arc-far').style.width=ri(Math.min(100,af/40*100))+'%';
+  document.getElementById('arc-near-v').textContent=r(an,1);
+  document.getElementById('arc-far-v').textContent=r(af,1);
+  document.getElementById('fn-m1').textContent=r(an,1);
+  document.getElementById('fn-m2').textContent=r(af,1);
+  document.getElementById('fn-m3').textContent=vN;
+  document.getElementById('fn-m4').textContent=vF;
+  document.getElementById('fn-m3c').className='met '+(an>=10?'grn':'err');
+  document.getElementById('fn-m4c').className='met '+(af>=10?'grn':'err');
+  document.getElementById('fn-nbadge').innerHTML=badge(vN,an>=10?'ok':an>=8?'warn':'err');
+  document.getElementById('fn-fbadge').innerHTML=badge(vF,af>=10?'ok':af>=8?'warn':'err');
+  const recTh=ri(far/4500*25),pxH=ri(th*ppi/25.4),pt=ri(pxH/1.33);
+  document.getElementById('fn-recth').textContent=recTh+' mm';
+  document.getElementById('fn-px').textContent=pxH+' px';
+  document.getElementById('fn-pt').textContent='~'+pt+' pt';
+  document.getElementById('fn-arr-s').textContent=arr>1?`÷${arr} → ~${ri(pt/arr)} pt per screen`:'1× (single screen)';
+  document.getElementById('f-font').textContent=`Near: 60×atan(${th}/${near})=${r(an,1)} arcmin | Far: 60×atan(${th}/${far})=${r(af,1)} arcmin`;
+}
+
+// ─── ROOM SIZING ─────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// ROOM SIZING + LIVE DRAWINGS
+// ═══════════════════════════════════════════════════════════════════
+function calcR(){
+  const ops   = +document.getElementById('rm-ops').value    || 3;
+  const cons  = ops; // consoles are now unified with operators — one console per operator
+  const racks = +document.getElementById('rm-racks').value  || 4;
+  const cams  = +document.getElementById('rm-cams').value   || 400;
+  // Live screen count — always sourced from the Screens tab's actual output
+  const liveScr = +document.getElementById('r-scr').textContent || 0;
+  const scrns = liveScr || +document.getElementById('rm-screens').value || 6;
+  // Keep the visible field in sync so the user always sees the true count
+  const rmScrEl = document.getElementById('rm-screens');
+  if(rmScrEl && liveScr) rmScrEl.value = liveScr;
+  const W     = +document.getElementById('rm-W').value      || 7;
+  const D     = +document.getElementById('rm-D').value      || 8;
+  const roomArea = r(W * D, 1);
+
+  // Areas
+  const opArea   = ops * 4.5;
+  const consArea = cons * 1.5;
+  const rackArea = racks * 0.8;
+  const base     = opArea + consArea + rackArea;
+  const calcTotal= r(base * 1.35, 1);
+  const sup      = Math.max(1, Math.floor(ops / 3));
+
+  // Category
+  let cat, rec;
+  if (cams <= 32)        { cat = 'Small  (≤ 32 cameras)';  rec = '8–12 m²'; }
+  else if (cams <= 128)  { cat = 'Medium (33–128 cameras)'; rec = '15–25 m²'; }
+  else                   { cat = 'Large / Central Command'; rec = '≥ 30 m²'; }
+
+  // Compliance: is room big enough?
+  const roomOk = roomArea >= calcTotal;
+
+  // Update metrics
+  document.getElementById('rm-cat').textContent         = cat;
+  document.getElementById('rm-area').textContent        = rec;
+  document.getElementById('rm-area-actual').textContent = roomArea + ' m²';
+  document.getElementById('rm-calc-area').textContent   = calcTotal + ' m²';
+  document.getElementById('rm-opzone').textContent      = r(opArea,1) + ' m²';
+  document.getElementById('rm-eqzone').textContent      = r(consArea+rackArea,1) + ' m²';
+  document.getElementById('rm-circ').textContent        = r(base*0.35,1) + ' m²';
+  document.getElementById('rm-sup').textContent         = sup;
+  document.getElementById('rm-m1').textContent          = '4.5';
+  document.getElementById('rm-m2').textContent          = r(consArea,1);
+  document.getElementById('rm-m3').textContent          = r(rackArea,1);
+  document.getElementById('rm-m4').textContent          = calcTotal;
+  document.getElementById('rm-m5').textContent          = roomArea;
+
+  // Drawing header
+  document.getElementById('dwg-dim').textContent       = W.toFixed(1) + ' × ' + D.toFixed(1) + ' m';
+  document.getElementById('dwg-area-m').textContent    = roomArea + ' m²';
+  const cb = document.getElementById('dwg-comp-badge');
+  cb.textContent = roomOk ? '■ COMPLIANT' : '⚠ UNDERSIZED';
+  cb.style.color = roomOk ? '#34D399' : '#FCA5A5';
+
+  // Draw all three views
+  drawPlan(W, D, ops, cons, racks, sup, scrns, calcTotal);
+  drawElevation(W, scrns, cons);
+  drawSection(D, ops);
+  drawCompliance(W, D, ops, cons, racks, calcTotal, roomArea);
+}
+
+// ─── HELPERS ──────────────────────────────────────────────────────
+function svgEl(tag, attrs, txt){
+  const ns='http://www.w3.org/2000/svg';
+  const el=document.createElementNS(ns,tag);
+  for(const[k,v] of Object.entries(attrs)) el.setAttribute(k,v);
+  if(txt!==undefined) el.textContent=txt;
+  return el;
+}
+function clearSvg(id){
+  const s=document.getElementById(id);
+  while(s.firstChild) s.removeChild(s.firstChild);
+  return s;
+}
+function dimLine(svg,x1,y1,x2,y2,label,offset,horiz){
+  const g=svgEl('g',{});
+  const o=offset||10;
+  if(horiz){
+    // horizontal dim
+    g.appendChild(svgEl('line',{x1,y1:y1+o,x2,y2:y2+o,stroke:'rgba(232,68,90,0.45)','stroke-width':'0.5','stroke-dasharray':'3 2'}));
+    g.appendChild(svgEl('line',{x1,y1,x2:x1,y2:y1+o+2,stroke:'rgba(232,68,90,0.35)','stroke-width':'0.5'}));
+    g.appendChild(svgEl('line',{x1:x2,y1,x2,y2:y2+o+2,stroke:'rgba(232,68,90,0.35)','stroke-width':'0.5'}));
+    g.appendChild(svgEl('text',{x:(x1+x2)/2,y:y1+o+10,'text-anchor':'middle','font-size':'9','font-family':'DM Mono,monospace',fill:'#C8293D'},label));
+  } else {
+    g.appendChild(svgEl('line',{x1:x1-o,y1,x2:x2-o,y2,stroke:'rgba(232,68,90,0.45)','stroke-width':'0.5','stroke-dasharray':'3 2'}));
+    g.appendChild(svgEl('line',{x1,y1,x2:x1-o-2,y2:y1,stroke:'rgba(232,68,90,0.35)','stroke-width':'0.5'}));
+    g.appendChild(svgEl('line',{x1:x2,y1:y2,x2:x2-o-2,y2,stroke:'rgba(232,68,90,0.35)','stroke-width':'0.5'}));
+    const t=svgEl('text',{x:x1-o-4,y:(y1+y2)/2+3,'text-anchor':'middle','font-size':'9','font-family':'DM Mono,monospace',fill:'#C8293D',transform:`rotate(-90,${x1-o-4},${(y1+y2)/2+3})`},label);
+    g.appendChild(t);
+  }
+  svg.appendChild(g);
+}
+function crosshair(svg,cx,cy,r2){
+  svg.appendChild(svgEl('line',{x1:cx-r2,y1:cy,x2:cx+r2,y2:cy,stroke:'rgba(200,41,61,0.30)','stroke-width':'0.5'}));
+  svg.appendChild(svgEl('line',{x1:cx,y1:cy-r2,x2:cx,y2:cy+r2,stroke:'rgba(200,41,61,0.30)','stroke-width':'0.5'}));
+  svg.appendChild(svgEl('circle',{cx,cy,r:3,fill:'none',stroke:'rgba(0,194,255,0.5)','stroke-width':'0.5'}));
+}
+
+// ─── PLAN VIEW ────────────────────────────────────────────────────
+function drawPlan(W,D,ops,cons,racks,sup,scrns,calcArea){
+  const svg = clearSvg('svg-plan');
+  const mx=52, my=38, pw=400, ph=260;
+  const sx=pw/Math.max(W,3), sy=ph/Math.max(D,3);
+  const ns='http://www.w3.org/2000/svg';
+
+  // ── Grid background ──
+  for(let gx=0;gx<=W;gx++)
+    svg.appendChild(svgEl('line',{x1:mx+gx*sx,y1:my,x2:mx+gx*sx,y2:my+ph,stroke:'rgba(0,0,0,0.05)','stroke-width':'0.5'}));
+  for(let gy=0;gy<=D;gy++)
+    svg.appendChild(svgEl('line',{x1:mx,y1:my+gy*sy,x2:mx+pw,y2:my+gy*sy,stroke:'rgba(0,0,0,0.05)','stroke-width':'0.5'}));
+
+  // ── Room outline ──
+  svg.appendChild(svgEl('rect',{x:mx,y:my,width:pw,height:ph,
+    fill:'rgba(0,0,0,0.015)',stroke:'rgba(200,41,61,0.40)','stroke-width':'1.5',rx:'3'}));
+
+  // ── Row labels on left wall (R1, R2 ...) matching image 2 ──
+  const [wCols,wRows] = screenArrangement(scrns||1);
+  const nRoomRows = Math.floor(D);
+  for(let rr=0; rr<Math.min(wRows,8); rr++){
+    const ry = my + (rr+0.5)*(ph*0.22/Math.max(wRows,1));
+    const rbox = document.createElementNS(ns,'rect');
+    Object.entries({x:mx-22,y:my+rr*18+4,width:18,height:14,rx:2,
+      fill:'rgba(16,185,129,0.15)',stroke:'rgba(16,185,129,0.5)','stroke-width':'0.6'})
+      .forEach(([k,v])=>rbox.setAttribute(k,v));
+    svg.appendChild(rbox);
+    svg.appendChild(svgEl('text',{x:mx-13,y:my+rr*18+14,'text-anchor':'middle',
+      'font-size':'8','font-family':'DM Mono,monospace',fill:'rgba(16,185,129,0.85)'},'R'+(rr+1)));
+  }
+
+  // ── VIDEO WALL (top wall) ──
+  const vwDepth = Math.min(sy*0.22, 18);
+  const vwTotalW = pw*0.92;
+  const vwStartX = mx+(pw-vwTotalW)/2;
+  // wall mount plate
+  svg.appendChild(svgEl('rect',{x:mx,y:my,width:pw,height:vwDepth*wRows+2,
+    fill:'rgba(200,41,61,0.10)',stroke:'rgba(200,41,61,0.20)','stroke-width':'0.5'}));
+  // screen tiles
+  const tileW=vwTotalW/wCols, tileH=vwDepth;
+  for(let rr=0; rr<wRows; rr++){
+    for(let cc=0; cc<wCols; cc++){
+      const tx=vwStartX+cc*tileW, ty=my+1+rr*(tileH+1);
+      svg.appendChild(svgEl('rect',{x:tx+0.5,y:ty,width:tileW-1,height:tileH,
+        fill:'rgba(200,41,61,0.80)',stroke:'rgba(200,41,61,0.90)','stroke-width':'0.5',rx:'1'}));
+    }
+  }
+  const wallFaceY = my + vwDepth*wRows + 2;
+  svg.appendChild(svgEl('text',{x:mx+pw/2,y:wallFaceY+10,'text-anchor':'middle',
+    'font-size':'8','font-family':'DM Mono,monospace',fill:'rgba(232,68,90,0.75)'},
+    wCols+'×'+wRows+' VIDEO WALL ('+scrns+' screens)'));
+
+  // ── OPERATOR CONSOLES ──
+  // Viewing distance: live from Critical Grid tab → scale to room depth
+  const liveDist = +( (document.getElementById('cg-dist')||{value:2975}).value || 2975 );
+  const viewDist_px = Math.min(liveDist/1000*sy, ph*0.42);
+  const consoleY = wallFaceY + viewDist_px;
+  const consH = Math.min(sy*0.45,22);
+  const consW = Math.min((pw*0.75)/cons, 56);
+  const totalCW = cons*consW + (cons-1)*4;
+  const consStartX = mx + (pw-totalCW)/2;
+
+  // Collect console centre positions for sightlines
+  const consoleCentres = [];
+  for(let i=0; i<cons; i++){
+    const cx = consStartX + i*(consW+4);
+    const cMidX = cx + consW/2;
+    const eyeY  = consoleY + 4; // eye position (front of console)
+    consoleCentres.push({cx:cMidX, cy:eyeY});
+
+    // console body
+    svg.appendChild(svgEl('rect',{x:cx,y:consoleY,width:consW,height:consH,
+      fill:'rgba(20,86,168,0.20)',stroke:'rgba(20,86,168,0.50)','stroke-width':'0.8',rx:'3'}));
+    // monitor bump facing wall
+    svg.appendChild(svgEl('rect',{x:cx+3,y:consoleY-8,width:consW-6,height:9,
+      fill:'rgba(20,86,168,0.30)',stroke:'rgba(20,86,168,0.40)','stroke-width':'0.5',rx:'2'}));
+    // chair circle
+    svg.appendChild(svgEl('circle',{cx:cMidX,cy:consoleY+consH+11,r:8,
+      fill:'rgba(20,86,168,0.10)',stroke:'rgba(20,86,168,0.30)','stroke-width':'0.5'}));
+    // crosshair
+    crosshair(svg, cMidX, consoleY+consH/2, 5);
+    // label
+    svg.appendChild(svgEl('text',{x:cMidX,y:consoleY+consH/2+4,'text-anchor':'middle',
+      'font-size':'8','font-family':'DM Mono,monospace',fill:'rgba(61,143,232,0.80)'},'C'+(i+1)));
+  }
+
+  // ── SIGHTLINES FROM ALL OPERATORS (Fix 2) ──────────────────────
+  // For each operator draw their ±θH cone to the wall
+  const angH = +( (document.getElementById('cg-angH')||{value:15}).value || 15 );
+  consoleCentres.forEach((op, idx)=>{
+    const distToWall = op.cy - wallFaceY; // px
+    const halfCone   = Math.tan(angH * Math.PI/180) * distToWall;
+    const wallMidX   = op.cx;
+    const wallL      = wallMidX - halfCone;
+    const wallR      = wallMidX + halfCone;
+
+    // Left sightline
+    svg.appendChild(svgEl('line',{
+      x1:op.cx, y1:op.cy,
+      x2:Math.max(mx, wallL), y2:wallFaceY,
+      stroke:'rgba(200,41,61,0.30)','stroke-width':'0.7','stroke-dasharray':'5 3'
+    }));
+    // Right sightline
+    svg.appendChild(svgEl('line',{
+      x1:op.cx, y1:op.cy,
+      x2:Math.min(mx+pw, wallR), y2:wallFaceY,
+      stroke:'rgba(200,41,61,0.30)','stroke-width':'0.7','stroke-dasharray':'5 3'
+    }));
+    // Small arc at operator showing angle
+    const arcR2 = 14;
+    // angle in SVG coords: wall is "up" (negative y), left = negative x
+    // Central direction: straight up (-PI/2)
+    // left edge: -PI/2 - angH*deg, right edge: -PI/2 + angH*deg
+    const aL  = (-Math.PI/2 - angH*Math.PI/180);
+    const aR  = (-Math.PI/2 + angH*Math.PI/180);
+    const ax1 = op.cx + arcR2*Math.cos(aL);
+    const ay1 = op.cy + arcR2*Math.sin(aL);
+    const ax2 = op.cx + arcR2*Math.cos(aR);
+    const ay2 = op.cy + arcR2*Math.sin(aR);
+    svg.appendChild(svgEl('path',{
+      d:`M${ax1},${ay1} A${arcR2},${arcR2} 0 0,1 ${ax2},${ay2}`,
+      fill:'rgba(200,41,61,0.06)',stroke:'rgba(200,41,61,0.45)','stroke-width':'0.7'
+    }));
+
+    // Angle label (only on the middle operator)
+    if(idx === Math.floor(cons/2)){
+      svg.appendChild(svgEl('text',{
+        x:op.cx+arcR2+3, y:op.cy-4,
+        'font-size':'8','font-family':'DM Mono,monospace',fill:'rgba(232,68,90,0.75)'
+      },angH+'°'));
+    }
+  });
+
+  // ── VIEWING DISTANCE DIMENSION (on right side, matching image 2) ──
+  // Draw from wall face to the middle console eye, on the right
+  const midOp = consoleCentres[Math.floor(cons/2)];
+  const dimX  = mx + pw + 8;
+  svg.appendChild(svgEl('line',{x1:dimX,y1:wallFaceY,x2:dimX,y2:midOp.cy,
+    stroke:'rgba(200,41,61,0.50)','stroke-width':'0.8'}));
+  // Arrowheads
+  svg.appendChild(svgEl('polygon',{points:`${dimX},${wallFaceY+1} ${dimX-3},${wallFaceY+8} ${dimX+3},${wallFaceY+8}`,fill:'rgba(200,41,61,0.55)'}));
+  svg.appendChild(svgEl('polygon',{points:`${dimX},${midOp.cy-1} ${dimX-3},${midOp.cy-8} ${dimX+3},${midOp.cy-8}`,fill:'rgba(200,41,61,0.55)'}));
+  // Tick lines
+  svg.appendChild(svgEl('line',{x1:dimX-4,y1:wallFaceY,x2:dimX+4,y2:wallFaceY,stroke:'rgba(232,68,90,0.45)','stroke-width':'0.6'}));
+  svg.appendChild(svgEl('line',{x1:dimX-4,y1:midOp.cy,x2:dimX+4,y2:midOp.cy,stroke:'rgba(232,68,90,0.45)','stroke-width':'0.6'}));
+  const vdMm = ri(liveDist);  // always show the TRUE input value, never the clamped drawing value
+  const wasClamped = (liveDist/1000*sy) > ph*0.42;
+  svg.appendChild(svgEl('text',{
+    x:dimX+5, y:(wallFaceY+midOp.cy)/2+3,
+    'font-size':'9','font-family':'DM Mono,monospace',fill:'#C8293D'
+  },'d='+vdMm+'mm'));
+  if(wasClamped){
+    svg.appendChild(svgEl('text',{
+      x:dimX+5, y:(wallFaceY+midOp.cy)/2+15,
+      'font-size':'7','font-family':'DM Mono,monospace',fill:'rgba(217,119,6,0.85)'
+    },'⚠ room too shallow'));
+  }
+
+  // ── SUPERVISOR ──
+  const supX = mx+pw-52, supY = my+ph-sy*0.9-18;
+  svg.appendChild(svgEl('rect',{x:supX,y:supY,width:46,height:26,
+    fill:'rgba(217,119,6,0.10)',stroke:'rgba(217,119,6,0.45)','stroke-width':'0.7',rx:'3'}));
+  svg.appendChild(svgEl('text',{x:supX+23,y:supY+16,'text-anchor':'middle',
+    'font-size':'8','font-family':'DM Mono,monospace',fill:'#FCD34D'},'SUP'));
+
+  // ── RACKS (left wall strip) ──
+  const rackH=Math.min(sy*0.45,22), rackW=16;
+  const rackStartY = wallFaceY + sy*0.3;
+  for(let i=0; i<racks; i++){
+    const ry = rackStartY + i*(rackH+4);
+    if(ry+rackH > my+ph-10) break;
+    svg.appendChild(svgEl('rect',{x:mx+3,y:ry,width:rackW,height:rackH,
+      fill:'rgba(5,110,75,0.12)',stroke:'rgba(5,150,105,0.55)','stroke-width':'0.6',rx:'2'}));
+    svg.appendChild(svgEl('text',{x:mx+3+rackW/2,y:ry+rackH/2+3,'text-anchor':'middle',
+      'font-size':'7','font-family':'DM Mono,monospace',fill:'#047857'},'R'+(i+1)));
+  }
+
+  // ── DOOR ──
+  const doorW = Math.min(sx*0.9, 38);
+  const doorX = mx+pw-doorW-4;
+  svg.appendChild(svgEl('line',{x1:doorX,y1:my+ph,x2:doorX+doorW,y2:my+ph,stroke:'rgba(5,150,105,0.70)','stroke-width':'2.5'}));
+  svg.appendChild(svgEl('path',{d:`M${doorX+doorW},${my+ph} A${doorW},${doorW} 0 0,0 ${doorX+doorW},${my+ph-doorW}`,
+    fill:'rgba(16,185,129,0.07)',stroke:'rgba(5,150,105,0.50)','stroke-width':'0.6','stroke-dasharray':'3 2'}));
+  svg.appendChild(svgEl('text',{x:doorX+doorW/2,y:my+ph-3,'text-anchor':'middle',
+    'font-size':'7','font-family':'DM Mono,monospace',fill:'rgba(16,185,129,0.70)'},'DOOR'));
+
+  // ── CIRCULATION ZONE ──
+  const clrY = consoleY + consH + 22;
+  if(clrY < my+ph-20){
+    svg.appendChild(svgEl('rect',{x:mx+2,y:clrY,width:pw-4,height:Math.min(sy*1.1,28),
+      fill:'rgba(220,38,38,0.04)',stroke:'rgba(220,38,38,0.30)','stroke-width':'0.6','stroke-dasharray':'5 3',rx:'2'}));
+    svg.appendChild(svgEl('text',{x:mx+pw/2,y:clrY+9,'text-anchor':'middle',
+      'font-size':'8','font-family':'DM Mono,monospace',fill:'rgba(239,68,68,0.60)'},'CIRCULATION ≥ 1400mm'));
+  }
+
+  // ── SECTION CUT LINE A-A ──
+  const scY = my + ph*0.52;
+  svg.appendChild(svgEl('line',{x1:mx-10,y1:scY,x2:mx+pw+10,y2:scY,
+    stroke:'rgba(180,83,9,0.55)','stroke-width':'0.8','stroke-dasharray':'8 3'}));
+  svg.appendChild(svgEl('text',{x:mx-8,y:scY-3,'font-size':'9','font-weight':'700',
+    'font-family':'Syne,sans-serif',fill:'#B45309'},'A'));
+  svg.appendChild(svgEl('text',{x:mx+pw+3,y:scY-3,'font-size':'9','font-weight':'700',
+    'font-family':'Syne,sans-serif',fill:'#B45309'},'A'));
+
+  // ── NORTH ARROW ──
+  const nx=mx+pw-10, ny=my+18;
+  svg.appendChild(svgEl('polygon',{points:`${nx},${ny-8} ${nx-4},${ny+4} ${nx+4},${ny+4}`,
+    fill:'rgba(200,41,61,0.80)',stroke:'#C8293D','stroke-width':'0.5'}));
+  svg.appendChild(svgEl('text',{x:nx,y:ny+14,'text-anchor':'middle',
+    'font-size':'8','font-family':'DM Mono,monospace',fill:'#C8293D'},'N'));
+
+  // ── DIMENSION LINES ──
+  dimLine(svg,mx,my,mx+pw,my, W.toFixed(1)+' m', -22, true);
+  dimLine(svg,mx,my,mx,my+ph, D.toFixed(1)+' m', -32, false);
+
+  // Corner labels
+  svg.appendChild(svgEl('text',{x:mx+3,y:my+ph-3,'font-size':'7.5',
+    'font-family':'DM Mono,monospace',fill:'rgba(200,41,61,0.30)'},'PLAN VIEW'));
+  svg.appendChild(svgEl('text',{x:mx+pw-3,y:my+ph-3,'text-anchor':'end','font-size':'7.5',
+    'font-family':'DM Mono,monospace',fill:'rgba(200,41,61,0.30)'},
+    W.toFixed(0)+'×'+D.toFixed(0)+'m | '+r(W*D,1)+'m²'));
+}
+
+// ─── ELEVATION VIEW ───────────────────────────────────────────────
+function drawElevation(W, scrns, cons){
+  cons = cons || 3;
+  const svg = clearSvg('svg-elev');
+  svg.setAttribute('viewBox','0 0 420 300');
+
+  const E = getCriticalZoneEngine(scrns);
+  const { wCols, wRows, sd, gCols, gRows, He, Hwall_bot, Hwall_top,
+          wallH_mm, wallW_mm, isCritCell, totalCW, totalCH } = E;
+
+  const mx=52, my=28, pw=300, ph=220;
+  const CEIL_MM = Math.max(2600, Hwall_top + 200); // ensure ceiling above wall top
+  const HSCALE = ph / CEIL_MM; // px per mm of height
+
+  const tileW = pw / wCols;
+  const tileH = (sd.h * HSCALE);
+  const wallTotalH = tileH * wRows;
+  const AFF_Y   = HSCALE * Hwall_bot;         // px offset of wall bottom from floor
+  const wallBottomY = ph - AFF_Y;
+  const wallTopY = wallBottomY - wallTotalH;
+
+  // ── FLOOR ──
+  const floorY = my + ph;
+  for(let hx=mx; hx<mx+pw; hx+=10)
+    svg.appendChild(svgEl('line',{x1:hx,y1:floorY,x2:hx-6,y2:floorY+6,stroke:'rgba(0,0,0,0.10)','stroke-width':'0.5'}));
+  svg.appendChild(svgEl('line',{x1:mx,y1:floorY,x2:mx+pw,y2:floorY,stroke:'rgba(0,0,0,0.35)','stroke-width':'1.5'}));
+  svg.appendChild(svgEl('text',{x:mx+pw/2,y:floorY+11,'text-anchor':'middle','font-size':'8','font-family':'DM Mono,monospace',fill:'rgba(0,0,0,0.35)'},'F.F.L.  ±0.000'));
+
+  // ── CEILING ──
+  const ceilY = my;
+  svg.appendChild(svgEl('line',{x1:mx,y1:ceilY,x2:mx+pw,y2:ceilY,stroke:'rgba(0,0,0,0.20)','stroke-width':'1'}));
+  for(let hx=mx; hx<mx+pw; hx+=10)
+    svg.appendChild(svgEl('line',{x1:hx,y1:ceilY,x2:hx+6,y2:ceilY-6,stroke:'rgba(0,0,0,0.07)','stroke-width':'0.5'}));
+
+  // ── WALL BACKGROUND PLATE ──
+  svg.appendChild(svgEl('rect',{x:mx,y:my+wallTopY,width:pw,height:wallTotalH+2,fill:'rgba(0,0,0,0.03)',stroke:'rgba(0,0,0,0.08)','stroke-width':'0.5',rx:'1'}));
+
+  // ── DRAW EVERY CAMERA CELL (matches Zone Visualizer exactly) ──
+  const cellW_px = tileW / gCols;
+  const cellH_px = tileH / gRows;
+  for(let rr=0; rr<totalCH; rr++){
+    for(let cc=0; cc<totalCW; cc++){
+      const crit = isCritCell(cc, rr);
+      const x = mx + cc*cellW_px;
+      const y = my + wallTopY + rr*cellH_px;
+      svg.appendChild(svgEl('rect',{
+        x:x+0.3, y:y+0.3, width:cellW_px-0.6, height:cellH_px-0.6,
+        fill:   crit ? 'rgba(200,41,61,0.78)' : 'rgba(20,86,168,0.14)',
+        stroke: crit ? 'rgba(200,41,61,0.55)' : 'rgba(20,86,168,0.20)',
+        'stroke-width':'0.25'
+      }));
+    }
+  }
+
+  // ── SCREEN SEPARATOR LINES (thicker, on top of cells) ──
+  for(let sc=0; sc<=wCols; sc++){
+    const sx = mx + sc*tileW;
+    svg.appendChild(svgEl('line',{x1:sx,y1:my+wallTopY,x2:sx,y2:my+wallTopY+wallTotalH,
+      stroke:'rgba(200,41,61,0.55)','stroke-width': sc===0||sc===wCols?'1.1':'0.9'}));
+  }
+  for(let sr=0; sr<=wRows; sr++){
+    const sy2 = my + wallTopY + sr*tileH;
+    svg.appendChild(svgEl('line',{x1:mx,y1:sy2,x2:mx+pw,y2:sy2,
+      stroke:'rgba(200,41,61,0.55)','stroke-width': sr===0||sr===wRows?'1.1':'0.9'}));
+  }
+
+  // ── SCREEN NUMBER LABELS ──
+  for(let rr=0; rr<wRows; rr++){
+    for(let cc=0; cc<wCols; cc++){
+      if(tileW>28 && tileH>18){
+        const tx=mx+cc*tileW, ty=my+wallTopY+rr*tileH;
+        svg.appendChild(svgEl('text',{x:tx+tileW/2,y:ty+tileH-4,'text-anchor':'middle',
+          'font-size':'7','font-family':'DM Mono,monospace',fill:'rgba(0,0,0,0.35)'},
+          'S'+(rr*wCols+cc+1)));
+      }
+    }
+  }
+
+  // ── DIMENSION: TOTAL WALL WIDTH (bottom of screens) ──
+  svg.appendChild(svgEl('line',{x1:mx,y1:my+wallTopY+wallTotalH+6,x2:mx+pw,y2:my+wallTopY+wallTotalH+6,stroke:'rgba(232,68,90,0.45)','stroke-width':'0.6'}));
+  svg.appendChild(svgEl('text',{x:mx+pw/2,y:my+wallTopY+wallTotalH+15,'text-anchor':'middle',
+    'font-size':'8','font-family':'DM Mono,monospace',fill:'rgba(200,41,61,0.75)'},ri(wallW_mm)+' mm  ('+wCols+'× '+sd.w+')'));
+
+  // ── DIMENSION: WALL BOTTOM AFF (left side, live from cg-hwall) ──
+  const affSVG = my + ph - AFF_Y;
+  svg.appendChild(svgEl('line',{x1:mx-14,y1:floorY,x2:mx-14,y2:affSVG,stroke:'rgba(217,119,6,0.55)','stroke-width':'0.7'}));
+  svg.appendChild(svgEl('line',{x1:mx-18,y1:affSVG,x2:mx-10,y2:affSVG,stroke:'rgba(217,119,6,0.45)','stroke-width':'0.6'}));
+  svg.appendChild(svgEl('line',{x1:mx-18,y1:floorY,x2:mx-10,y2:floorY,stroke:'rgba(217,119,6,0.40)','stroke-width':'0.6'}));
+  svg.appendChild(svgEl('text',{x:mx-16,y:(floorY+affSVG)/2+3,'text-anchor':'middle',
+    'font-size':'7.5','font-family':'DM Mono,monospace',fill:'#B45309',transform:`rotate(-90,${mx-16},${(floorY+affSVG)/2})`},Hwall_bot+''));
+
+  // ── DIMENSION: WALL HEIGHT (right side) ──
+  const wallTopSVG = my + wallTopY;
+  const wallBotSVG = my + wallTopY + wallTotalH;
+  svg.appendChild(svgEl('line',{x1:mx+pw+12,y1:wallBotSVG,x2:mx+pw+12,y2:wallTopSVG,stroke:'rgba(200,41,61,0.40)','stroke-width':'0.6'}));
+  svg.appendChild(svgEl('line',{x1:mx+pw+8,y1:wallTopSVG,x2:mx+pw+16,y2:wallTopSVG,stroke:'rgba(200,41,61,0.30)','stroke-width':'0.5'}));
+  svg.appendChild(svgEl('line',{x1:mx+pw+8,y1:wallBotSVG,x2:mx+pw+16,y2:wallBotSVG,stroke:'rgba(200,41,61,0.30)','stroke-width':'0.5'}));
+  svg.appendChild(svgEl('text',{x:mx+pw+14,y:(wallTopSVG+wallBotSVG)/2+3,'text-anchor':'middle',
+    'font-size':'7.5','font-family':'DM Mono,monospace',fill:'#C8293D',transform:`rotate(90,${mx+pw+14},${(wallTopSVG+wallBotSVG)/2})`},ri(wallH_mm)+' mm'));
+
+  // Ceiling height dim (right)
+  svg.appendChild(svgEl('line',{x1:mx+pw+26,y1:ceilY,x2:mx+pw+26,y2:floorY,stroke:'rgba(0,0,0,0.15)','stroke-width':'0.5'}));
+  svg.appendChild(svgEl('text',{x:mx+pw+28,y:(ceilY+floorY)/2+3,'font-size':'7','font-family':'DM Mono,monospace',fill:'rgba(0,0,0,0.35)',transform:`rotate(90,${mx+pw+28},${(ceilY+floorY)/2})`},ri(CEIL_MM)+'mm'));
+
+  // ── WALL BOTTOM AFF dashed line across wall (live) ──
+  svg.appendChild(svgEl('line',{x1:mx,y1:affSVG,x2:mx+pw,y2:affSVG,stroke:'rgba(217,119,6,0.50)','stroke-width':'0.7','stroke-dasharray':'5 3'}));
+  svg.appendChild(svgEl('text',{x:mx+pw+2,y:affSVG+3,'font-size':'7.5','font-family':'DM Mono,monospace',fill:'#B45309'},Hwall_bot+'mm AFF'));
+
+  // ── EYE LEVEL (live from e-He) ──
+  const eyeSVG = my + ph - He*HSCALE;
+  svg.appendChild(svgEl('line',{x1:mx,y1:eyeSVG,x2:mx+pw,y2:eyeSVG,stroke:'rgba(5,150,105,0.40)','stroke-width':'0.6','stroke-dasharray':'4 3'}));
+  svg.appendChild(svgEl('text',{x:mx+pw+2,y:eyeSVG+3,'font-size':'7.5','font-family':'DM Mono,monospace',fill:'rgba(5,150,105,0.75)'},He+'mm eye'));
+
+  // ── CONSOLE SILHOUETTES ──
+  const conSVGH = 750*HSCALE;
+  const conSVGY = floorY - conSVGH;
+  const nC = Math.min(cons||3, 6);
+  const cW2 = Math.min(44, pw/nC-4), cH2 = conSVGH;
+  const cStart = mx + (pw-(nC*(cW2+4)-4))/2;
+  for(let i=0; i<nC; i++){
+    const cx2 = cStart + i*(cW2+4);
+    svg.appendChild(svgEl('rect',{x:cx2,y:conSVGY,width:cW2,height:cH2,fill:'rgba(20,86,168,0.15)',stroke:'rgba(20,86,168,0.35)','stroke-width':'0.6',rx:'2'}));
+    svg.appendChild(svgEl('rect',{x:cx2+3,y:conSVGY-14,width:cW2-6,height:13,fill:'rgba(20,86,168,0.20)',stroke:'rgba(20,86,168,0.35)','stroke-width':'0.5',rx:'2'}));
+  }
+  svg.appendChild(svgEl('text',{x:mx+pw/2,y:conSVGY-16,'text-anchor':'middle','font-size':'8','font-family':'DM Mono,monospace',fill:'rgba(20,86,168,0.45)'},'CONSOLES ('+nC+')'));
+
+  // ── LEGEND ──
+  svg.appendChild(svgEl('rect',{x:mx+2,y:my+3,width:10,height:7,rx:'1',fill:'rgba(200,41,61,0.78)',stroke:'rgba(200,41,61,0.55)','stroke-width':'0.5'}));
+  svg.appendChild(svgEl('text',{x:mx+14,y:my+9,'font-size':'8','font-family':'DM Mono,monospace',fill:'rgba(200,41,61,0.80)'},'Critical'));
+  svg.appendChild(svgEl('rect',{x:mx+56,y:my+3,width:10,height:7,rx:'1',fill:'rgba(20,86,168,0.14)',stroke:'rgba(20,86,168,0.30)','stroke-width':'0.5'}));
+  svg.appendChild(svgEl('text',{x:mx+68,y:my+9,'font-size':'8','font-family':'DM Mono,monospace',fill:'rgba(20,86,168,0.65)'},'Rotating'));
+
+  // Label
+  svg.appendChild(svgEl('text',{x:mx+pw-2,y:my+ph-4,'text-anchor':'end','font-size':'8','font-family':'DM Mono,monospace',fill:'rgba(200,41,61,0.30)'},'ELEVATION — FRONT WALL'));
+}
+
+// ─── SECTION A–A — ISO 11064-7 STYLE ─────────────────────────────
+function drawSection(D, ops){
+  const svg = clearSvg('svg-sect');
+  svg.setAttribute('viewBox','0 0 380 240');
+  const ns = 'http://www.w3.org/2000/svg';
+
+  // ── Read all live parameters ──────────────────────────────────
+  const rd = id => { const el=document.getElementById(id); return el?+(el.value)||0:0; };
+  const E  = getCriticalZoneEngine();               // wall arrangement, He, Hwall_bot, screen size
+  const distMm = rd('cg-dist')  || 2975;             // live viewing distance (Critical Grid tab)
+  const Hc      = rd('e-Hc')    || 750;              // console height (Ergonomics tab)
+  const Dc      = rd('e-Dc')    || 800;              // console depth  (Ergonomics tab)
+  const wallTotalH_mm = E.wRows * E.sd.h;            // actual stacked wall height
+  const ceilMm  = Math.max(2600, E.Hwall_top + 200); // ceiling clears the wall top
+
+  const LEFT_X=50, ROOM_W=280, RIGHT_X=LEFT_X+ROOM_W;
+  const FLOOR_Y=218, CEIL_Y=FLOOR_Y-220;
+  const HSCALE = (FLOOR_Y-CEIL_Y) / ceilMm; // px per mm of height
+
+  // ── BACKGROUND ──
+  svg.appendChild(svgEl('rect',{x:0,y:0,width:380,height:240,fill:'#FAFBFC'}));
+
+  // ── FLOOR / CEILING ──
+  for(let hx=LEFT_X; hx<RIGHT_X; hx+=8)
+    svg.appendChild(svgEl('line',{x1:hx,y1:FLOOR_Y,x2:hx-6,y2:FLOOR_Y+6,stroke:'rgba(0,0,0,0.10)','stroke-width':'0.5'}));
+  svg.appendChild(svgEl('line',{x1:LEFT_X,y1:FLOOR_Y,x2:RIGHT_X,y2:FLOOR_Y,stroke:'rgba(0,0,0,0.35)','stroke-width':'1.5'}));
+  svg.appendChild(svgEl('text',{x:LEFT_X+ROOM_W/2,y:FLOOR_Y+10,'text-anchor':'middle','font-size':'8','font-family':'DM Mono,monospace',fill:'rgba(0,0,0,0.35)'},'F.F.L. ±0.000'));
+  for(let hx=LEFT_X; hx<RIGHT_X; hx+=8)
+    svg.appendChild(svgEl('line',{x1:hx,y1:CEIL_Y,x2:hx+6,y2:CEIL_Y-6,stroke:'rgba(0,0,0,0.08)','stroke-width':'0.5'}));
+  svg.appendChild(svgEl('line',{x1:LEFT_X,y1:CEIL_Y,x2:RIGHT_X,y2:CEIL_Y,stroke:'rgba(0,0,0,0.2)','stroke-width':'1'}));
+  svg.appendChild(svgEl('text',{x:LEFT_X-2,y:CEIL_Y-3,'font-size':'8','font-family':'DM Mono,monospace','text-anchor':'end',fill:'rgba(0,0,0,0.35)'},'C/H'));
+
+  // ── VIDEO WALL (stacked panels, live count = wRows) ─────────────
+  const AFF_bot = FLOOR_Y - E.Hwall_bot*HSCALE;   // y of wall bottom (live install height)
+  const VW_W = 14;
+  for(let i=0; i<E.wRows; i++){
+    const panelBotY = AFF_bot - i*E.sd.h*HSCALE;
+    const panelTopY = panelBotY - E.sd.h*HSCALE;
+    svg.appendChild(svgEl('rect',{x:LEFT_X,y:panelTopY,width:VW_W,height:panelBotY-panelTopY-(i<E.wRows-1?1:0),
+      fill:'rgba(200,41,61,0.75)',stroke:'rgba(200,41,61,0.88)','stroke-width':'0.7'}));
+  }
+  const WALL_TOP_Y = AFF_bot - wallTotalH_mm*HSCALE;
+  svg.appendChild(svgEl('text',{x:LEFT_X+VW_W/2,y:(AFF_bot+WALL_TOP_Y)/2+3,'text-anchor':'middle','font-size':'7',
+    'font-family':'DM Mono,monospace',fill:'rgba(200,41,61,0.75)',
+    transform:`rotate(-90,${LEFT_X+VW_W/2},${(AFF_bot+WALL_TOP_Y)/2})`},'VIDEO WALL'));
+
+  // ── OPERATOR CONSOLE (live depth Dc, height Hc) ─────────────────
+  const CONS_X = LEFT_X+VW_W + Dc*HSCALE*0.9;
+  const CONS_TOP_Y = FLOOR_Y - Hc*HSCALE;
+  const CONS_W=28, CONS_H=FLOOR_Y-CONS_TOP_Y;
+  svg.appendChild(svgEl('rect',{x:CONS_X,y:CONS_TOP_Y,width:CONS_W,height:CONS_H,fill:'rgba(20,86,168,0.20)',stroke:'rgba(20,86,168,0.50)','stroke-width':'0.7',rx:2}));
+  svg.appendChild(svgEl('rect',{x:CONS_X+3,y:CONS_TOP_Y-14,width:CONS_W-6,height:13,fill:'rgba(20,86,168,0.30)',stroke:'rgba(20,86,168,0.40)','stroke-width':'0.5',rx:2}));
+  svg.appendChild(svgEl('text',{x:CONS_X+CONS_W/2,y:CONS_TOP_Y-4,'text-anchor':'middle','font-size':'6','font-family':'DM Mono,monospace',fill:'rgba(20,86,168,0.60)'},'MON'));
+
+  // ── SEATED OPERATOR (eye height live = E.He) ────────────────────
+  const FIG_X = CONS_X+CONS_W+12;
+  const FIG_SEAT_Y = FLOOR_Y - 430*HSCALE;
+  const FIG_EYE_Y  = FLOOR_Y - E.He*HSCALE;
+
+  svg.appendChild(svgEl('rect',{x:FIG_X-8,y:FIG_SEAT_Y,width:18,height:3,fill:'rgba(20,86,168,0.30)',stroke:'rgba(20,86,168,0.30)','stroke-width':'0.4',rx:1}));
+  svg.appendChild(svgEl('rect',{x:FIG_X+8,y:FIG_SEAT_Y-350*HSCALE,width:3,height:350*HSCALE,fill:'rgba(20,86,168,0.35)',stroke:'rgba(20,86,168,0.25)','stroke-width':'0.4',rx:1}));
+  svg.appendChild(svgEl('line',{x1:FIG_X-5,y1:FIG_SEAT_Y+3,x2:FIG_X-5,y2:FLOOR_Y,stroke:'rgba(20,86,168,0.30)','stroke-width':'1.2'}));
+  svg.appendChild(svgEl('line',{x1:FIG_X+5,y1:FIG_SEAT_Y+3,x2:FIG_X+5,y2:FLOOR_Y,stroke:'rgba(20,86,168,0.30)','stroke-width':'1.2'}));
+  svg.appendChild(svgEl('rect',{x:FIG_X-5,y:FIG_EYE_Y+12,width:14,height:FIG_SEAT_Y-FIG_EYE_Y-12,fill:'rgba(20,86,168,0.30)',stroke:'rgba(20,86,168,0.45)','stroke-width':'0.5',rx:3}));
+  svg.appendChild(svgEl('circle',{cx:FIG_X+2,cy:FIG_EYE_Y+6,r:8,fill:'rgba(20,86,168,0.35)',stroke:'rgba(20,86,168,0.60)','stroke-width':'0.7'}));
+  svg.appendChild(svgEl('circle',{cx:FIG_X-2,cy:FIG_EYE_Y+5,r:1.5,fill:'#C8293D'}));
+
+  // ── SIGHTLINES FROM EYE (top of wall, bottom of wall) ──────────
+  const EYE_X=FIG_X-2, EYE_Y=FIG_EYE_Y+5;
+  const WALL_FACE_X = LEFT_X+VW_W;
+
+  svg.appendChild(svgEl('line',{x1:EYE_X,y1:EYE_Y,x2:WALL_FACE_X,y2:WALL_TOP_Y,stroke:'rgba(200,41,61,0.35)','stroke-width':'0.6','stroke-dasharray':'4 2'}));
+  svg.appendChild(svgEl('line',{x1:EYE_X,y1:EYE_Y,x2:WALL_FACE_X,y2:AFF_bot,stroke:'rgba(200,41,61,0.35)','stroke-width':'0.6','stroke-dasharray':'4 2'}));
+  const MID_WALL_Y=(WALL_TOP_Y+AFF_bot)/2;
+  svg.appendChild(svgEl('line',{x1:EYE_X,y1:EYE_Y,x2:WALL_FACE_X,y2:MID_WALL_Y,stroke:'rgba(200,41,61,0.55)','stroke-width':'0.8','stroke-dasharray':'5 2'}));
+
+  // ── VIEWING ANGLE ARC ────────────────────────────────────────────
+  const arcR=30;
+  const startAngle = Math.atan2(EYE_Y-WALL_TOP_Y, EYE_X-WALL_FACE_X);
+  const endAngle   = Math.atan2(EYE_Y-AFF_bot,    EYE_X-WALL_FACE_X);
+  const ax1=EYE_X+arcR*Math.cos(startAngle), ay1=EYE_Y+arcR*Math.sin(startAngle);
+  const ax2=EYE_X+arcR*Math.cos(endAngle),   ay2=EYE_Y+arcR*Math.sin(endAngle);
+  svg.appendChild(svgEl('path',{d:`M${ax1},${ay1} A${arcR},${arcR} 0 0,1 ${ax2},${ay2}`,
+    fill:'rgba(200,41,61,0.08)',stroke:'rgba(200,41,61,0.50)','stroke-width':'0.7'}));
+  svg.appendChild(svgEl('path',{d:`M${EYE_X+20},${EYE_Y} A22,22 0 0,1 ${EYE_X+20},${EYE_Y+8}`,
+    fill:'rgba(5,150,105,0.1)',stroke:'rgba(5,150,105,0.40)','stroke-width':'0.6','stroke-dasharray':'3 2'}));
+
+  // ── HORIZONTAL REFERENCE LINE through eye ──────────────────────
+  svg.appendChild(svgEl('line',{x1:LEFT_X-10,y1:EYE_Y,x2:EYE_X-5,y2:EYE_Y,stroke:'rgba(5,150,105,0.40)','stroke-width':'0.6','stroke-dasharray':'3 2'}));
+  svg.appendChild(svgEl('line',{x1:EYE_X+14,y1:EYE_Y,x2:RIGHT_X+20,y2:EYE_Y,stroke:'rgba(5,150,105,0.25)','stroke-width':'0.5','stroke-dasharray':'3 2'}));
+
+  // ── DIMENSION: Eye height (live He) ─────────────────────────────
+  svg.appendChild(svgEl('line',{x1:LEFT_X-18,y1:FLOOR_Y,x2:LEFT_X-18,y2:EYE_Y,stroke:'rgba(232,68,90,0.45)','stroke-width':'0.5'}));
+  svg.appendChild(svgEl('line',{x1:LEFT_X-22,y1:FLOOR_Y,x2:LEFT_X-14,y2:FLOOR_Y,stroke:'rgba(232,68,90,0.35)','stroke-width':'0.5'}));
+  svg.appendChild(svgEl('line',{x1:LEFT_X-22,y1:EYE_Y,x2:LEFT_X-14,y2:EYE_Y,stroke:'rgba(232,68,90,0.35)','stroke-width':'0.5'}));
+  svg.appendChild(svgEl('text',{x:LEFT_X-20,y:(FLOOR_Y+EYE_Y)/2+3,'text-anchor':'middle','font-size':'7',
+    'font-family':'DM Mono,monospace',fill:'#C8293D',transform:`rotate(-90,${LEFT_X-20},${(FLOOR_Y+EYE_Y)/2})`},'He='+E.He));
+
+  // ── DIMENSION: Wall bottom AFF (live install height) ────────────
+  svg.appendChild(svgEl('line',{x1:LEFT_X,y1:AFF_bot,x2:LEFT_X-4,y2:AFF_bot,stroke:'rgba(217,119,6,0.55)','stroke-width':'0.7'}));
+  svg.appendChild(svgEl('line',{x1:LEFT_X+VW_W+3,y1:AFF_bot,x2:RIGHT_X+20,y2:AFF_bot,stroke:'rgba(217,119,6,0.40)','stroke-width':'0.6','stroke-dasharray':'3 2'}));
+  svg.appendChild(svgEl('line',{x1:LEFT_X+VW_W+2,y1:AFF_bot,x2:LEFT_X+VW_W+2,y2:WALL_TOP_Y,stroke:'rgba(200,41,61,0.30)','stroke-width':'0.5'}));
+
+  // ── VIEWING DISTANCE (live D, drawn to scale) ───────────────────
+  const VD_Y=FLOOR_Y+4;
+  svg.appendChild(svgEl('line',{x1:WALL_FACE_X,y1:VD_Y,x2:EYE_X,y2:VD_Y,stroke:'rgba(200,41,61,0.55)','stroke-width':'0.7'}));
+  svg.appendChild(svgEl('polygon',{points:`${WALL_FACE_X+1},${VD_Y} ${WALL_FACE_X+6},${VD_Y-2} ${WALL_FACE_X+6},${VD_Y+2}`,fill:'rgba(200,41,61,0.55)'}));
+  svg.appendChild(svgEl('polygon',{points:`${EYE_X-1},${VD_Y} ${EYE_X-6},${VD_Y-2} ${EYE_X-6},${VD_Y+2}`,fill:'rgba(200,41,61,0.55)'}));
+  svg.appendChild(svgEl('text',{x:(WALL_FACE_X+EYE_X)/2,y:VD_Y+9,'text-anchor':'middle','font-size':'7.5',
+    'font-family':'DM Mono,monospace',fill:'#C8293D'},'d='+distMm+'mm'));
+
+  // ── ANNOTATIONS ──
+  svg.appendChild(svgEl('text',{x:RIGHT_X+22,y:AFF_bot+3,'font-size':'7.5','font-family':'DM Mono,monospace',fill:'#B45309'},E.Hwall_bot+'mm'));
+  svg.appendChild(svgEl('text',{x:RIGHT_X+22,y:AFF_bot+11,'font-size':'7','font-family':'DM Mono,monospace',fill:'rgba(217,119,6,0.65)'},'AFF'));
+  svg.appendChild(svgEl('text',{x:RIGHT_X+22,y:EYE_Y+3,'font-size':'7.5','font-family':'DM Mono,monospace',fill:'#047857'},'He='+E.He));
+  svg.appendChild(svgEl('text',{x:RIGHT_X+22,y:EYE_Y+11,'font-size':'7','font-family':'DM Mono,monospace',fill:'rgba(5,150,105,0.65)'},'Eye lvl'));
+  svg.appendChild(svgEl('text',{x:EYE_X+36,y:EYE_Y-4,'font-size':'7.5','font-family':'DM Mono,monospace',fill:'rgba(5,150,105,0.80)'},'±'+E.angV+'° primary'));
+  svg.appendChild(svgEl('text',{x:LEFT_X+VW_W+3,y:WALL_TOP_Y-3,'font-size':'7','font-family':'DM Mono,monospace',fill:'rgba(200,41,61,0.65)'},'Top of wall'));
+
+  svg.appendChild(svgEl('text',{x:LEFT_X,y:CEIL_Y-5,'font-size':'8','font-family':'DM Mono,monospace',fill:'rgba(200,41,61,0.40)'},'SECTION A–A'));
+  svg.appendChild(svgEl('text',{x:LEFT_X-8,y:FLOOR_Y-10,'font-size':'10','font-weight':'700','font-family':'Syne,sans-serif',fill:'#B45309'},'A'));
+  svg.appendChild(svgEl('text',{x:RIGHT_X+4,y:FLOOR_Y-10,'font-size':'10','font-weight':'700','font-family':'Syne,sans-serif',fill:'#B45309'},'A'));
+
+  // Console depth callout (live Dc)
+  const CON_MID_X=CONS_X+CONS_W/2;
+  svg.appendChild(svgEl('line',{x1:WALL_FACE_X,y1:CONS_TOP_Y-5,x2:CON_MID_X,y2:CONS_TOP_Y-5,stroke:'rgba(20,86,168,0.30)','stroke-width':'0.5','stroke-dasharray':'2 2'}));
+  svg.appendChild(svgEl('text',{x:(WALL_FACE_X+CON_MID_X)/2,y:CONS_TOP_Y-8,'text-anchor':'middle','font-size':'7','font-family':'DM Mono,monospace',fill:'rgba(20,86,168,0.55)'},'Dc='+Dc));
+
+  // Ceiling height dimension (right side, live ceilMm)
+  svg.appendChild(svgEl('line',{x1:RIGHT_X+10,y1:CEIL_Y,x2:RIGHT_X+10,y2:FLOOR_Y,stroke:'rgba(0,0,0,0.15)','stroke-width':'0.5'}));
+  svg.appendChild(svgEl('text',{x:RIGHT_X+12,y:(CEIL_Y+FLOOR_Y)/2+3,'font-size':'7','font-family':'DM Mono,monospace',fill:'rgba(0,0,0,0.35)',
+    transform:`rotate(-90,${RIGHT_X+12},${(CEIL_Y+FLOOR_Y)/2})`},'H='+ri(ceilMm)+'mm'));
+}
+
+// ─── COMPLIANCE PANEL ─────────────────────────────────────────────
+function drawCompliance(W,D,ops,cons,racks,calcArea,roomArea){
+  const checks=[
+    {label:'Room area',val:roomArea+' m²',req:'≥'+calcArea+' m²',ok:roomArea>=calcArea},
+    {label:'Width ≥ 4m',val:W.toFixed(1)+' m',req:'≥ 4.0 m',ok:W>=4},
+    {label:'Depth ≥ 5m',val:D.toFixed(1)+' m',req:'≥ 5.0 m',ok:D>=5},
+    {label:'Consoles vs ops',val:cons+' consoles / '+ops+' ops',req:'cons ≥ ops',ok:cons>=ops},
+    {label:'Area per operator',val:r(roomArea/Math.max(ops,1),1)+' m²',req:'≥ 4.5 m²',ok:roomArea/ops>=4.5},
+    {label:'Main aisle',val:'Calculated',req:'≥ 1400 mm',ok:W>=5},
+  ];
+  const wrap=document.getElementById('dwg-checks');
+  wrap.innerHTML='';
+  checks.forEach(c=>{
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid rgba(255,255,255,0.06);font-size:11px';
+    row.innerHTML=`<span style="color:var(--tx3);font-family:var(--font-mono);font-size:10px">${c.label}</span><span style="display:flex;align-items:center;gap:6px"><span style="color:${c.ok?'#34D399':'#FCA5A5'};font-family:var(--font-mono);font-size:10px">${c.val}</span><span style="font-size:10px">${c.ok?'✓':'✗'}</span></span>`;
+    wrap.appendChild(row);
+  });
+
+  // Utilisation grid
+  const total=roomArea;
+  const segs=[
+    {label:'Operators',area:r(ops*4.5,1),color:'#1A6FD4'},
+    {label:'Consoles',area:r(cons*1.5,1),color:'#3D8FE8'},
+    {label:'Racks',area:r(racks*0.8,1),color:'#10B981'},
+    {label:'Circulation',area:r((ops*4.5+cons*1.5+racks*0.8)*0.35,1),color:'#F59E0B'},
+  ];
+  const ug=document.getElementById('dwg-util-grid');
+  ug.innerHTML='';
+  segs.forEach(s=>{
+    const pct=r(s.area/total*100,0);
+    const div=document.createElement('div');
+    div.style.cssText='background:rgba(255,255,255,0.03);border-radius:6px;padding:6px 8px;border:0.5px solid rgba(255,255,255,0.06)';
+    div.innerHTML=`<div style="font-size:10px;color:var(--tx3);font-family:var(--font-mono);margin-bottom:3px">${s.label}</div><div style="font-size:14px;font-weight:600;color:${s.color};font-family:Syne,sans-serif">${s.area} m²</div><div style="font-size:10px;color:var(--tx3);font-family:var(--font-mono)">${pct}% of room</div>`;
+    ug.appendChild(div);
+  });
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────
+calcS();calcCG();calcO();calcE();calcP();calcF();calcR();
+</script>
+</body>
+</html>

@@ -1,0 +1,2279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wi-Fi Heatmap Visualizations Tool v6.0</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.11.0/dist/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --brand:#00b4ff;--bdark:#0090d4;
+  --bg:#ffffff;--bg2:#f4f6f8;--bg3:#f0f3f7;
+  --tx:#111122;--mu:#556677;
+  --br:rgba(0,0,0,.09);--br2:rgba(0,0,0,.15);
+  --r1:6px;--r2:8px;--r3:12px;
+  --ib:#0a1f35;--ibd:#0072b1;--itx:#7dd3fc;
+  --ob:#001a0a;--obd:#15803d;--otx:#4ade80;
+  --eb:#1a0a0a;--ebd:#991b1b;--etx:#f87171;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:#f0f3f7;color:var(--tx);min-height:100vh;line-height:1.6}
+.topbar{display:flex;align-items:center;gap:12px;padding:.8rem 1.2rem;background:#fff;border-bottom:1px solid var(--br);box-shadow:0 2px 8px rgba(0,0,0,.06);position:sticky;top:0;z-index:200}
+.topbar-logo{width:36px;height:36px;background:linear-gradient(135deg,var(--bdark),var(--brand));border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 14px rgba(0,180,255,.3)}
+.topbar-logo i{color:#fff;font-size:20px}
+.topbar-title{font-size:16px;font-weight:700;color:var(--tx)}
+.topbar-v{font-size:9px;background:rgba(0,180,255,.12);border:1px solid rgba(0,180,255,.25);color:var(--brand);padding:2px 8px;border-radius:100px;margin-left:4px}
+.bc{display:flex;align-items:center;gap:5px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);margin-left:2px}
+.bc-sep{color:#aab}.bc-cur{color:var(--brand)}
+.topbar-back{font-size:11px;font-weight:600;padding:5px 13px;border-radius:var(--r1);border:1px solid var(--br2);cursor:pointer;background:var(--bg2);color:var(--tx);margin-left:auto}
+.topbar-back:hover{border-color:var(--brand);color:var(--brand)}
+.nav-wrap{background:#fff;border-bottom:1px solid var(--br);padding:.5rem 1.2rem;display:flex;gap:5px;flex-wrap:wrap}
+.nt{font-size:11px;font-weight:600;padding:6px 13px;border-radius:100px;border:1px solid var(--br2);cursor:pointer;background:var(--bg2);color:var(--mu);transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:5px}
+.nt i{font-size:14px}
+.nt.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.nt:hover:not(.on){background:var(--bg2);border-color:var(--brand);color:var(--brand)}
+.nt.hi{border-color:rgba(0,180,255,.4);color:var(--brand);background:#f0f8ff}
+.nt.hi.on{background:var(--brand);color:#fff}
+.sec{display:none;padding:1rem 1.2rem 2rem}.sec.on{display:block}
+.pw{max-width:980px;margin:0 auto}
+.card{background:#fff;border:1px solid var(--br);border-radius:var(--r3);padding:1rem 1.2rem;margin-bottom:1rem;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.ct{font-size:13px;font-weight:600;color:var(--tx);margin-bottom:.8rem;display:flex;align-items:center;gap:7px}
+.ct i{color:var(--brand);font-size:17px}
+.kvg{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:1rem}
+.kvc{background:#fff;border:1px solid var(--br);border-radius:var(--r2);padding:.7rem .9rem}
+.kvl{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--mu);margin-bottom:3px;font-weight:600}
+.kvv{font-size:20px;font-weight:700;color:var(--tx)}.kvu{font-size:11px;color:var(--mu);font-weight:400}
+.kvn{font-size:10px;color:var(--mu);margin-top:2px}
+.hl{border-left:3px solid var(--brand);padding:.55rem .9rem;background:#f0f4f8;border-radius:0 var(--r2) var(--r2) 0;font-size:12px;color:var(--tx);margin-bottom:.8rem;line-height:1.65}
+.ic{background:#e8f4fd;border:1px solid #93c5fd;border-radius:var(--r2);padding:.65rem .9rem;font-size:12px;color:#1e3a6e;margin-top:.6rem;line-height:1.65}
+.oc{background:#f0fdf4;border:1px solid #86efac;border-radius:var(--r2);padding:.65rem .9rem;font-size:12px;color:#14532d;margin-top:.6rem;line-height:1.65}
+.sr{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.sll{font-size:12px;color:var(--mu);min-width:130px}
+input[type=range]{flex:1;accent-color:var(--brand);cursor:pointer}
+.sv{font-size:13px;font-weight:600;color:var(--tx);min-width:70px;text-align:right}
+.btn{font-size:11px;padding:5px 11px;border-radius:var(--r1);border:1px solid var(--br2);cursor:pointer;background:var(--bg2);color:var(--tx);transition:all .12s;display:inline-flex;align-items:center;gap:4px}
+.btn:hover{border-color:var(--brand);color:var(--brand)}
+.btnp{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}.btnp:hover{background:var(--bdark)}
+.btne{border-color:var(--ebd);color:var(--etx);background:var(--eb)}.btne:hover{background:#2a1010}
+.mt{width:100%;font-size:12px;border-collapse:collapse}
+.mt th{text-align:left;padding:5px 9px;font-weight:600;color:var(--mu);border-bottom:1px solid var(--br);font-size:11px;background:#f4f6f8}
+.mt td{padding:5px 9px;border-bottom:1px solid var(--br);color:var(--tx)}
+.mt tr:hover td{background:var(--bg2)}
+.tw{position:relative;width:30px;height:17px;flex-shrink:0}
+.tw input{opacity:0;width:0;height:0}
+.tw .tsl{position:absolute;cursor:pointer;inset:0;background:var(--br2);border-radius:17px;transition:.2s}
+.tw input:checked+.tsl{background:var(--brand)}
+.tw .tsl:before{position:absolute;content:"";height:11px;width:11px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+.tw input:checked+.tsl:before{transform:translateX(13px)}
+.tgr{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.tgl{font-size:11px;color:var(--tx);display:flex;align-items:center;gap:5px}
+.tgl i{font-size:13px;color:var(--mu)}
+.sel{font-size:11px;padding:3px 6px;border:1px solid var(--br2);border-radius:4px;background:var(--bg);color:var(--tx)}
+.scb{display:flex;height:24px;border-radius:5px;overflow:hidden;margin-bottom:.4rem}
+.sc{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;flex:1}
+.lr{display:flex;align-items:center;gap:7px;margin-bottom:5px;font-size:12px;color:var(--tx)}
+.ld{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+.snrr{font-size:16px;font-weight:700;padding:.4rem 1rem;border-radius:var(--r2);display:inline-block}
+.rb{margin:4px 0}.rbl{display:flex;justify-content:space-between;font-size:11px;color:var(--mu);margin-bottom:2px}
+.rbt{height:7px;background:#e4e6ee;border-radius:4px;overflow:hidden}.rbf{height:100%;border-radius:4px;transition:width .4s}
+.hmc{width:100%;height:140px;border-radius:6px;border:1px solid var(--br);display:block;margin:8px 0}
+.tc{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.fs{height:32px;border-radius:5px;overflow:hidden;display:flex;margin-bottom:.4rem}
+.fc{display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#fff;flex:1;border-right:1px solid rgba(255,255,255,.15)}
+.og{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin:8px 0}
+.oc2{height:42px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;cursor:pointer}
+.spb{height:80px;display:flex;align-items:flex-end;gap:2px;padding:3px 0}
+.spbar{flex:1;border-radius:3px 3px 0 0;cursor:pointer;min-height:4px}
+.splbl{display:flex;gap:2px;margin-top:2px}
+.splbl span{flex:1;font-size:9px;text-align:center;color:var(--mu)}
+.arg{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin-bottom:1rem}
+.arc{background:#fff;border:1px solid var(--br);border-radius:var(--r2);padding:.75rem 1rem;cursor:pointer;transition:all .15s;position:relative}
+.arc:hover{border-color:var(--brand);background:#f0f8ff}
+.arc.sel{border-color:var(--brand);background:#e8f4ff;box-shadow:0 0 0 2px rgba(0,180,255,.18)}
+.arc .an{font-size:13px;font-weight:700;color:var(--tx);margin-bottom:3px;display:flex;align-items:center;gap:5px}
+.arc .ab{font-size:9px;padding:1px 6px;border-radius:100px;font-weight:700}
+.ah{background:#fee2e2;color:#991b1b}.am{background:#fff7ed;color:#92400e}.al{background:#f0fdf4;color:#166534}
+.arc .ar{font-size:11px;color:var(--mu);line-height:1.7}
+.arc .ar strong{color:var(--brand)}
+.asi{position:absolute;top:8px;right:8px;width:16px;height:16px;border-radius:50%;background:var(--brand);color:#fff;font-size:10px;display:none;align-items:center;justify-content:center;font-weight:700}
+.arc.sel .asi{display:flex}
+
+/* ═══════ DISTRIBUTION MAP v6 — NEW LAYOUT ═══════ */
+#sec-distmap{padding:0}
+.dm-layout{display:flex;flex-direction:column;height:calc(100vh - 108px);background:#eef1f4}
+
+/* Slim top toolbar */
+.dm-toolbar{display:flex;align-items:center;gap:6px;padding:.4rem .8rem;background:#fff;border-bottom:1px solid var(--br);flex-wrap:wrap;flex-shrink:0}
+.dm-sep{width:1px;height:20px;background:var(--br);flex-shrink:0}
+.dm-tbtn{font-size:11px;font-weight:600;padding:5px 10px;border-radius:6px;border:1px solid var(--br2);cursor:pointer;background:#f4f6f8;color:var(--tx);display:flex;align-items:center;gap:4px;transition:all .12s}
+.dm-tbtn:hover{border-color:var(--brand);color:var(--brand)}
+.dm-tbtn.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.dm-scale-chip{font-size:10px;font-weight:600;padding:4px 9px;border-radius:100px;background:#f0f8ff;border:1px solid rgba(0,180,255,.3);color:var(--bdark)}
+
+/* Category accordion tabs */
+.dm-cats{display:flex;align-items:center;gap:4px;padding:.35rem .8rem;background:#fafbfc;border-bottom:1px solid var(--br);flex-wrap:wrap;flex-shrink:0}
+.dm-cat-btn{font-size:10.5px;font-weight:600;padding:5px 11px;border-radius:100px;border:1px solid var(--br2);cursor:pointer;background:#fff;color:var(--mu);display:flex;align-items:center;gap:4px;transition:all .12s}
+.dm-cat-btn i{font-size:13px}
+.dm-cat-btn:hover{border-color:var(--brand);color:var(--brand)}
+.dm-cat-btn.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.dm-cat-panel{display:none;background:#fff;border-bottom:1px solid var(--br);padding:.7rem 1rem;flex-shrink:0;max-height:230px;overflow-y:auto}
+.dm-cat-panel.on{display:block}
+.dm-cat-grid{display:flex;flex-wrap:wrap;gap:14px 22px}
+.dm-cat-col{min-width:170px}
+.dm-cat-col-h{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--mu);margin-bottom:6px;display:flex;align-items:center;gap:4px}
+.dm-cat-col-h i{color:var(--brand);font-size:13px}
+.dp-row{display:flex;align-items:center;gap:6px;margin-bottom:5px;font-size:11px}
+.dp-lbl{color:var(--mu);min-width:82px;flex-shrink:0}
+.dp-val{font-weight:600;color:var(--tx);font-size:11px;min-width:52px;text-align:right}
+.vi{width:48px;font-size:10px;padding:2px 4px;border:1px solid var(--br2);border-radius:4px;background:#f8f9fb;color:var(--tx)}
+.ap-hw-info{background:#e8f4fd;border:1px solid #93c5fd;border-radius:5px;padding:.4rem .6rem;font-size:10px;color:#1e3a6e;margin-top:4px;line-height:1.7;max-width:260px}
+.room-item{background:#f4f6f8;border:1px solid var(--br);border-radius:5px;padding:3px 6px;margin-bottom:3px;display:flex;align-items:center;gap:5px;font-size:11px}
+.room-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.room-nm{font-weight:600;color:var(--tx)}
+.room-geo{font-size:9px;color:var(--mu)}
+.room-del{border:none;background:none;cursor:pointer;color:var(--etx);font-size:13px;padding:0;margin-left:auto}
+.wall-item{background:#f4f6f8;border:1px solid var(--br);border-radius:5px;padding:3px 6px;margin-bottom:3px;display:flex;align-items:center;gap:5px;font-size:11px}
+.wall-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.wall-del{border:none;background:none;cursor:pointer;color:var(--etx);font-size:13px;padding:0;margin-left:auto}
+.ap-item{background:#f4f6f8;border:1px solid var(--br);border-radius:5px;padding:4px 6px;margin-bottom:3px;width:100%}
+.ap-item.on{background:#f0f8ff;border-color:rgba(0,180,255,.35)}
+.ap-hd{display:flex;align-items:center;gap:4px;cursor:pointer}
+.ap-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.ap-nm{font-size:10px;font-weight:600;color:var(--tx);flex:1}
+.ap-inf{font-size:9px;color:var(--mu)}
+.ap-ed{display:none;padding-top:4px}
+.ap-item.on .ap-ed{display:block}
+.ap-field{font-size:10px;color:var(--mu);display:flex;align-items:center;gap:4px;margin-bottom:3px}
+.ap-field select,.ap-field input[type=number]{font-size:10px;padding:2px 4px;border:1px solid var(--br2);border-radius:3px;background:var(--bg);color:var(--tx);flex:1}
+.vtx-tbl{width:100%;font-size:10px;border-collapse:collapse;margin-top:4px}
+.vtx-tbl th{text-align:left;padding:3px 5px;background:#f4f6f8;font-weight:600;color:var(--mu)}
+.vtx-tbl td{padding:2px 4px}
+.vtx-tbl input{width:56px;font-size:10px;padding:2px 3px;border:1px solid var(--br2);border-radius:3px}
+.meas-item{background:#f4f6f8;border:1px solid var(--br);border-radius:5px;padding:4px 7px;margin-bottom:3px;font-size:10px;display:flex;align-items:center;gap:5px}
+.meas-del{border:none;background:none;cursor:pointer;color:var(--etx);font-size:12px;margin-left:auto}
+
+/* CANVAS AREA */
+.dm-canvas-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;min-height:640px}
+.dm-canvas-wrap.fs-mode{position:fixed;inset:0;z-index:5000;background:#fff}
+.dm-canvas-header{display:flex;align-items:center;justify-content:space-between;padding:.35rem .6rem;background:#f4f6f8;border-bottom:1px solid rgba(0,0,0,.09);flex-shrink:0}
+.dm-canvas-title{font-size:11px;font-weight:700;color:#333;display:flex;align-items:center;gap:5px}
+.dm-canvas-title i{color:var(--brand)}
+.dm-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:100px;background:var(--brand);color:#fff}
+.dm-header-r{display:flex;align-items:center;gap:5px}
+
+/* Ruler + canvas grid */
+.ruler-grid{flex:1;display:grid;grid-template-columns:22px 1fr;grid-template-rows:20px 1fr;position:relative;overflow:hidden;background:#c8cdd2}
+.ruler-corner{grid-column:1;grid-row:1;background:#eef1f4;border-right:1px solid var(--br2);border-bottom:1px solid var(--br2);z-index:15}
+#ruler-h{grid-column:2;grid-row:1;background:#eef1f4;border-bottom:1px solid var(--br2);z-index:14;display:block}
+#ruler-v{grid-column:1;grid-row:2;background:#eef1f4;border-right:1px solid var(--br2);z-index:14;display:block}
+.dm-canvas-scroller{grid-column:2;grid-row:2;position:relative;overflow:hidden;background:#c8cdd2}
+#dmc{display:block;position:absolute;left:0;top:0}
+
+/* Floating vertical tool rail (left edge of canvas) */
+.canvas-toolrail{position:absolute;left:8px;top:8px;z-index:40;display:flex;flex-direction:column;gap:3px;background:#fff;border:1px solid var(--br2);border-radius:9px;padding:4px;box-shadow:0 3px 12px rgba(0,0,0,.15)}
+.ctb{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:6px;cursor:pointer;color:var(--mu);border:none;background:none;font-size:16px;position:relative}
+.ctb:hover{background:var(--bg2);color:var(--brand)}
+.ctb.on{background:var(--brand);color:#fff}
+.ctb-sepline{height:1px;background:var(--br);margin:2px 4px}
+
+/* zoom controls bottom-right */
+.zoom-ctl{position:absolute;right:10px;bottom:10px;z-index:40;display:flex;align-items:center;gap:2px;background:rgba(255,255,255,.95);border:1px solid var(--br2);border-radius:9px;padding:3px;box-shadow:0 3px 12px rgba(0,0,0,.15)}
+.zoom-ctl button{width:26px;height:26px;border-radius:6px;border:none;background:none;cursor:pointer;color:var(--tx);display:flex;align-items:center;justify-content:center;font-size:14px}
+.zoom-ctl button:hover{background:var(--bg2);color:var(--brand)}
+.zoom-lbl{font-size:10px;color:var(--mu);width:42px;text-align:center;font-weight:600}
+
+/* scale bar bottom-left */
+.scale-info-box{position:absolute;bottom:10px;left:10px;background:rgba(255,255,255,.92);border:1px solid var(--br2);border-radius:6px;padding:4px 9px;font-size:9px;font-weight:700;color:#333;pointer-events:none;z-index:40;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+
+/* draw hint floating */
+.draw-hint-float{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:rgba(10,31,53,.94);border:1px solid var(--ibd);border-radius:8px;padding:6px 14px;font-size:11px;color:var(--itx);z-index:45;display:none;text-align:center}
+.draw-hint-float.show{display:block}
+.draw-hint-float b{color:#fff}
+.draw-hint-float kbd{font-family:monospace;background:rgba(255,255,255,.15);border-radius:3px;padding:0 4px;margin:0 1px}
+
+/* Legend + status */
+.dm-legend{background:#fff;border-top:1px solid rgba(0,0,0,.09);padding:.35rem .6rem;flex-shrink:0}
+.dleg{display:flex;gap:2px;margin:.25rem 0 .1rem}
+.dls{flex:1;height:12px;border-radius:2px}
+.dlll{display:flex;justify-content:space-between;font-size:9px;color:var(--mu)}
+.dinfo{font-size:11px;color:var(--tx);padding:.3rem .5rem;background:#f8f9fb;border-radius:6px;margin-top:.25rem;border:1px solid var(--br);min-height:1.8rem;line-height:1.6}
+.sig-scale-bar{display:flex;gap:2px;align-items:stretch;margin-bottom:.25rem}
+.sig-seg{flex:1;height:15px;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff}
+.sig-dbm-row{display:flex;justify-content:space-between;margin-top:1px}
+.sig-dbm-row span{font-size:8px;color:var(--mu)}
+.dm-statusbar{background:#fff;border-top:1px solid var(--br);padding:.25rem .6rem;display:flex;align-items:center;gap:10px;font-size:10px;color:var(--mu);flex-shrink:0;flex-wrap:wrap}
+.dm-sb-item strong{color:var(--tx)}
+.design-chk{background:#fff;border-top:1px solid var(--br);padding:.4rem .6rem;flex-shrink:0}
+.chkr{display:flex;align-items:center;gap:5px;padding:1px 0;font-size:11px}
+.roam-box{background:#fff;border-top:1px solid var(--br);padding:.4rem .6rem;flex-shrink:0}
+.hm-toggle-btn{font-size:10px;font-weight:700;padding:4px 10px;border-radius:100px;border:1px solid var(--br2);cursor:pointer;background:#f4f6f8;color:var(--mu);display:flex;align-items:center;gap:4px;transition:all .12s}
+.hm-toggle-btn.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.hm-toggle-btn i{font-size:12px}
+body.mode-scale #dmc,body.mode-scale .dm-canvas-scroller{cursor:crosshair}
+body.mode-pan #dmc,body.mode-pan .dm-canvas-scroller{cursor:grab}
+body.mode-draw-room #dmc,body.mode-draw-room .dm-canvas-scroller{cursor:cell}
+body.mode-draw-wall #dmc,body.mode-draw-wall .dm-canvas-scroller{cursor:crosshair}
+body.mode-place-ap #dmc,body.mode-place-ap .dm-canvas-scroller{cursor:copy}
+body.mode-measure #dmc,body.mode-measure .dm-canvas-scroller{cursor:crosshair}
+body.mode-area #dmc,body.mode-area .dm-canvas-scroller{cursor:crosshair}
+body.panning .dm-canvas-scroller{cursor:grabbing!important}
+
+/* REPORT (unchanged from v5) */
+.rpt-wrap{max-width:840px;margin:0 auto}
+.rpt-header{background:linear-gradient(135deg,#1a3a5c 0%,#2d6a9f 100%);color:#fff;border-radius:12px;padding:1.4rem 1.8rem;margin-bottom:1rem;position:relative}
+.rpt-logo{font-size:19px;font-weight:800;margin-bottom:.2rem}
+.rpt-subtitle{font-size:11px;opacity:.7;text-transform:uppercase;letter-spacing:.05em}
+.rpt-badge{position:absolute;top:1.2rem;right:1.4rem;font-size:9px;font-weight:700;padding:3px 11px;border-radius:100px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);color:#fff;letter-spacing:.04em}
+.rpt-card{background:#fff;border:1px solid var(--br);border-radius:var(--r3);padding:1rem 1.3rem;margin-bottom:.9rem}
+.rpt-ct{font-size:13px;font-weight:700;color:var(--tx);margin-bottom:.75rem;display:flex;align-items:center;gap:7px;padding-bottom:.5rem;border-bottom:2px solid var(--brand)}
+.rpt-ct i{color:var(--brand);font-size:18px}
+.rpt-grid2{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.rpt-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem}
+.rpt-field{display:flex;flex-direction:column;gap:2px}
+.rpt-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--mu)}
+.rpt-input{font-size:12px;padding:5px 8px;border:1px solid var(--br2);border-radius:var(--r1);background:#f8f9fb;color:var(--tx);width:100%}
+.rpt-input:focus{outline:none;border-color:var(--brand)}
+.rpt-tbl{width:100%;font-size:12px;border-collapse:collapse}
+.rpt-tbl th{text-align:left;padding:6px 10px;font-weight:600;font-size:11px;color:var(--mu);background:#f4f6f8;border-bottom:2px solid var(--br)}
+.rpt-tbl td{padding:6px 10px;border-bottom:1px solid var(--br);color:var(--tx);vertical-align:middle}
+.rpt-tbl tr:hover td{background:#f8fafc}
+.rpt-pass{color:#166534;font-weight:700}.rpt-fail{color:#991b1b;font-weight:700}
+.rpt-fail-bg td{background:#fef2f2!important}
+.rpt-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-bottom:.7rem}
+.rpt-stat{background:#f4f6f8;border-radius:var(--r2);padding:.5rem .7rem;text-align:center}
+.rpt-stat-v{font-size:18px;font-weight:800;color:var(--tx)}.rpt-stat-u{font-size:10px;color:var(--mu)}
+.rpt-stat-l{font-size:10px;color:var(--mu);margin-top:1px}
+.rpt-sig-bar{display:flex;height:18px;border-radius:5px;overflow:hidden;margin:.4rem 0}
+.rpt-sig-seg{flex:1;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff}
+.rpt-conclusion{background:#f0fdf4;border:1px solid #86efac;border-radius:var(--r2);padding:.8rem 1rem;font-size:12px;color:#14532d;line-height:1.8}
+.rpt-warn{background:#fff7ed;border:1px solid #fcd34d;border-radius:var(--r2);padding:.8rem 1rem;font-size:12px;color:#7c2d12;line-height:1.8;margin-top:.6rem}
+.rpt-footer{text-align:center;font-size:10px;color:var(--mu);padding:.9rem 0 .3rem;border-top:1px solid var(--br);margin-top:.9rem}
+.mode-switch{display:flex;border:1px solid var(--br2);border-radius:100px;overflow:hidden;width:fit-content}
+.mode-switch-opt{font-size:11px;font-weight:600;padding:6px 16px;border:none;cursor:pointer;background:#f4f6f8;color:var(--mu);display:flex;align-items:center;gap:5px;transition:all .15s}
+.mode-switch-opt.on{background:var(--brand);color:#fff}
+.mode-switch-opt:not(.on):hover{background:var(--bg2);color:var(--brand)}
+kbd{font-family:monospace;background:rgba(0,0,0,.06);border-radius:3px;padding:0 4px}
+@media(max-width:700px){.tc{grid-template-columns:1fr}.rpt-grid2,.rpt-grid3,.rpt-stat-grid{grid-template-columns:1fr}}
+@media print{body{background:#fff}.topbar,.nav-wrap,.dm-toolbar,.dm-cats,.dm-cat-panel,.dm-canvas-header,.dm-statusbar,.design-chk,.roam-box,.dm-legend,.no-print{display:none!important}#sec-report{display:block!important}.rpt-card{page-break-inside:avoid;border:1px solid #ccc}.rpt-header{background:#1a3a5c!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo"><i class="ti ti-wifi"></i></div>
+  <div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <div class="topbar-title">Wi-Fi Heatmap Visualizations Tool</div>
+      <span class="topbar-v">v6.0</span>
+    </div>
+    <div class="bc"><span>MEP PLATFORM</span><span class="bc-sep">›</span><span>ICT DESIGN TOOLS</span><span class="bc-sep">›</span><span class="bc-cur">WI-FI HEATMAP VISUALIZATIONS TOOL</span></div>
+  </div>
+  <button class="topbar-back">← ICT Design Tools</button>
+</div>
+
+<div class="nav-wrap">
+  <button class="nt on" onclick="showTab('signal',this)"><i class="ti ti-wifi-2"></i>Signal</button>
+  <button class="nt" onclick="showTab('snr',this)"><i class="ti ti-adjustments"></i>SNR</button>
+  <button class="nt" onclick="showTab('datarate',this)"><i class="ti ti-gauge"></i>Data Rate</button>
+  <button class="nt" onclick="showTab('noise',this)"><i class="ti ti-activity"></i>Interference</button>
+  <button class="nt" onclick="showTab('chover',this)"><i class="ti ti-topology-star-2"></i>Ch. Overlap</button>
+  <button class="nt" onclick="showTab('numaps',this)"><i class="ti ti-router"></i>No. of APs</button>
+  <button class="nt" onclick="showTab('spectrum',this)"><i class="ti ti-chart-bar"></i>Spectrum</button>
+  <button class="nt hi" onclick="showTab('distmap',this)"><i class="ti ti-map-2"></i>Distribution Map</button>
+  <button class="nt hi" onclick="showTab('appreq',this)"><i class="ti ti-apps"></i>App Requirements</button>
+  <button class="nt hi" onclick="showTab('report',this);buildReport()"><i class="ti ti-file-analytics"></i>Report</button>
+</div>
+
+<!-- SIGNAL STRENGTH -->
+<div id="sec-signal" class="sec on"><div class="pw">
+  <div class="kvg">
+    <div class="kvc"><div class="kvl">Enterprise target</div><div class="kvv">-67<span class="kvu"> dBm</span></div><div class="kvn">VoIP minimum</div></div>
+    <div class="kvc"><div class="kvl">Design range</div><div class="kvv">-65–-70<span class="kvu"> dBm</span></div><div class="kvn">with 2+ AP overlap</div></div>
+    <div class="kvc"><div class="kvl">Cutoff</div><div class="kvv">-75<span class="kvu"> dBm</span></div><div class="kvn">Hidden below</div></div>
+    <div class="kvc"><div class="kvl">Grey-out</div><div class="kvv">-65<span class="kvu"> dBm</span></div><div class="kvn">Below requirement</div></div>
+  </div>
+  <div class="card">
+    <div class="ct"><i class="ti ti-thermometer"></i>Signal strength color scale</div>
+    <div class="scb" id="sig-scale"></div><div id="sig-legend"></div>
+    <div class="hl"><strong>Rule:</strong> Higher signal → higher data rates. VoIP requires -67 dBm.</div>
+  </div>
+  <div class="card">
+    <div class="ct"><i class="ti ti-adjustments"></i>Live signal strength simulator</div>
+    <div class="sr"><span class="sll">Distance from AP</span><input type="range" min="1" max="60" value="15" id="dist-sl" oninput="updateSig()"><span class="sv" id="dist-out">15 m</span></div>
+    <div class="sr"><span class="sll">AP TX Power</span><input type="range" min="10" max="30" value="20" id="txpow-sl" oninput="updateSig()"><span class="sv" id="txpow-out">20 dBm</span></div>
+    <div class="sr"><span class="sll">Wall attenuation</span><input type="range" min="0" max="20" value="5" id="wall-sl" oninput="updateSig()"><span class="sv" id="wall-out">5 dB</span></div>
+    <canvas class="hmc" id="sig-canvas"></canvas>
+    <div id="sig-status" style="font-size:13px;font-weight:600;margin-top:4px"></div>
+  </div>
+  <div class="card">
+    <div class="ct"><i class="ti ti-device-mobile"></i>RSSI requirements by application</div>
+    <div id="app-bars"></div>
+    <div class="ic">Industry standard: <strong>-67 dBm</strong> ensures VoIP, roaming, and SNR margin for all enterprise applications.</div>
+  </div>
+</div></div>
+
+<!-- SNR -->
+<div id="sec-snr" class="sec"><div class="pw">
+  <div class="kvg">
+    <div class="kvc"><div class="kvl">Excellent</div><div class="kvv">&gt;40<span class="kvu"> dB</span></div></div>
+    <div class="kvc"><div class="kvl">Enterprise target</div><div class="kvv">&gt;25<span class="kvu"> dB</span></div></div>
+    <div class="kvc"><div class="kvl">Formula</div><div class="kvv" style="font-size:13px">SS − NF</div></div>
+    <div class="kvc"><div class="kvl">Typical NF</div><div class="kvv">-90<span class="kvu"> dBm</span></div></div>
+  </div>
+  <div class="card">
+    <div class="ct"><i class="ti ti-calculator"></i>Interactive SNR calculator</div>
+    <div class="sr"><span class="sll">Signal strength</span><input type="range" min="-90" max="-30" value="-60" id="ss-sl" oninput="updateSNR()"><span class="sv" id="ss-out">-60 dBm</span></div>
+    <div class="sr"><span class="sll">Noise floor</span><input type="range" min="-105" max="-60" value="-90" id="nf-sl" oninput="updateSNR()"><span class="sv" id="nf-out">-90 dBm</span></div>
+    <div style="margin-top:.8rem"><div style="font-size:11px;color:var(--mu);margin-bottom:4px">Calculated SNR</div><div id="snr-val" class="snrr"></div><div id="snr-grade" style="font-size:12px;margin-top:7px"></div></div>
+  </div>
+  <div class="card"><div class="ct"><i class="ti ti-stairs-up"></i>SNR quality levels</div><div id="snr-levels"></div></div>
+  <div class="card"><div class="ct"><i class="ti ti-table"></i>MCS index vs SNR</div><table class="mt"><thead><tr><th>MCS</th><th>Modulation</th><th>Min SNR</th><th>Rate</th></tr></thead><tbody id="mcs-tbody"></tbody></table></div>
+</div></div>
+
+<!-- DATA RATE -->
+<div id="sec-datarate" class="sec"><div class="pw">
+  <div class="kvg">
+    <div class="kvc"><div class="kvl">Max 802.11n</div><div class="kvv">600<span class="kvu"> Mbps</span></div></div>
+    <div class="kvc"><div class="kvl">Max 802.11ac</div><div class="kvv">6993<span class="kvu"> Mbps</span></div></div>
+    <div class="kvc"><div class="kvl">Typical corp.</div><div class="kvv">346<span class="kvu"> Mbps</span></div></div>
+    <div class="kvc"><div class="kvl">Net throughput</div><div class="kvv">&lt;50<span class="kvu"> %</span></div></div>
+  </div>
+  <div class="card">
+    <div class="ct"><i class="ti ti-math-function"></i>Data rate calculator</div>
+    <div class="hl" style="font-family:monospace;font-size:12px">Rate = SS × BW_Factor × MCS_Factor / GI_Factor</div>
+    <div class="sr"><span class="sll">Spatial streams</span><input type="range" min="1" max="4" value="2" id="ss-num" oninput="updateDR()"><span class="sv" id="ss-num-out">2</span></div>
+    <div class="sr"><span class="sll">Channel BW</span><input type="range" min="0" max="3" value="1" id="bw-sl" oninput="updateDR()"><span class="sv" id="bw-out">40 MHz</span></div>
+    <div class="sr"><span class="sll">MCS index</span><input type="range" min="0" max="9" value="7" id="mcs-sl" oninput="updateDR()"><span class="sv" id="mcs-out">7</span></div>
+    <div class="sr"><span class="sll">Guard interval</span><input type="range" min="0" max="1" value="1" id="gi-sl" oninput="updateDR()"><span class="sv" id="gi-out">SGI</span></div>
+    <div style="margin-top:.8rem;padding:.8rem;background:#f4f6f8;border-radius:var(--r2)"><div style="font-size:11px;color:var(--mu);margin-bottom:3px">Estimated data rate</div><div id="dr-result" style="font-size:28px;font-weight:700"></div><div id="dr-detail" style="font-size:12px;color:var(--mu);margin-top:3px"></div></div>
+  </div>
+  <div class="card"><div class="ct"><i class="ti ti-chart-line"></i>Data rate vs distance</div><div style="position:relative;width:100%;height:160px"><canvas id="rate-chart"></canvas></div></div>
+</div></div>
+
+<!-- INTERFERENCE -->
+<div id="sec-noise" class="sec"><div class="pw">
+  <div class="kvg">
+    <div class="kvc"><div class="kvl">20 MHz</div><div class="kvv">-101<span class="kvu"> dBm</span></div></div>
+    <div class="kvc"><div class="kvl">40 MHz</div><div class="kvv">-98<span class="kvu"> dBm</span></div></div>
+    <div class="kvc"><div class="kvl">80 MHz</div><div class="kvv">-95<span class="kvu"> dBm</span></div></div>
+    <div class="kvc"><div class="kvl">160 MHz</div><div class="kvv">-92<span class="kvu"> dBm</span></div></div>
+  </div>
+  <div class="card"><div class="ct"><i class="ti ti-activity"></i>Johnson-Nyquist formula</div><div class="hl" style="font-family:monospace;font-size:13px">P<sub>dBm</sub> = −174 + 10·log₁₀(Δf)</div></div>
+  <div class="card"><div class="ct"><i class="ti ti-broadcast"></i>Common interference sources</div><div id="int-list"></div></div>
+  <div class="card">
+    <div class="ct"><i class="ti ti-adjustments"></i>Network load simulator</div>
+    <div class="sr"><span class="sll">Network load %</span><input type="range" min="0" max="100" value="50" id="load-sl" oninput="updateLoad()"><span class="sv" id="load-out">50%</span></div>
+    <div id="load-result" style="font-size:12px;margin-top:.4rem"></div>
+    <canvas class="hmc" id="noise-canvas" style="height:110px"></canvas>
+  </div>
+</div></div>
+
+<!-- CHANNEL OVERLAP -->
+<div id="sec-chover" class="sec"><div class="pw">
+  <div class="kvg">
+    <div class="kvc"><div class="kvl">2.4 GHz non-overlap</div><div class="kvv">3<span class="kvu"> ch</span></div></div>
+    <div class="kvc"><div class="kvl">5 GHz non-overlap</div><div class="kvv">~24<span class="kvu"> ch</span></div></div>
+    <div class="kvc"><div class="kvl">ACI vs CCI</div><div class="kvv" style="font-size:13px">ACI worse</div></div>
+    <div class="kvc"><div class="kvl">Non-overlap spacing</div><div class="kvv">25<span class="kvu"> MHz</span></div></div>
+  </div>
+  <div class="card">
+    <div class="ct"><i class="ti ti-topology-star"></i>2.4 GHz channel plan</div>
+    <div class="fs" id="freq-24"></div>
+    <div style="font-size:11px;color:var(--mu);margin-bottom:1rem">Non-overlapping: ch 1 · ch 6 · ch 11</div>
+    <div class="ct"><i class="ti ti-topology-full"></i>5 GHz UNII bands</div>
+    <div class="fs" id="freq-5"></div>
+  </div>
+  <div class="card">
+    <div class="ct"><i class="ti ti-stack-2"></i>Co-channel overlap simulation</div>
+    <div class="sr"><span class="sll">APs on same ch.</span><input type="range" min="1" max="8" value="3" id="co-sl" oninput="updateOverlap()"><span class="sv" id="co-out">3</span></div>
+    <div class="og" id="ov-grid"></div>
+    <div id="ov-info" class="ic"></div>
+  </div>
+  <div class="tc">
+    <div class="card"><div class="ct"><i class="ti ti-antenna"></i>CCI</div><p style="font-size:12px;line-height:1.7">Devices <strong>cooperate</strong> via 802.11 CCA — take turns.</p></div>
+    <div class="card"><div class="ct"><i class="ti ti-alert-triangle"></i>ACI</div><p style="font-size:12px;line-height:1.7">Devices <strong>inject noise</strong>. Far more damaging than CCI.</p></div>
+  </div>
+</div></div>
+
+<!-- NUM APs -->
+<div id="sec-numaps" class="sec"><div class="pw">
+  <div class="kvg">
+    <div class="kvc"><div class="kvl">Min for roaming</div><div class="kvv">2<span class="kvu"> APs</span></div></div>
+    <div class="kvc"><div class="kvl">VoIP overlap</div><div class="kvv">15–20<span class="kvu"> %</span></div></div>
+    <div class="kvc"><div class="kvl">HD density</div><div class="kvv">3+<span class="kvu"> APs</span></div></div>
+    <div class="kvc"><div class="kvl">Failover</div><div class="kvv">≥ 2<span class="kvu"> APs</span></div></div>
+  </div>
+  <div class="card"><div class="ct"><i class="ti ti-router"></i>AP count planning</div><div id="numaps-content"></div></div>
+  <div class="card">
+    <div class="ct"><i class="ti ti-calculator"></i>Capacity formula</div>
+    <div class="hl" style="font-family:monospace">APs = CEILING( Users × Take Rate % / Clients per Radio )</div>
+    <table class="mt"><thead><tr><th>Scenario</th><th>Users</th><th>Take Rate</th><th>Clients/Radio</th><th>APs Req.</th></tr></thead>
+    <tbody><tr><td>Small office</td><td>50</td><td>70%</td><td>25</td><td>2</td></tr><tr><td>Open office</td><td>200</td><td>65%</td><td>30</td><td>5</td></tr><tr><td>High-density</td><td>500</td><td>80%</td><td>25</td><td>16</td></tr><tr><td>Conference centre</td><td>1000</td><td>100%</td><td>25</td><td>40</td></tr></tbody></table>
+  </div>
+</div></div>
+
+<!-- SPECTRUM -->
+<div id="sec-spectrum" class="sec"><div class="pw">
+  <div class="card"><div class="ct"><i class="ti ti-chart-bar"></i>Spectrum analyzer — 2.4 GHz</div><div class="spb" id="spec-24"></div><div class="splbl" id="spec-24-lbl"></div><div id="spec-info" style="font-size:11px;background:#f4f6f8;border-radius:4px;padding:5px 9px;margin-top:5px"></div></div>
+  <div class="card"><div class="ct"><i class="ti ti-chart-bar"></i>Spectrum analyzer — 5 GHz</div><div class="spb" id="spec-5"></div><div class="splbl" id="spec-5-lbl"></div></div>
+</div></div>
+
+<!-- ═══════════════ DISTRIBUTION MAP v6 ═══════════════ -->
+<div id="sec-distmap" class="sec">
+<div class="dm-layout">
+
+  <!-- Slim toolbar: only Import / Scale / Units / Snap / Fullscreen -->
+  <div class="dm-toolbar">
+    <button class="dm-tbtn" onclick="trigImport()"><i class="ti ti-upload"></i>Import Image</button>
+    <input type="file" id="fp-file" accept="image/*" style="display:none" onchange="loadFPImage(event)">
+    <button class="dm-tbtn" id="tb-scale" onclick="setMode('scale')" title="Click 2 points, enter real distance"><i class="ti ti-ruler-2"></i>Set Scale</button>
+    <span class="dm-scale-chip" id="scale-chip">Default: 0.05 m/px</span>
+    <div class="dm-sep"></div>
+    <button class="dm-tbtn" id="tb-units" onclick="toggleUnits()"><i class="ti ti-ruler"></i>Units: m</button>
+    <button class="dm-tbtn" id="tb-snap" onclick="toggleSnap()"><i class="ti ti-grid-dots"></i>Snap: Off</button>
+    <input type="range" min="0.25" max="5" step="0.25" value="1" id="grid-size" style="width:60px" oninput="document.getElementById('grid-size-o').textContent=this.value+'m';dmR()">
+    <span id="grid-size-o" style="font-size:10px;color:var(--mu);min-width:26px">1m</span>
+    <div class="dm-sep"></div>
+    <button class="dm-tbtn" onclick="exportPNG()"><i class="ti ti-download"></i>Export PNG</button>
+    <button class="dm-tbtn btnp" style="background:var(--brand);border-color:var(--brand);color:#fff;margin-left:auto" onclick="toggleFullscreen()" id="tb-fs" title="Maximize the drawing space [F]"><i class="ti ti-arrows-maximize"></i>Fullscreen</button>
+  </div>
+
+  <!-- Category accordion -->
+  <div class="dm-cats" id="dm-cats">
+    <button class="dm-cat-btn" onclick="toggleCat('rooms')" id="cat-rooms"><i class="ti ti-vector-triangle"></i>Rooms <span id="cat-rooms-n">(0)</span></button>
+    <button class="dm-cat-btn" onclick="toggleCat('walls')" id="cat-walls"><i class="ti ti-minus"></i>Walls <span id="cat-walls-n">(0)</span></button>
+    <button class="dm-cat-btn" onclick="toggleCat('aps')" id="cat-aps"><i class="ti ti-router"></i>APs &amp; RF <span id="cat-aps-n">(0)</span></button>
+    <button class="dm-cat-btn" onclick="toggleCat('overlays')" id="cat-overlays"><i class="ti ti-eye"></i>Overlays</button>
+    <button class="dm-cat-btn" onclick="toggleCat('legend')" id="cat-legend"><i class="ti ti-adjustments-horizontal"></i>Legend Settings</button>
+    <button class="dm-cat-btn" onclick="toggleCat('capacity')" id="cat-capacity"><i class="ti ti-users"></i>Capacity</button>
+    <button class="dm-cat-btn" onclick="toggleCat('measure')" id="cat-measure"><i class="ti ti-ruler-measure"></i>Measurements <span id="cat-measure-n">(0)</span></button>
+    <button class="dm-cat-btn" onclick="toggleCat('auto')" id="cat-auto"><i class="ti ti-wand"></i>Auto Distribution</button>
+  </div>
+
+  <!-- ROOMS PANEL -->
+  <div class="dm-cat-panel" id="panel-rooms">
+    <div class="dm-cat-grid">
+      <div class="dm-cat-col">
+        <div class="dm-cat-col-h"><i class="ti ti-list"></i>Room List</div>
+        <div id="room-list" style="max-height:150px;overflow-y:auto"></div>
+        <div style="display:flex;gap:4px;margin-top:5px">
+          <button class="btn" onclick="setMode('draw-room')" style="flex:1;justify-content:center;font-size:10px"><i class="ti ti-plus"></i>Draw Room</button>
+          <button class="btn btne" onclick="clearAllRooms()" style="flex:1;justify-content:center;font-size:10px"><i class="ti ti-trash"></i>Clear All</button>
+        </div>
+      </div>
+      <div class="dm-cat-col" style="min-width:190px">
+        <div class="dm-cat-col-h"><i class="ti ti-shape"></i>Quick Shapes</div>
+        <select class="sel" id="shape-type" onchange="onShapeTypeChange()" style="width:100%;margin-bottom:5px">
+          <option value="rect">Rectangle</option>
+          <option value="square">Square</option>
+          <option value="circle">Circle / Round</option>
+          <option value="triangle">Triangle</option>
+          <option value="lshape">L-Shape</option>
+          <option value="tshape">T-Shape</option>
+        </select>
+        <div id="shape-params" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px"></div>
+        <button class="btn btnp" onclick="insertShapeRoom()" style="width:100%;justify-content:center;font-size:10px"><i class="ti ti-plus"></i>Insert Shape as Room</button>
+        <div style="font-size:9px;color:var(--mu);margin-top:4px">Dimensions in metres · shape drops at the current view centre · edit further via Vertex Coordinates →</div>
+      </div>
+      <div class="dm-cat-col">
+        <div class="dm-cat-col-h"><i class="ti ti-brick"></i>Wall Loss (Boundary)</div>
+        <div class="dp-row"><span class="dp-lbl">Interior wall:</span><input type="range" min="1" max="20" value="5" id="dm-wl" oninput="document.getElementById('dm-wl-o').textContent=this.value+' dB';dmR()"><span class="dp-val" id="dm-wl-o">5 dB</span></div>
+        <div class="ic" style="font-size:10px;padding:.4rem .6rem;margin-top:4px">🔒 Rooms are <strong>fully isolated</strong> — signal from an AP in one room does not reach another room, regardless of distance. Only interior "Draw Wall" segments apply dB loss within the same room.</div>
+      </div>
+      <div class="dm-cat-col" style="min-width:260px">
+        <div class="dm-cat-col-h"><i class="ti ti-axis-x"></i>Vertex Coordinates (m)</div>
+        <div class="dp-row"><span class="dp-lbl">Room:</span><select class="sel" id="vtx-room-sel" onchange="buildVertexTable()" style="flex:1"></select></div>
+        <table class="vtx-tbl" id="vtx-table"><thead><tr><th>#</th><th>X (m)</th><th>Y (m)</th><th></th></tr></thead><tbody id="vtx-tbody"></tbody></table>
+        <div id="vtx-geo" style="font-size:10px;color:var(--mu);margin-top:4px;font-weight:600"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WALLS PANEL -->
+  <div class="dm-cat-panel" id="panel-walls">
+    <div class="dm-cat-grid">
+      <div class="dm-cat-col">
+        <div class="dm-cat-col-h"><i class="ti ti-pencil"></i>Draw Interior Wall</div>
+        <div class="dp-row"><span class="dp-lbl">Wall type:</span>
+          <select class="sel" id="wall-type-sel" onchange="onWallTypeChange()" style="flex:1">
+            <option value="3">Drywall (3 dB)</option><option value="3.5">Glass (3.5 dB)</option><option value="6">Light Brick (6 dB)</option><option value="10" selected>Brick (10 dB)</option><option value="15">Concrete (15 dB)</option><option value="22">Metal (22 dB)</option><option value="custom">Custom…</option>
+          </select>
+        </div>
+        <div id="custom-loss-row" style="display:none" class="dp-row"><span class="dp-lbl">Custom loss:</span><input type="range" min="1" max="40" value="10" id="wall-loss-sl" oninput="document.getElementById('wall-loss-o').textContent=this.value+' dB'"><span class="dp-val" id="wall-loss-o">10 dB</span></div>
+        <button class="btn" onclick="setMode('draw-wall')" style="width:100%;justify-content:center;font-size:10px;margin-top:4px"><i class="ti ti-pencil"></i>Draw Wall</button>
+      </div>
+      <div class="dm-cat-col">
+        <div class="dm-cat-col-h"><i class="ti ti-list"></i>Wall List</div>
+        <div id="wall-list" style="max-height:150px;overflow-y:auto"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- APs & RF PANEL -->
+  <div class="dm-cat-panel" id="panel-aps">
+    <div class="dm-cat-grid">
+      <div class="dm-cat-col">
+        <div class="dm-cat-col-h"><i class="ti ti-radio"></i>RF Parameters</div>
+        <div class="dp-row"><span class="dp-lbl">AP Model:</span>
+          <select class="sel" id="ap-hw-model" onchange="applyAPPreset()" style="flex:1;font-size:9px">
+            <option value="custom">Custom / Generic</option>
+            <optgroup label="Ubiquiti">
+              <option value="ubi_u6pro">U6 Pro (Ceiling)</option>
+              <option value="ubi_u6lite">U6 Lite (Wall)</option>
+              <option value="ubi_u6mesh">U6 Mesh (Outdoor)</option>
+              <option value="ubi_u6ext">U6 Extender (Mesh Node)</option>
+            </optgroup>
+            <optgroup label="Cisco (Meraki)">
+              <option value="mer_mr57">MR57 (Ceiling)</option>
+              <option value="mer_mr36">MR36 (Wall)</option>
+              <option value="mer_mr76">MR76 (Outdoor)</option>
+              <option value="mer_mr30h">MR30H (Mesh Node)</option>
+            </optgroup>
+            <optgroup label="Aruba">
+              <option value="aru_ap635">AP-635 (Ceiling)</option>
+              <option value="aru_ap505h">AP-505H (Wall)</option>
+              <option value="aru_ap577">AP-577 (Outdoor)</option>
+              <option value="aru_ap615">AP-615 (Mesh Node)</option>
+            </optgroup>
+            <optgroup label="Ruckus">
+              <option value="ruk_r750">R750 (Ceiling)</option>
+              <option value="ruk_r550">R550 (Wall)</option>
+              <option value="ruk_t750">T750 (Outdoor)</option>
+              <option value="ruk_e510">E510 (Mesh Node)</option>
+            </optgroup>
+            <optgroup label="TP-Link">
+              <option value="tpl_eap670">EAP670 (Ceiling)</option>
+              <option value="tpl_eap615wall">EAP615-Wall (Wall)</option>
+              <option value="tpl_eap670out">EAP670 Outdoor (Outdoor)</option>
+              <option value="tpl_eap610">EAP610 (Mesh Node)</option>
+            </optgroup>
+            <optgroup label="Generic">
+              <option value="gen_ceiling">AP Ceiling</option>
+              <option value="gen_wall">AP Wall</option>
+              <option value="gen_outdoor">AP Outdoor</option>
+              <option value="gen_mesh">Mesh Node</option>
+            </optgroup>
+            <optgroup label="Detailed Datasheets (Enterprise)">
+              <option value="ruckus_r350">RUCKUS R350 Indoor W6</option>
+              <option value="ruckus_t350c">RUCKUS T350c Outdoor</option>
+              <option value="ruckus_t350d">RUCKUS T350d + IoT</option>
+              <option value="ruckus_t350se">RUCKUS T350se Sector</option>
+              <option value="cisco9163e_omni">Cisco 9163E Omni 5G</option>
+              <option value="cisco9163e_dir">Cisco 9163E Dir 5G</option>
+              <option value="cisco9163e_6g">Cisco 9163E 6 GHz</option>
+            </optgroup>
+          </select>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin:-2px 0 3px">
+          <button class="btn" onclick="toggleVendorTable()" style="font-size:9px;padding:2px 8px"><i class="ti ti-table"></i>Vendor Spec Sheet</button>
+        </div>
+        <div id="ap-hw-info" class="ap-hw-info" style="display:none"></div>
+        <div class="dp-row"><span class="dp-lbl">TX Power:</span><input type="range" min="1" max="30" value="20" id="dm-tx" oninput="updateEIRP();dmR()"><span class="dp-val" id="dm-tx-o">20 dBm</span></div>
+        <div class="dp-row"><span class="dp-lbl">Ant. Gain:</span><input type="range" min="0" max="15" value="5" id="dm-ag" oninput="updateEIRP();dmR()"><span class="dp-val" id="dm-ag-o">5 dBi</span></div>
+        <div class="dp-row"><span class="dp-lbl">EIRP:</span><span class="dp-val" id="dm-eirp" style="color:var(--brand)">25 dBm</span></div>
+        <div class="dp-row"><span class="dp-lbl">Noise Floor:</span><input type="range" min="-105" max="-75" value="-92" id="dm-nf" oninput="document.getElementById('dm-nf-o').textContent=this.value+' dBm';dmR()"><span class="dp-val" id="dm-nf-o">-92 dBm</span></div>
+        <div class="dp-row"><span class="dp-lbl">Requirement:</span><input type="range" min="-85" max="-55" value="-67" id="dm-req" oninput="document.getElementById('dm-req-o').textContent=this.value+' dBm';document.getElementById('leg-primary').value=this.value;document.getElementById('leg-primary-o').textContent=this.value+' dBm';dmR()"><span class="dp-val" id="dm-req-o">-67 dBm</span></div>
+        <div class="dp-row"><span class="dp-lbl">Show cutoff:</span><input type="range" min="-95" max="-65" value="-80" id="dm-thr" oninput="document.getElementById('dm-thr-o').textContent=this.value+' dBm';dmR()"><span class="dp-val" id="dm-thr-o">-80 dBm</span></div>
+        <div class="dp-row"><span class="dp-lbl">Resolution:</span><input type="range" min="3" max="16" value="6" id="dm-res" oninput="dmR()"><span class="dp-val">px</span></div>
+      </div>
+      <div class="dm-cat-col" style="min-width:220px">
+        <div class="dm-cat-col-h"><i class="ti ti-list"></i>Access Point List</div>
+        <div id="ap-list-wrap" style="max-height:200px;overflow-y:auto"></div>
+        <div style="display:flex;gap:4px;margin-top:4px">
+          <button class="btn" onclick="setMode('place-ap')" style="flex:1;justify-content:center;font-size:10px"><i class="ti ti-plus"></i>Place AP</button>
+          <button class="btn btne" onclick="clearAPs()" style="flex:1;justify-content:center;font-size:10px"><i class="ti ti-trash"></i>Clear</button>
+        </div>
+      </div>
+      <div class="dm-cat-col" style="display:none;min-width:520px;max-width:640px" id="vendor-table-col">
+        <div class="dm-cat-col-h"><i class="ti ti-table"></i>Wireless AP Brand / Model Spec Sheet</div>
+        <div style="max-height:200px;overflow-y:auto">
+          <table class="mt" style="font-size:10px" id="vendor-spec-table"></table>
+        </div>
+        <div style="font-size:9px;color:var(--mu);margin-top:4px">Click a row to apply that model to the RF Parameters. Frequency parsed from Band text (6→6GHz, 5→5GHz, else 2.4GHz). Default TX: Outdoor=26dBm, Mesh Node=20dBm, others=23dBm.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERLAYS PANEL -->
+  <div class="dm-cat-panel" id="panel-overlays">
+    <div class="dm-cat-grid">
+      <div class="dm-cat-col">
+        <div class="dm-cat-col-h"><i class="ti ti-photo"></i>Floor Plan Image</div>
+        <div class="dp-row"><span class="dp-lbl">Opacity:</span><input type="range" min="0" max="1" step=".05" value="0.6" id="fp-opacity" oninput="dmR()"><span class="dp-val" id="fp-op-o">60%</span></div>
+        <div class="dp-row"><span class="dp-lbl">Scale:</span><input type="range" min="0.1" max="3" step=".01" value="1" id="fp-scale" oninput="fpScaleChange()"><span class="dp-val" id="fp-scale-o">1.00×</span></div>
+        <div class="dp-row"><span class="dp-lbl">Offset X:</span><input type="range" min="-600" max="600" value="0" id="fp-offx" oninput="dmR()"><span class="dp-val" id="fp-offx-o">0px</span></div>
+        <div class="dp-row"><span class="dp-lbl">Offset Y:</span><input type="range" min="-600" max="600" value="0" id="fp-offy" oninput="dmR()"><span class="dp-val" id="fp-offy-o">0px</span></div>
+      </div>
+      <div class="dm-cat-col">
+        <div class="dm-cat-col-h"><i class="ti ti-flame"></i>Heatmap Colors</div>
+        <div class="dp-row"><span class="dp-lbl">Opacity:</span><input type="range" min="0.1" max="1" step=".05" value="1" id="hm-opacity" oninput="document.getElementById('hm-op-o').textContent=Math.round(this.value*100)+'%';dmR()"><span class="dp-val" id="hm-op-o">100%</span></div>
+        <div style="font-size:9px;color:var(--mu);line-height:1.6">Fades the signal-strength color layer without hiding it — handy for reading the floor plan through the heatmap.</div>
+      </div>
+      <div class="dm-cat-col">
+        <div class="dm-cat-col-h"><i class="ti ti-eye"></i>Overlay Toggles</div>
+        <div class="tgr"><div class="tgl"><i class="ti ti-grid-dots"></i>Line grid</div><label class="tw"><input type="checkbox" id="o-grid" onchange="dmR()"><span class="tsl"></span></label></div>
+        <div class="tgr"><div class="tgl"><i class="ti ti-point"></i>Dot grid</div><label class="tw"><input type="checkbox" id="o-dotgrid" onchange="dmR()"><span class="tsl"></span></label></div>
+        <div class="tgr"><div class="tgl"><i class="ti ti-circle-dashed"></i>RSSI rings</div><label class="tw"><input type="checkbox" id="o-cnt" onchange="dmR()" checked><span class="tsl"></span></label></div>
+        <div class="tgr"><div class="tgl"><i class="ti ti-tag"></i>AP labels</div><label class="tw"><input type="checkbox" id="o-lbl" onchange="dmR()" checked><span class="tsl"></span></label></div>
+      </div>
+      <div class="dm-cat-col">
+        <div class="dm-cat-col-h"><i class="ti ti-ruler-3"></i>More overlays</div>
+        <div class="tgr"><div class="tgl"><i class="ti ti-ruler"></i>Dimensions</div><label class="tw"><input type="checkbox" id="o-dims" onchange="dmR()"><span class="tsl"></span></label></div>
+        <div class="tgr"><div class="tgl"><i class="ti ti-scale"></i>Scale bar</div><label class="tw"><input type="checkbox" id="o-sb" onchange="dmR()" checked><span class="tsl"></span></label></div>
+        <div class="tgr"><div class="tgl"><i class="ti ti-point"></i>Vertices</div><label class="tw"><input type="checkbox" id="o-vtx" onchange="dmR()"><span class="tsl"></span></label></div>
+        <div class="tgr"><div class="tgl"><i class="ti ti-arrows-shuffle"></i>Roam links</div><label class="tw"><input type="checkbox" id="o-roam" onchange="dmR()"><span class="tsl"></span></label></div>
+        <div class="tgr"><div class="tgl"><i class="ti ti-ruler-2"></i>Rulers</div><label class="tw"><input type="checkbox" id="o-rulers" onchange="dmR()" checked><span class="tsl"></span></label></div>
+      </div>
+      <div class="dm-cat-col">
+        <div class="dm-cat-col-h"><i class="ti ti-palette"></i>Rendering</div>
+        <select class="sel" id="dm-viz" onchange="vmCur=this.value;dmR()" style="width:100%;margin-bottom:6px">
+          <option value="signal">Signal Strength</option><option value="snr">SNR</option><option value="datarate">Data Rate</option><option value="overlap">Ch. Overlap</option><option value="numaps">No. of APs</option>
+        </select>
+        <select class="sel" id="dm-cs" onchange="dmR()" style="width:100%">
+          <option value="classic">Classic (Ekahau)</option><option value="thermal">Thermal</option><option value="cool">Cool</option><option value="mono">Mono</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEGEND SETTINGS PANEL (Ekahau-style adjustable range) -->
+  <div class="dm-cat-panel" id="panel-legend">
+    <div class="dm-cat-grid">
+      <div class="dm-cat-col">
+        <div class="dm-cat-col-h"><i class="ti ti-target-arrow"></i>Primary Requirement</div>
+        <div class="dp-row"><span class="dp-lbl">Primary ≥:</span><input type="range" min="-90" max="-40" value="-67" id="leg-primary" oninput="onPrimaryChange(this.value)"><span class="dp-val" id="leg-primary-o">-67 dBm</span></div>
+        <div style="font-size:10px;color:var(--mu);line-height:1.6">This drives the design Requirement, Roaming Validation, and (if grey-out is on) which pixels are flagged as failing. Change per application/project.</div>
+        <div class="tgr" style="margin-top:8px"><div class="tgl"><i class="ti ti-eye-off"></i>Enable requirement grey-out</div><label class="tw"><input type="checkbox" id="leg-greyout" checked onchange="dmR()"><span class="tsl"></span></label></div>
+        <div class="tgr"><div class="tgl"><i class="ti ti-circle-dashed"></i>Contours</div><label class="tw"><input type="checkbox" id="leg-contours" checked onchange="document.getElementById('o-cnt').checked=this.checked;dmR()"><span class="tsl"></span></label></div>
+        <div class="tgr"><div class="tgl"><i class="ti ti-arrows-horizontal"></i>Adjustable legend color range</div><label class="tw"><input type="checkbox" id="leg-adjustable" onchange="toggleLegendAdjust()"><span class="tsl"></span></label></div>
+        <div class="dp-row" id="leg-spacing-row" style="display:none"><span class="dp-lbl">Spacing:</span><input type="number" min="1" max="20" value="3" id="leg-spacing" style="width:44px;font-size:10px;padding:2px 4px;border:1px solid var(--br2);border-radius:4px;background:#f8f9fb;color:var(--tx)" oninput="dmR()"> dB / tick</div>
+      </div>
+      <div class="dm-cat-col" style="min-width:340px" id="leg-range-col">
+        <div class="dm-cat-col-h"><i class="ti ti-adjustments-horizontal"></i>Legend Range Adjustments</div>
+        <div id="leg-range-controls" style="opacity:.4;pointer-events:none">
+          <div class="dp-row"><span class="dp-lbl" style="color:#ef4444">Poor cutoff:</span><input type="range" min="-100" max="-60" value="-85" id="leg-poor" oninput="onLegendRangeChange()"><span class="dp-val" id="leg-poor-o">-85 dBm</span></div>
+          <div class="dp-row"><span class="dp-lbl" style="color:#f97316">Marginal:</span><input type="range" min="-95" max="-50" value="-75" id="leg-marginal" oninput="onLegendRangeChange()"><span class="dp-val" id="leg-marginal-o">-75 dBm</span></div>
+          <div class="dp-row"><span class="dp-lbl" style="color:#84cc16">Good:</span><input type="range" min="-85" max="-45" value="-67" id="leg-good" oninput="onLegendRangeChange()"><span class="dp-val" id="leg-good-o">-67 dBm</span></div>
+          <div class="dp-row"><span class="dp-lbl" style="color:#22c55e">Excellent:</span><input type="range" min="-75" max="-30" value="-55" id="leg-excellent" oninput="onLegendRangeChange()"><span class="dp-val" id="leg-excellent-o">-55 dBm</span></div>
+          <div id="leg-gradient-bar" style="height:16px;border-radius:4px;margin:8px 0 3px;border:1px solid var(--br2)"></div>
+          <div id="leg-ruler" style="display:flex;justify-content:space-between;font-size:8px;color:var(--mu);font-family:monospace"></div>
+          <div style="font-size:9px;color:var(--mu);margin-top:4px">Drag each slider to reshape the Excellent → Poor color bands used by the heatmap.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CAPACITY PANEL -->
+  <div class="dm-cat-panel" id="panel-capacity">
+    <div class="dm-cat-grid">
+      <div class="dm-cat-col">
+        <div class="dm-cat-col-h"><i class="ti ti-users"></i>Capacity Planner (Live)</div>
+        <div class="dp-row"><span class="dp-lbl">Total users:</span><input type="number" value="100" min="1" max="5000" id="cap-u" oninput="updateCap();scheduleAutoSync()" style="width:60px;font-size:10px;padding:2px 4px;border:1px solid var(--br2);border-radius:4px;background:#f8f9fb;color:var(--tx)"></div>
+        <div class="dp-row"><span class="dp-lbl">Take rate:</span><input type="range" min="10" max="100" value="60" id="cap-t" oninput="updateCap()" onchange="scheduleAutoSync()"><span class="dp-val" id="cap-t-o">60%</span></div>
+        <div class="dp-row"><span class="dp-lbl">Clients/radio:</span><input type="range" min="5" max="60" value="30" id="cap-c" oninput="updateCap()" onchange="scheduleAutoSync()"><span class="dp-val" id="cap-c-o">30</span></div>
+        <div class="dp-row"><span class="dp-lbl">Cov. target:</span><input type="range" min="70" max="100" value="90" id="cov-tgt" oninput="document.getElementById('cov-tgt-o').textContent=this.value+'%';dmR()" onchange="scheduleAutoSync()"><span class="dp-val" id="cov-tgt-o">90%</span></div>
+      </div>
+      <div class="dm-cat-col">
+        <div class="dm-cat-col-h"><i class="ti ti-report"></i>Result (updates live)</div>
+        <div id="cap-r" style="font-size:12px;background:#f4f6f8;padding:.5rem .7rem;border-radius:6px;line-height:1.8"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MEASUREMENTS PANEL -->
+  <div class="dm-cat-panel" id="panel-measure">
+    <div class="dm-cat-grid">
+      <div class="dm-cat-col">
+        <div class="dm-cat-col-h"><i class="ti ti-ruler-measure"></i>Tools</div>
+        <button class="btn" onclick="setMode('measure')" style="width:100%;justify-content:center;margin-bottom:4px;font-size:10px"><i class="ti ti-ruler-2"></i>Measure Distance <kbd style="font-size:9px;opacity:.6">[M]</kbd></button>
+        <button class="btn" onclick="setMode('area')" style="width:100%;justify-content:center;font-size:10px"><i class="ti ti-shape"></i>Measure Area <kbd style="font-size:9px;opacity:.6">[A]</kbd></button>
+        <div class="ic" style="font-size:10px;padding:.4rem .6rem;margin-top:6px">Click points to measure · <kbd>Enter</kbd> finish · <kbd>Backspace</kbd> undo point · <kbd>Esc</kbd> cancel</div>
+      </div>
+      <div class="dm-cat-col" style="min-width:220px">
+        <div class="dm-cat-col-h"><i class="ti ti-list"></i>Measurement List</div>
+        <div id="meas-list" style="max-height:150px;overflow-y:auto"></div>
+        <button class="btn btne" onclick="clearMeasurements()" style="width:100%;justify-content:center;font-size:10px;margin-top:4px"><i class="ti ti-trash"></i>Clear All</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTO DISTRIBUTION PANEL -->
+  <div class="dm-cat-panel" id="panel-auto">
+    <div class="dm-cat-grid">
+      <div class="dm-cat-col">
+        <div class="dm-cat-col-h"><i class="ti ti-toggle-left"></i>Distribution Mode</div>
+        <div class="mode-switch" id="mode-switch">
+          <button class="mode-switch-opt on" id="ms-manual" onclick="setDistMode('manual')"><i class="ti ti-hand-click"></i>Manual</button>
+          <button class="mode-switch-opt" id="ms-auto" onclick="setDistMode('auto')"><i class="ti ti-wand"></i>Auto</button>
+        </div>
+        <div style="font-size:10px;color:var(--mu);margin-top:6px;line-height:1.6" id="mode-hint">Manual: place APs yourself with the "Place AP" tool. Switch to Auto for algorithmic placement.</div>
+      </div>
+      <div class="dm-cat-col">
+        <div class="dm-cat-col-h"><i class="ti ti-wand"></i>Auto AP Distribution</div>
+        <select class="sel" id="ap-pat" onchange="onPatChange();scheduleAutoSync(true)" style="width:100%;margin-bottom:6px">
+          <option value="smart">Smart (auto-coverage)</option><option value="manual-count">Fixed count</option><option value="grid">Uniform grid</option><option value="center">Room centres</option>
+        </select>
+        <div id="ap-cnt-row" style="display:none;align-items:center;gap:6px;margin-bottom:6px">
+          <span style="font-size:10px;color:var(--mu)">Count:</span><input type="range" min="1" max="20" value="4" id="ap-cnt" oninput="document.getElementById('ap-cnt-o').textContent=this.value" onchange="scheduleAutoSync(true)" style="flex:1"><span id="ap-cnt-o" style="font-size:10px;font-weight:600;min-width:16px">4</span>
+        </div>
+        <button class="btn btnp" onclick="trigAutoAPs()" style="width:100%;justify-content:center"><i class="ti ti-wand"></i>Run Auto Distribution Now</button>
+        <div class="tgr" style="margin-top:8px"><div class="tgl"><i class="ti ti-refresh"></i>Live sync (re-run on room/wall/capacity changes)</div><label class="tw"><input type="checkbox" id="live-sync" onchange="onLiveSyncToggle()"><span class="tsl"></span></label></div>
+      </div>
+      <div class="dm-cat-col">
+        <div class="dm-cat-col-h"><i class="ti ti-info-circle"></i>Status</div>
+        <div class="ap-prog" style="display:block;height:5px"><div class="ap-prog-fill" id="ap-prog-fill" style="width:0%"></div></div>
+        <div id="ap-stat" style="font-size:11px;color:var(--mu)">Draw rooms first, then run auto distribution.</div>
+        <div id="sync-badge" style="display:none;margin-top:6px" class="oc">🔄 Auto mode active — APs re-distribute automatically when rooms, walls, or scale change.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CANVAS -->
+  <div class="dm-canvas-wrap" id="dm-canvas-wrap">
+    <div class="dm-canvas-header">
+      <div class="dm-canvas-title"><i class="ti ti-map-2"></i>Signal Distribution Map <span class="dm-badge" id="dm-mode-badge">Predictive</span></div>
+      <div class="dm-header-r">
+        <span style="font-size:9px;color:var(--mu)" id="cursor-pos">X:— Y:—</span>
+        <button class="hm-toggle-btn on" id="hm-toggle" onclick="toggleHeatmap()"><i class="ti ti-flame"></i>Heatmap ON</button>
+        <button class="dm-tbtn" onclick="toggleFullscreen()" id="tb-fs2" title="Exit fullscreen" style="display:none"><i class="ti ti-arrows-minimize"></i></button>
+      </div>
+    </div>
+
+    <div class="ruler-grid">
+      <div class="ruler-corner"></div>
+      <canvas id="ruler-h"></canvas>
+      <canvas id="ruler-v"></canvas>
+      <div class="dm-canvas-scroller" id="canvas-scroller">
+        <canvas id="dmc"></canvas>
+
+        <!-- Floating vertical tool rail -->
+        <div class="canvas-toolrail">
+          <button class="ctb" id="ctb-select" onclick="setMode('')" title="Select [V]"><i class="ti ti-pointer"></i></button>
+          <button class="ctb" id="ctb-pan" onclick="setMode('pan')" title="Pan / Hand — click &amp; drag to move the view [H]"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><path d="M8 13V5a1.5 1.5 0 0 1 3 0v6"/><path d="M11 11V4a1.5 1.5 0 0 1 3 0v7"/><path d="M14 10.5V5a1.5 1.5 0 0 1 3 0v7"/><path d="M17 11.5a1.5 1.5 0 0 1 3 0V16a6 6 0 0 1-6 6h-2c-2.8 0-4.3-.8-6-3l-2.9-3.8a1.5 1.5 0 0 1 2.35-1.85L8 13"/></svg></button>
+          <div class="ctb-sepline"></div>
+          <button class="ctb" id="ctb-room" onclick="setMode('draw-room')" title="Draw Room [R]"><i class="ti ti-vector-triangle"></i></button>
+          <button class="ctb" id="ctb-wall" onclick="setMode('draw-wall')" title="Draw Wall [W]"><i class="ti ti-minus"></i></button>
+          <button class="ctb" id="ctb-ap" onclick="setMode('place-ap')" title="Place AP [P]"><i class="ti ti-router"></i></button>
+          <div class="ctb-sepline"></div>
+          <button class="ctb" id="ctb-measure" onclick="setMode('measure')" title="Measure [M]"><i class="ti ti-ruler-2"></i></button>
+          <button class="ctb" id="ctb-area" onclick="setMode('area')" title="Area [A]"><i class="ti ti-shape"></i></button>
+          <button class="ctb" id="ctb-scale" onclick="setMode('scale')" title="Set Scale [S]"><i class="ti ti-ruler-2"></i></button>
+        </div>
+
+        <div class="draw-hint-float" id="draw-hint-float"></div>
+        <div class="scale-info-box" id="scale-bar-el">Scale: 0.05 m/px</div>
+
+        <div class="zoom-ctl">
+          <button onclick="zoomBtn(0.8)" title="Zoom out"><i class="ti ti-minus"></i></button>
+          <span class="zoom-lbl" id="zoom-lbl">100%</span>
+          <button onclick="zoomBtn(1.25)" title="Zoom in"><i class="ti ti-plus"></i></button>
+          <button onclick="fitView()" title="Fit to view"><i class="ti ti-fit-screen"></i></button>
+          <button onclick="resetView()" title="Reset zoom"><i class="ti ti-zoom-reset"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="dm-legend">
+      <div class="sig-scale-bar" id="sig-scale-bar">
+        <div class="sig-seg" style="background:#22c55e;flex:1.5">Excellent</div>
+        <div class="sig-seg" style="background:#84cc16;flex:1.5">Good</div>
+        <div class="sig-seg" style="background:#f97316;flex:1.5">Marginal</div>
+        <div class="sig-seg" style="background:#ef4444;flex:1.5">Poor</div>
+        <div class="sig-seg" style="background:#6b7280;flex:1">None</div>
+      </div>
+      <div class="sig-dbm-row" id="sig-dbm-row"><span>≥ −55 dBm</span><span>−55→−67</span><span>−67→−75</span><span>−75→−85</span><span>&lt; −85</span></div>
+      <div id="dleg-alt" style="display:none"><div class="dleg" id="dleg"></div><div class="dlll" id="dlll"></div></div>
+      <div class="dinfo" id="dinfo">Click on floor plan to inspect · Hover for tooltip · Drag APs to reposition · Alt+drag or mouse-wheel to pan/zoom</div>
+    </div>
+
+    <!-- Status bar -->
+    <div class="dm-statusbar">
+      <div class="dm-sb-item"><i class="ti ti-router" style="font-size:11px"></i> APs: <strong id="dm-aps">0</strong></div>
+      <div class="dm-sb-item"><i class="ti ti-percentage" style="font-size:11px"></i> Coverage: <strong id="dm-cov">—</strong></div>
+      <div class="dm-sb-item"><i class="ti ti-signal" style="font-size:11px"></i> Avg Signal: <strong id="dm-sig">—</strong></div>
+      <div class="dm-sb-item"><i class="ti ti-adjustments" style="font-size:11px"></i> Avg SNR: <strong id="dm-snr">—</strong></div>
+      <div class="dm-sb-item" id="dm-app-bar" style="display:none;background:#f0fdf4;border:1px solid #86efac;color:#14532d;padding:1px 8px;border-radius:4px;font-size:10px;font-weight:600"></div>
+      <button class="btn btnp" onclick="showTab('report',null);buildReport()" style="margin-left:auto;font-size:10px"><i class="ti ti-file-analytics"></i>Generate Report</button>
+    </div>
+
+    <!-- Roaming Validation -->
+    <div class="roam-box">
+      <div style="font-size:10px;font-weight:700;color:var(--tx);margin-bottom:2px;display:flex;align-items:center;gap:4px"><i class="ti ti-arrows-shuffle" style="font-size:13px;color:var(--brand)"></i>Roaming Validation <span style="font-weight:400;color:var(--mu)">(Primary &amp; Secondary AP ≥ requirement, Δ ≤ 10 dB)</span></div>
+      <div id="roam-result" style="font-size:11px;color:var(--mu)">⏳ Draw rooms and place ≥2 APs per room to validate roaming.</div>
+    </div>
+
+    <!-- Design checklist -->
+    <div class="design-chk">
+      <div style="font-size:10px;font-weight:700;color:var(--tx);margin-bottom:2px;display:flex;align-items:center;gap:4px"><i class="ti ti-clipboard-check" style="font-size:13px;color:var(--brand)"></i>Design Validation</div>
+      <div id="design-chk" style="display:flex;flex-wrap:wrap;gap:2px 10px">
+        <div class="chkr"><span style="color:var(--mu)">⏳ Draw rooms and place APs to evaluate…</span></div>
+      </div>
+    </div>
+  </div><!-- END CANVAS WRAP -->
+
+</div><!-- dm-layout -->
+</div><!-- sec-distmap -->
+
+<!-- APP REQUIREMENTS -->
+<div id="sec-appreq" class="sec"><div class="pw">
+  <div class="ic" style="margin-bottom:1rem"><strong>📌 How to use:</strong> Select a scenario — the tool auto-applies RSSI, SNR and noise floor to the Distribution Map.</div>
+  <div class="card"><div class="ct"><i class="ti ti-apps"></i>Select Application Profile</div><div class="arg" id="arg"></div><div id="app-sel-r" style="display:none" class="oc"><strong id="app-sel-n"></strong> applied — <span id="app-sel-d" style="font-size:11px"></span></div></div>
+  <div class="card"><div class="ct"><i class="ti ti-sort-descending"></i>Design Priority Matrix</div><table class="mt"><thead><tr><th>Priority</th><th>Application</th><th>RSSI</th><th>SNR</th><th>Roaming</th></tr></thead><tbody id="pm-tb"></tbody></table></div>
+</div></div>
+
+<!-- REPORT -->
+<div id="sec-report" class="sec"><div class="pw"><div class="rpt-wrap">
+  <div class="rpt-header">
+    <div class="rpt-badge">Wi-Fi 6 / 6E Design Report</div>
+    <div class="rpt-logo">🛜 Wi-Fi Heatmap Visualizations Tool</div>
+    <div class="rpt-subtitle">Predictive RF Simulation — Ekahau Best Practices</div>
+    <div style="margin-top:.8rem;display:flex;flex-wrap:wrap;gap:1.2rem;font-size:12px;opacity:.85">
+      <span id="rpt-hdr-project">Project: —</span><span id="rpt-hdr-date">Date: —</span><span id="rpt-hdr-consultant">Consultant: —</span>
+    </div>
+  </div>
+  <div class="rpt-card">
+    <div class="rpt-ct"><i class="ti ti-file-analytics"></i>1. Project Information</div>
+    <div class="rpt-grid2" style="margin-bottom:.6rem">
+      <div class="rpt-field"><label class="rpt-label">Project Name</label><input class="rpt-input" id="rpt-proj" placeholder="e.g. Office Building Wi-Fi Upgrade" oninput="updateRptHeader()"></div>
+      <div class="rpt-field"><label class="rpt-label">Location / Site</label><input class="rpt-input" id="rpt-loc" placeholder="e.g. Building A, Floor 3"></div>
+    </div>
+    <div class="rpt-grid3">
+      <div class="rpt-field"><label class="rpt-label">Document Reference</label><input class="rpt-input" id="rpt-doc" placeholder="WLAN-DES-001-v1.0"></div>
+      <div class="rpt-field"><label class="rpt-label">Date</label><input class="rpt-input" id="rpt-date" type="date" oninput="updateRptHeader()"></div>
+      <div class="rpt-field"><label class="rpt-label">Lead Consultant</label><input class="rpt-input" id="rpt-consult" placeholder="Name / Company" oninput="updateRptHeader()"></div>
+    </div>
+  </div>
+  <div class="rpt-card"><div class="rpt-ct"><i class="ti ti-list-check"></i>2. Methodology &amp; Coverage Requirements</div><table class="rpt-tbl"><thead><tr><th>Parameter</th><th>2.4 GHz</th><th>5 / 6 GHz</th><th>Source</th></tr></thead><tbody id="rpt-req-tbody"></tbody></table></div>
+  <div class="rpt-card">
+    <div class="rpt-ct"><i class="ti ti-chart-bar"></i>3. Design Statistics</div>
+    <div class="rpt-stat-grid" id="rpt-stats"></div>
+    <div class="rpt-sig-bar">
+      <div class="rpt-sig-seg" style="background:#22c55e;flex:1.5">Excellent</div><div class="rpt-sig-seg" style="background:#84cc16;flex:1.5">Good</div><div class="rpt-sig-seg" style="background:#f97316;flex:1.5">Marginal</div><div class="rpt-sig-seg" style="background:#ef4444;flex:1.5">Poor</div><div class="rpt-sig-seg" style="background:#6b7280;flex:1">None</div>
+    </div>
+  </div>
+  <div class="rpt-card"><div class="rpt-ct"><i class="ti ti-router"></i>4. Access Point Configuration</div><table class="rpt-tbl"><thead><tr><th>#</th><th>Label</th><th>Band</th><th>Channel</th><th>TX</th><th>EIRP</th><th>Model</th><th>Status</th></tr></thead><tbody id="rpt-ap-tbody"></tbody></table><div style="font-size:11px;color:var(--mu);margin-top:.3rem" id="rpt-ap-footer"></div></div>
+  <div class="rpt-card"><div class="rpt-ct"><i class="ti ti-flame"></i>5. Heatmap Results</div><table class="rpt-tbl"><thead><tr><th>Heatmap Type</th><th>Requirement</th><th>Measured</th><th>Result</th></tr></thead><tbody id="rpt-heatmap-tbody"></tbody></table></div>
+  <div class="rpt-card"><div class="rpt-ct"><i class="ti ti-clipboard-check"></i>6. Design Validation Checklist</div><table class="rpt-tbl"><thead><tr><th>#</th><th>Check</th><th>Target</th><th>Simulated</th><th>Status</th></tr></thead><tbody id="rpt-chk-tbody"></tbody></table></div>
+  <div class="rpt-card"><div class="rpt-ct"><i class="ti ti-certificate"></i>7. Conclusion</div><div id="rpt-conclusion"></div></div>
+  <div class="rpt-footer">
+    <div id="rpt-gen-time" style="margin-bottom:4px"></div>
+    Wi-Fi Heatmap Visualizations Tool v6.0 · Predictive RF Simulation · Ekahau Best Practices
+    <div class="no-print" style="margin-top:8px;display:flex;gap:8px;justify-content:center"><button class="btn btnp" onclick="window.print()"><i class="ti ti-printer"></i>Print / PDF</button></div>
+  </div>
+</div></div></div>
+
+<div id="tip"></div>
+<script>
+/* ═══ NAV ═══ */
+function showTab(id,btn){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.nt').forEach(b=>b.classList.remove('on'));
+  const sec=document.getElementById('sec-'+id);if(sec)sec.classList.add('on');
+  if(btn)btn.classList.add('on');
+  else document.querySelectorAll('.nt').forEach(b=>{if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+id+"'"))b.classList.add('on');});
+  if(id==='distmap')setTimeout(()=>{resizeCanvas();dmR();},50);
+}
+function val(id){return document.getElementById(id).value;}
+
+/* ═══ MCS TABLE ═══ */
+window.MCS=[
+  {mcs:0,mod:'BPSK 1/2',snr:2,rate:6.5},{mcs:1,mod:'QPSK 1/2',snr:5,rate:13},
+  {mcs:2,mod:'QPSK 3/4',snr:9,rate:19.5},{mcs:3,mod:'16-QAM 1/2',snr:11,rate:26},
+  {mcs:4,mod:'16-QAM 3/4',snr:15,rate:39},{mcs:5,mod:'64-QAM 2/3',snr:18,rate:52},
+  {mcs:6,mod:'64-QAM 3/4',snr:20,rate:58.5},{mcs:7,mod:'64-QAM 5/6',snr:25,rate:65},
+  {mcs:8,mod:'256-QAM 3/4',snr:30,rate:78},{mcs:9,mod:'256-QAM 5/6',snr:32,rate:86.67},
+  {mcs:10,mod:'1024-QAM 3/4',snr:35,rate:97.5},{mcs:11,mod:'1024-QAM 5/6',snr:38,rate:108.3},
+];
+
+/* ═══ WIRELESS AP BRAND / MODEL SPEC SHEET (uploaded datasheet) ═══
+   Columns: brand, type, model, range(m), maxClients, band
+   Derived defaults: freq parsed from band text (6→6GHz,5→5GHz,else 2.4GHz)
+   Default TX(dBm): Outdoor=26, Mesh Node=20, all others=23 */
+const VENDOR_SPEC=[
+  {brand:'Ubiquiti',type:'Ceiling',model:'U6 Pro',range:30,clients:300,band:'WiFi6 2.4/5GHz',key:'ubi_u6pro'},
+  {brand:'Ubiquiti',type:'Wall',model:'U6 Lite',range:22,clients:200,band:'WiFi6 2.4/5GHz',key:'ubi_u6lite'},
+  {brand:'Ubiquiti',type:'Outdoor',model:'U6 Mesh',range:60,clients:300,band:'WiFi6 5GHz',key:'ubi_u6mesh'},
+  {brand:'Ubiquiti',type:'Mesh Node',model:'U6 Extender',range:25,clients:200,band:'WiFi6 Mesh',key:'ubi_u6ext'},
+  {brand:'Cisco (Meraki)',type:'Ceiling',model:'MR57',range:35,clients:400,band:'WiFi6E tri-band',key:'mer_mr57'},
+  {brand:'Cisco (Meraki)',type:'Wall',model:'MR36',range:25,clients:300,band:'WiFi6 2.4/5GHz',key:'mer_mr36'},
+  {brand:'Cisco (Meraki)',type:'Outdoor',model:'MR76',range:70,clients:500,band:'WiFi6 5GHz',key:'mer_mr76'},
+  {brand:'Cisco (Meraki)',type:'Mesh Node',model:'MR30H',range:30,clients:300,band:'WiFi6 Mesh',key:'mer_mr30h'},
+  {brand:'Aruba',type:'Ceiling',model:'AP-635',range:32,clients:350,band:'WiFi6E tri-band',key:'aru_ap635'},
+  {brand:'Aruba',type:'Wall',model:'AP-505H',range:22,clients:250,band:'WiFi6 2.4/5GHz',key:'aru_ap505h'},
+  {brand:'Aruba',type:'Outdoor',model:'AP-577',range:65,clients:400,band:'WiFi6 5GHz',key:'aru_ap577'},
+  {brand:'Aruba',type:'Mesh Node',model:'AP-615',range:28,clients:200,band:'WiFi6 Mesh',key:'aru_ap615'},
+  {brand:'Ruckus',type:'Ceiling',model:'R750',range:35,clients:512,band:'WiFi6E tri-band',key:'ruk_r750'},
+  {brand:'Ruckus',type:'Wall',model:'R550',range:24,clients:256,band:'WiFi6 2.4/5GHz',key:'ruk_r550'},
+  {brand:'Ruckus',type:'Outdoor',model:'T750',range:80,clients:512,band:'WiFi6 5GHz',key:'ruk_t750'},
+  {brand:'Ruckus',type:'Mesh Node',model:'E510',range:30,clients:256,band:'WiFi6 Mesh',key:'ruk_e510'},
+  {brand:'TP-Link',type:'Ceiling',model:'EAP670',range:28,clients:250,band:'WiFi6 2.4/5GHz',key:'tpl_eap670'},
+  {brand:'TP-Link',type:'Wall',model:'EAP615-Wall',range:20,clients:150,band:'WiFi6 2.4/5GHz',key:'tpl_eap615wall'},
+  {brand:'TP-Link',type:'Outdoor',model:'EAP670 Outdoor',range:55,clients:300,band:'WiFi6 5GHz',key:'tpl_eap670out'},
+  {brand:'TP-Link',type:'Mesh Node',model:'EAP610',range:22,clients:150,band:'WiFi6 Mesh',key:'tpl_eap610'},
+  {brand:'Generic',type:'Ceiling',model:'AP Ceiling',range:25,clients:200,band:'802.11ax',key:'gen_ceiling'},
+  {brand:'Generic',type:'Wall',model:'AP Wall',range:18,clients:100,band:'802.11ax',key:'gen_wall'},
+  {brand:'Generic',type:'Outdoor',model:'AP Outdoor',range:50,clients:250,band:'802.11ax',key:'gen_outdoor'},
+  {brand:'Generic',type:'Mesh Node',model:'Mesh Node',range:20,clients:150,band:'802.11ax',key:'gen_mesh'},
+];
+function vendorFreq(bandTxt){ if(bandTxt.includes('6'))return'6 GHz';if(bandTxt.includes('5'))return'5 GHz';return'2.4 GHz'; }
+function vendorDefaultTx(type){ return type==='Outdoor'?26:type==='Mesh Node'?20:23; }
+function vendorAntGain(type){ return type==='Outdoor'?6:type==='Ceiling'?4:type==='Mesh Node'?4:3; }
+function vendorNf(bandTxt){ return bandTxt.includes('6')?-92:-95; }
+const VENDOR_PRESETS={};
+VENDOR_SPEC.forEach(v=>{
+  const tx=vendorDefaultTx(v.type), ag=vendorAntGain(v.type), nf=vendorNf(v.band), freq=vendorFreq(v.band);
+  VENDOR_PRESETS[v.key]={
+    name:`${v.brand} ${v.model} (${v.type})`,tx,antGain:ag,nf,req:-67,
+    info:`📶 <strong>${v.brand} ${v.model}</strong> · ${v.type} · ${v.band} (${freq})<br>Rated range: ${v.range} m · Max clients: ${v.clients} · TX: ${tx} dBm · Ant: ${ag} dBi · EIRP: ${tx+ag} dBm`
+  };
+});
+
+/* ═══ AP PRESETS ═══ */
+const AP_PRESETS={
+  custom:{name:'Custom / Generic',tx:18,antGain:0,nf:-95,req:-67,info:''},
+  generic_indoor:{name:'Generic Indoor AP (Wi-Fi 6)',tx:17,antGain:4,nf:-95,req:-67,info:'📶 Generic indoor Wi-Fi 6 · TX 17 dBm · Ant 4 dBi · EIRP 21 dBm'},
+  ruckus_r350:{name:'RUCKUS R350 (Indoor Wi-Fi 6)',tx:20,antGain:3,nf:-95,req:-67,info:'📶 RUCKUS R350 · Wi-Fi 6 · 2×2 MIMO · Ant 3 dBi · Max TX 23 dBm<br>Rx sens −101 dBm · PHY 574+1200 Mbps · BeamFlex+ 64 patterns'},
+  ruckus_t350c:{name:'RUCKUS T350c (Outdoor Wi-Fi 6)',tx:20,antGain:5,nf:-95,req:-67,info:'🌧 RUCKUS T350c · IP-67 Outdoor · Internal omni · Max TX 23 dBm · PoE+ max 13.24W'},
+  ruckus_t350d:{name:'RUCKUS T350d (Outdoor + IoT)',tx:20,antGain:5,nf:-95,req:-67,info:'🌧 RUCKUS T350d · IP-67 · BLE/Zigbee IoT · PoE+ max 17.57W · SmartMesh'},
+  ruckus_t350se:{name:'RUCKUS T350se (Outdoor Sector)',tx:20,antGain:7,nf:-95,req:-67,info:'📡 RUCKUS T350se · IP-67 · 120° sector + external antenna capable · 7 dBi'},
+  cisco9163e_omni:{name:'Cisco 9163E Omni (5 GHz)',tx:20,antGain:8,nf:-94,req:-67,info:'📡 Cisco 9163E · Wi-Fi 6E · 2×2 MIMO · 5GHz omni 8 dBi · Max TX 23 dBm · EIRP 28 dBm'},
+  cisco9163e_dir:{name:'Cisco 9163E Directional (5 GHz)',tx:20,antGain:9,nf:-94,req:-67,info:'📡 Cisco 9163E · 5GHz directional patch 9 dBi · Beam 60°×30°'},
+  cisco9163e_6g:{name:'Cisco 9163E (6 GHz)',tx:18,antGain:8,nf:-92,req:-67,info:'📡 Cisco 9163E · Wi-Fi 6E 6GHz · Max TX 23 dBm · ~2.4 Gbps · AFC/LPI'},
+  ...VENDOR_PRESETS,
+};
+function toggleVendorTable(){
+  const col=document.getElementById('vendor-table-col');
+  const show=col.style.display==='none';
+  col.style.display=show?'block':'none';
+  if(show)buildVendorTable();
+}
+function buildVendorTable(){
+  const t=document.getElementById('vendor-spec-table');if(!t)return;
+  t.innerHTML='<thead><tr><th>Brand</th><th>Type</th><th>Model</th><th>Range</th><th>Clients</th><th>Band</th></tr></thead><tbody>'+
+    VENDOR_SPEC.map(v=>`<tr style="cursor:pointer" onclick="selectVendorPreset('${v.key}')"><td>${v.brand}</td><td>${v.type}</td><td><strong>${v.model}</strong></td><td>${v.range} m</td><td>${v.clients}</td><td style="font-size:9px">${v.band}</td></tr>`).join('')+
+    '</tbody>';
+}
+function selectVendorPreset(key){
+  document.getElementById('ap-hw-model').value=key;
+  applyAPPreset();
+}
+function applyAPPreset(){
+  const k=val('ap-hw-model'),p=AP_PRESETS[k];if(!p)return;
+  document.getElementById('dm-tx').value=p.tx;document.getElementById('dm-ag').value=p.antGain;
+  document.getElementById('dm-nf').value=p.nf;document.getElementById('dm-nf-o').textContent=p.nf+' dBm';
+  document.getElementById('dm-req').value=p.req;document.getElementById('dm-req-o').textContent=p.req+' dBm';
+  document.getElementById('leg-primary').value=p.req;document.getElementById('leg-primary-o').textContent=p.req+' dBm';
+  const info=document.getElementById('ap-hw-info');
+  if(p.info){info.style.display='block';info.innerHTML=p.info;}else info.style.display='none';
+  updateEIRP();dmR();
+}
+function updateEIRP(){
+  const tx=+val('dm-tx'),ag=+val('dm-ag');
+  document.getElementById('dm-eirp').textContent=(tx+ag)+' dBm';
+  document.getElementById('dm-tx-o').textContent=tx+' dBm';document.getElementById('dm-ag-o').textContent=ag+' dBi';
+}
+
+/* ═══ APP PROFILES ═══ */
+const APPS=[
+  {id:'voip',icon:'📞',name:'VoIP / Wireless Voice',badge:'HIGH',bc:'ah',rssi:-67,snr:25,nf:-92,roam:true,desc:'RSSI −67 dBm · SNR 25 dB · Seamless roaming required'},
+  {id:'video',icon:'🎥',name:'Video Conferencing',badge:'HIGH',bc:'ah',rssi:-65,snr:28,nf:-92,roam:true,desc:'RSSI −65 dBm · SNR 28 dB · HD/4K'},
+  {id:'clinical',icon:'🏥',name:'Healthcare / Clinical',badge:'CRITICAL',bc:'ah',rssi:-65,snr:28,nf:-92,roam:true,desc:'RSSI −65 dBm · SNR 28 dB · 30% overlap'},
+  {id:'data',icon:'💻',name:'Data / Web Browsing',badge:'MED',bc:'am',rssi:-70,snr:20,nf:-95,roam:false,desc:'RSSI −70 dBm · SNR 20 dB'},
+  {id:'streaming',icon:'📺',name:'Streaming Video',badge:'MED',bc:'am',rssi:-70,snr:20,nf:-95,roam:false,desc:'RSSI −70 dBm · SNR 20 dB'},
+  {id:'warehouse',icon:'🏭',name:'Warehouse / Logistics',badge:'HIGH',bc:'ah',rssi:-67,snr:25,nf:-93,roam:true,desc:'RSSI −67 dBm · Aisle-based'},
+  {id:'iot',icon:'📡',name:'IoT / Sensors',badge:'LOW',bc:'al',rssi:-75,snr:15,nf:-100,roam:false,desc:'RSSI −75 dBm · SNR 15 dB'},
+  {id:'outdoor',icon:'🌳',name:'Outdoor / Campus',badge:'MED',bc:'am',rssi:-70,snr:20,nf:-95,roam:true,desc:'RSSI −70 dBm · Weather-rated'},
+];
+let selApp=null;
+function buildAppReq(){
+  const a=document.getElementById('arg');if(!a)return;
+  a.innerHTML=APPS.map(ap=>`<div class="arc${selApp&&selApp.id===ap.id?' sel':''}" onclick="selectApp('${ap.id}')"><div class="asi">✓</div><div class="an">${ap.icon} ${ap.name} <span class="badge ab ${ap.bc}">${ap.badge}</span></div><div class="ar">RSSI: <strong>${ap.rssi} dBm</strong> · SNR: <strong>${ap.snr} dB</strong><br>${ap.desc}</div></div>`).join('');
+  const pm=document.getElementById('pm-tb');if(pm)pm.innerHTML=APPS.map((ap,i)=>`<tr><td>${i+1}</td><td>${ap.icon} ${ap.name}</td><td>${ap.rssi} dBm</td><td>${ap.snr} dB</td><td>${ap.roam?'✅ Required':'—'}</td></tr>`).join('');
+}
+function selectApp(id){
+  selApp=APPS.find(a=>a.id===id);buildAppReq();
+  if(selApp){
+    document.getElementById('dm-req').value=selApp.rssi;document.getElementById('dm-req-o').textContent=selApp.rssi+' dBm';
+    document.getElementById('leg-primary').value=selApp.rssi;document.getElementById('leg-primary-o').textContent=selApp.rssi+' dBm';
+    document.getElementById('dm-nf').value=selApp.nf;document.getElementById('dm-nf-o').textContent=selApp.nf+' dBm';
+    const sr=document.getElementById('app-sel-r'),bar=document.getElementById('dm-app-bar');
+    if(sr){sr.style.display='block';document.getElementById('app-sel-n').textContent=selApp.icon+' '+selApp.name;document.getElementById('app-sel-d').textContent=selApp.desc;}
+    if(bar){bar.style.display='flex';bar.textContent=selApp.icon+' '+selApp.name+' applied';}
+    dmR();
+  }
+}
+
+/* ═══ STATIC TAB VISUALS (unchanged logic) ═══ */
+function buildSigScale(){
+  const s=document.getElementById('sig-scale'),l=document.getElementById('sig-legend');if(!s||!l)return;
+  const segs=[{c:'#22c55e',t:'Excellent > −55'},{c:'#84cc16',t:'Good −55→−67'},{c:'#f97316',t:'Marginal −67→−75'},{c:'#ef4444',t:'Poor −75→−85'},{c:'#6b7280',t:'No signal < −85'}];
+  s.innerHTML=segs.map(g=>`<div class="sc" style="background:${g.c}">${g.t.split(' ')[0]}</div>`).join('');
+  l.innerHTML=segs.map(g=>`<div class="lr"><div class="ld" style="background:${g.c}"></div>${g.t}</div>`).join('');
+}
+function updateSig(){
+  const d=+val('dist-sl'),tx=+val('txpow-sl'),wl=+val('wall-sl');
+  document.getElementById('dist-out').textContent=d+' m';document.getElementById('txpow-out').textContent=tx+' dBm';document.getElementById('wall-out').textContent=wl+' dB';
+  const fspl=20*Math.log10(Math.max(.001,d/1000))+20*Math.log10(2412)+32.44;
+  const sig=Math.round(tx-fspl-wl);
+  const stEl=document.getElementById('sig-status');
+  const col=sig>=-55?'#22c55e':sig>=-67?'#84cc16':sig>=-75?'#f97316':sig>=-85?'#ef4444':'#6b7280';
+  const lbl=sig>=-55?'Excellent':sig>=-67?'Good':sig>=-75?'Marginal':sig>=-85?'Poor':'No signal';
+  if(stEl)stEl.innerHTML=`Signal: <span style="color:${col};font-size:16px;font-weight:700">${sig} dBm</span> — ${lbl}`;
+  const cv=document.getElementById('sig-canvas');if(!cv)return;
+  const ctx=cv.getContext('2d');const W=cv.clientWidth||400;const H=cv.clientHeight||140;
+  cv.width=W;cv.height=H;ctx.clearRect(0,0,W,H);
+  for(let i=0;i<60;i++){
+    const di=1+(i/60)*60;const fi=20*Math.log10(Math.max(.001,di/1000))+20*Math.log10(2412)+32.44;const si=tx-fi-wl;
+    const y=H-((si+100)/70*H*0.8+H*0.1);const x=i/60*W;
+    const cc=si>=-55?'#22c55e':si>=-67?'#84cc16':si>=-75?'#f97316':si>=-85?'#ef4444':'#6b7280';
+    ctx.strokeStyle=cc;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+3,y);ctx.stroke();
+  }
+  const cx=d/60*W,cy=H-((sig+100)/70*H*0.8+H*0.1);
+  ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();
+  ctx.fillStyle='rgba(0,0,0,.6)';ctx.font='bold 10px sans-serif';ctx.textAlign='center';ctx.fillText(sig+' dBm',cx,cy-10);
+}
+function buildAppBars(){
+  const el=document.getElementById('app-bars');if(!el)return;
+  const items=[{app:'VoIP',rssi:-67,col:'#ef4444'},{app:'Video Conf.',rssi:-65,col:'#f97316'},{app:'Streaming',rssi:-70,col:'#eab308'},{app:'Web/Data',rssi:-72,col:'#22c55e'},{app:'IoT',rssi:-80,col:'#06b6d4'}];
+  el.innerHTML=items.map(it=>{const p=((it.rssi+100)/45)*100;return`<div class="rb"><div class="rbl"><span>${it.app}</span><span style="font-weight:600">${it.rssi} dBm</span></div><div class="rbt"><div class="rbf" style="width:${p}%;background:${it.col}"></div></div></div>`;}).join('');
+}
+function buildIntList(){
+  const el=document.getElementById('int-list');if(!el)return;
+  const items=[{src:'Co-channel Wi-Fi APs',band:'2.4/5 GHz',sev:'High'},{src:'Bluetooth devices',band:'2.4 GHz',sev:'Med'},{src:'Microwave ovens',band:'2.4 GHz',sev:'High'},{src:'Baby monitors',band:'2.4 GHz',sev:'Med'},{src:'RADAR (DFS)',band:'5 GHz',sev:'Med'},{src:'Electric motors',band:'All',sev:'Low'},{src:'Zigbee sensors',band:'2.4 GHz',sev:'Low'},{src:'Adjacent-ch APs',band:'2.4 GHz',sev:'Very High'}];
+  el.innerHTML=`<table class="mt"><thead><tr><th>Source</th><th>Band</th><th>Severity</th></tr></thead><tbody>${items.map(it=>`<tr><td>${it.src}</td><td>${it.band}</td><td>${it.sev==='Very High'?'<span style="color:#991b1b;font-weight:700">'+it.sev+'</span>':it.sev==='High'?'<span style="color:#c2410c;font-weight:600">'+it.sev+'</span>':it.sev}</td></tr>`).join('')}</tbody></table>`;
+}
+function updateSNR(){
+  const ss=+val('ss-sl'),nf=+val('nf-sl');
+  document.getElementById('ss-out').textContent=ss+' dBm';document.getElementById('nf-out').textContent=nf+' dBm';
+  const snr=ss-nf;
+  const v=document.getElementById('snr-val');const col=snr>40?'#22c55e':snr>25?'#84cc16':snr>15?'#eab308':snr>10?'#f97316':'#ef4444';
+  if(v){v.textContent=snr+' dB';v.style.background=col+'22';v.style.border='1px solid '+col;v.style.color=col;}
+  const g=document.getElementById('snr-grade');const lbl=snr>40?'🌟 Excellent':snr>25?'✅ Good — target met':snr>15?'⚠️ Fair — data only':snr>10?'❌ Poor':'🚫 Bad — redesign';
+  if(g)g.innerHTML=lbl;
+  const le=document.getElementById('snr-levels');if(le)le.innerHTML=[{r:'>40 dB',q:'🌟 Excellent',c:'#22c55e'},{r:'25–40 dB',q:'✅ Good',c:'#84cc16'},{r:'15–25 dB',q:'⚠️ Fair',c:'#eab308'},{r:'10–15 dB',q:'❌ Poor',c:'#f97316'},{r:'<10 dB',q:'🚫 Bad',c:'#ef4444'}].map(l=>`<div class="lr"><div class="ld" style="background:${l.c}"></div><span style="min-width:60px;font-weight:600">${l.r}</span> — ${l.q}</div>`).join('');
+  const mtb=document.getElementById('mcs-tbody');if(mtb)mtb.innerHTML=MCS.map(m=>`<tr style="background:${snr>=m.snr?'rgba(34,197,94,.08)':''}"><td>MCS ${m.mcs}</td><td>${m.mod}</td><td>${m.snr} dB</td><td>${m.rate} Mbps</td></tr>`).join('');
+}
+function updateDR(){
+  const ss=+val('ss-num'),bws=[20,40,80,160],bwf=[52,108,234,468];
+  const bwi=+val('bw-sl'),mcs=+val('mcs-sl'),gi=+val('gi-sl');
+  const mcsF=[0.5,1,1.5,2,3,4,4.5,5,6,6.67];const bwVal=bws[bwi];const giF=gi?3.6:4;
+  const rate=(ss*bwf[bwi]*mcsF[mcs]/giF).toFixed(1);
+  document.getElementById('ss-num-out').textContent=ss;document.getElementById('bw-out').textContent=bwVal+' MHz';document.getElementById('mcs-out').textContent=mcs;document.getElementById('gi-out').textContent=gi?'SGI':'LGI';
+  const dr=document.getElementById('dr-result');if(dr)dr.innerHTML=`${rate} <span style="font-size:16px;font-weight:400;color:var(--mu)">Mbps</span>`;
+  const dd=document.getElementById('dr-detail');if(dd)dd.textContent=`${ss}SS × ${bwVal}MHz(${bwf[bwi]}) × MCS${mcs}(${mcsF[mcs]}) / GI(${giF}) = ${rate} Mbps`;
+  const cv=document.getElementById('rate-chart');if(!cv)return;
+  if(window._rc)window._rc.destroy();
+  window._rc=new Chart(cv,{type:'bar',data:{labels:MCS.map(m=>'MCS '+m.mcs),datasets:[{label:'Rate (Mbps)',data:MCS.map(m=>(ss*bwf[bwi]*m.snr/giF).toFixed(1)),backgroundColor:'rgba(0,180,255,.55)',borderColor:'rgba(0,180,255,.9)',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{font:{size:9}}}}}});
+}
+function updateLoad(){
+  const l=+val('load-sl');document.getElementById('load-out').textContent=l+'%';
+  const r=document.getElementById('load-result');if(r)r.innerHTML=`Effective throughput: <strong>${Math.max(0,100-l*.6).toFixed(0)}%</strong> · SNR impact: <strong>−${(l*.15).toFixed(1)} dB</strong>`;
+  const cv=document.getElementById('noise-canvas');if(!cv)return;
+  const ctx=cv.getContext('2d');const W=cv.clientWidth||400;const H=cv.clientHeight||110;cv.width=W;cv.height=H;ctx.clearRect(0,0,W,H);
+  const nf=-95;const noise=nf+(l*.05);
+  for(let x=0;x<W;x++){const sig=-60+Math.sin(x*.08)*8+Math.random()*3*(l/100);const ny=H*0.7-((sig-nf)/50*H*.5);const ni=H*0.7-((noise-nf)/50*H*.5);ctx.fillStyle='rgba(0,180,255,.6)';ctx.fillRect(x,ny,1,H-ny);ctx.fillStyle='rgba(239,68,68,.5)';ctx.fillRect(x,ni,1,2);}
+}
+function buildFreqBands(){
+  const el24=document.getElementById('freq-24');if(el24)el24.innerHTML=[{c:'Ch 1',col:'#3b82f6'},{c:'Ch 2',col:'#6b7280'},{c:'Ch 3',col:'#6b7280'},{c:'Ch 4',col:'#6b7280'},{c:'Ch 5',col:'#6b7280'},{c:'Ch 6',col:'#22c55e'},{c:'Ch 7',col:'#6b7280'},{c:'Ch 8',col:'#6b7280'},{c:'Ch 9',col:'#6b7280'},{c:'Ch 10',col:'#6b7280'},{c:'Ch 11',col:'#f97316'}].map(c=>`<div class="fc" style="background:${c.col}">${c.c}</div>`).join('');
+  const el5=document.getElementById('freq-5');if(el5)el5.innerHTML=['36','40','44','48','52','56','60','64','100','104','108','112','116','120','124','128','132','136','140','149','153','157','161','165'].map((c,i)=>`<div class="fc" style="background:hsl(${200+i*6},60%,48%);min-width:0">${c}</div>`).join('');
+}
+function updateOverlap(){
+  const n=+val('co-sl');document.getElementById('co-out').textContent=n;
+  const gr=document.getElementById('ov-grid');if(!gr)return;
+  const cols=['#22c55e','#84cc16','#eab308','#f97316','#ef4444'];
+  gr.innerHTML=Array.from({length:10},(_,i)=>{const ov=Math.max(0,n-1-Math.floor(i*.5));const c=cols[Math.min(ov,4)];return`<div class="oc2" style="background:${c}22;border:1px solid ${c};color:${c}">${ov===0?'No CCI':ov+' CCI'}</div>`;}).join('');
+  const inf=document.getElementById('ov-info');if(inf)inf.innerHTML=n>3?`<strong>⚠️ High CCI:</strong> throughput severely reduced.`:n>1?`<strong>ℹ️ Moderate CCI:</strong> CCA manages contention.`:`<strong>✅ No CCI:</strong> max throughput.`;
+}
+function updateCP(){
+  const el=document.getElementById('numaps-content');if(!el)return;
+  el.innerHTML=`<div class="hl">For roaming, a client must always hear <strong>2+ APs</strong> at or above RSSI. Cell overlap <strong>15–20%</strong> recommended.</div><table class="mt"><thead><tr><th>Spacing</th><th>Area/AP</th><th>APs/1000m²</th><th>Use case</th></tr></thead><tbody><tr><td>6–8m</td><td>28–50m²</td><td>20–35</td><td>High density</td></tr><tr><td>10–12m</td><td>78–113m²</td><td>9–13</td><td>Office/VoIP</td></tr><tr><td>15–18m</td><td>177–254m²</td><td>4–6</td><td>Warehouse</td></tr><tr><td>20–25m</td><td>314–490m²</td><td>2–3</td><td>Outdoor</td></tr></tbody></table>`;
+}
+function buildSpectrum(){
+  function ms(id,li,cs,n,bn){const e=document.getElementById(id),l=document.getElementById(li);if(!e||!l)return;const d=Array.from({length:n},(_,i)=>{const b=bn+Math.random()*8;return Math.round(i===2||i===5||i===n-3?b+18+Math.random()*12:b);});const mx=Math.max(...d);e.innerHTML=d.map((v)=>{const h=Math.max(4,(v-bn)/(mx-bn)*100);const c=v>bn+20?'#ef4444':v>bn+12?'#f97316':v>bn+6?'#eab308':'#22c55e';return`<div class="spbar" style="height:${h}%;background:${c}"></div>`;}).join('');l.innerHTML=d.map((_,i)=>`<span>${cs+i*5}</span>`).join('');const si=document.getElementById('spec-info');if(si)si.textContent='2.4 GHz: highest at ch 6,11. Use channels 1,6,11 only.';}
+  ms('spec-24','spec-24-lbl',2412,11,-95);ms('spec-5','spec-5-lbl',5180,24,-100);
+}
+
+/* ═══════════════════════════════════════════════════
+   DISTRIBUTION MAP v6 ENGINE
+   World coords = raw canvas px (unscaled logical space)
+   view = {x,y,scale}  screen = world*scale + {x,y}
+═══════════════════════════════════════════════════ */
+const DM={
+  rooms:[],walls:[],aps:[],measurements:[],
+  sf:0.05,scaleSet:false,
+  fpImg:null,fpNatW:0,fpNatH:0,fpScale:1,
+  hmVisible:true,units:'m',snap:false,
+  legend:{ex:-55,gd:-67,mg:-75,pr:-85},legendAdjustable:false,greyout:true,
+  distMode:'manual',liveSync:false,
+};
+const view={x:0,y:0,scale:1};
+let vmCur='signal',curMode='',scalePoints=[],drawRoomVerts=[],drawWallPt1=null,measurePts=[],areaPts=[],mousePos={x:0,y:0};
+let shiftHeld=false;
+function constrainOrtho(prevPt,x,y){
+  // Point 1: hold Shift to snap the next point to 0/90/180/270° relative to the last point (horizontal or vertical only)
+  if(!shiftHeld||!prevPt)return[x,y];
+  const dx=x-prevPt[0],dy=y-prevPt[1];
+  return Math.abs(dx)>=Math.abs(dy) ? [x,prevPt[1]] : [prevPt[0],y];
+}
+let selRoomId=null,fsMode=false;
+const ROOM_COLORS=['#c0392b','#2980b9','#27ae60','#8e44ad','#d35400','#16a085','#e74c3c','#2471a3'];
+const APC=['#3b82f6','#a855f7','#22c55e','#f59e0b','#ef4444','#06b6d4','#f97316','#8b5cf6','#ec4899','#0ea5e9'];
+const M_PER_FT=0.3048;
+const FT_PER_M=3.28084;
+
+function fmtLen(m){ return DM.units==='ft' ? (m*FT_PER_M).toFixed(1)+' ft' : m.toFixed(1)+' m'; }
+function fmtArea(m2){ return DM.units==='ft' ? (m2*FT_PER_M*FT_PER_M).toFixed(0)+' ft²' : m2.toFixed(1)+' m²'; }
+
+/* ───── Point 3: Primary requirement + adjustable legend range (Ekahau-style ruler) ───── */
+function onPrimaryChange(v){
+  v=+v;
+  document.getElementById('leg-primary-o').textContent=v+' dBm';
+  // keep the RF-parameters "Requirement" slider (used everywhere: coverage stats, roaming, checklist) in sync
+  document.getElementById('dm-req').value=v;
+  document.getElementById('dm-req-o').textContent=v+' dBm';
+  dmR();
+}
+function toggleLegendAdjust(){
+  DM.legendAdjustable=document.getElementById('leg-adjustable').checked;
+  document.getElementById('leg-range-controls').style.opacity=DM.legendAdjustable?'1':'.4';
+  document.getElementById('leg-range-controls').style.pointerEvents=DM.legendAdjustable?'auto':'none';
+  document.getElementById('leg-spacing-row').style.display=DM.legendAdjustable?'flex':'none';
+}
+function onLegendRangeChange(){
+  let ex=+val('leg-excellent'),gd=+val('leg-good'),mg=+val('leg-marginal'),pr=+val('leg-poor');
+  // enforce ordering: excellent > good > marginal > poor
+  if(gd>=ex)gd=ex-1; if(mg>=gd)mg=gd-1; if(pr>=mg)pr=mg-1;
+  document.getElementById('leg-good').value=gd; document.getElementById('leg-marginal').value=mg; document.getElementById('leg-poor').value=pr;
+  DM.legend={ex,gd,mg,pr};
+  document.getElementById('leg-excellent-o').textContent=ex+' dBm';
+  document.getElementById('leg-good-o').textContent=gd+' dBm';
+  document.getElementById('leg-marginal-o').textContent=mg+' dBm';
+  document.getElementById('leg-poor-o').textContent=pr+' dBm';
+  renderLegendGradient();
+  dmR();
+}
+function renderLegendGradient(){
+  const {ex,gd,mg,pr}=DM.legend;
+  const lo=pr-8, hi=ex+8, span=hi-lo;
+  const pct=v=>((v-lo)/span*100).toFixed(1);
+  const bar=document.getElementById('leg-gradient-bar');
+  if(bar)bar.style.background=`linear-gradient(90deg,
+    #ef4444 0%, #ef4444 ${pct(pr)}%,
+    #f97316 ${pct(pr)}%, #f97316 ${pct(mg)}%,
+    #eab308 ${pct(mg)}%, #84cc16 ${pct(gd)}%,
+    #22c55e ${pct(gd)}%, #22c55e 100%)`;
+  const spacing=+val('leg-spacing')||3;
+  const ruler=document.getElementById('leg-ruler');
+  if(ruler){
+    let ticks=[];for(let v=Math.ceil(lo/spacing)*spacing;v<=hi;v+=spacing)ticks.push(v);
+    ruler.innerHTML=ticks.map(t=>`<span>${t}</span>`).join('');
+  }
+}
+
+/* ───── Point 2: Manual / Auto distribution mode switch ───── */
+function setDistMode(m){
+  DM.distMode=m;
+  document.getElementById('ms-manual').classList.toggle('on',m==='manual');
+  document.getElementById('ms-auto').classList.toggle('on',m==='auto');
+  document.getElementById('mode-hint').textContent = m==='manual'
+    ? 'Manual: place APs yourself with the "Place AP" tool (or drag existing APs). Auto Distribution will not run automatically.'
+    : 'Auto: the algorithm owns AP placement. Enable "Live sync" below to keep it updated automatically as rooms/walls/capacity requirements change, or click "Run Auto Distribution Now" on demand.';
+  if(m==='auto' && DM.rooms.length) trigAutoAPs();
+}
+function onLiveSyncToggle(){
+  DM.liveSync=document.getElementById('live-sync').checked;
+  document.getElementById('sync-badge').style.display=(DM.liveSync&&DM.distMode==='auto')?'block':'none';
+  if(DM.liveSync && DM.distMode!=='auto') setDistMode('auto');
+}
+let autoSyncTimer=null;
+function scheduleAutoSync(force){
+  // Point 1: re-run auto distribution in real time when project geometry changes
+  // (area extended, walls added, scale changed) OR when Capacity Planner inputs change
+  // (Total users, Take rate, Clients/radio, Coverage target).
+  if(!DM.liveSync && !force) return;
+  if(DM.distMode!=='auto') return;
+  document.getElementById('sync-badge').style.display='block';
+  clearTimeout(autoSyncTimer);
+  autoSyncTimer=setTimeout(()=>{ if(DM.rooms.length) autoAPs(); },450);
+}
+
+/* ───── Category accordion ───── */
+function toggleCat(name){
+  const btn=document.getElementById('cat-'+name),panel=document.getElementById('panel-'+name);
+  const wasOpen=panel.classList.contains('on');
+  document.querySelectorAll('.dm-cat-panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.dm-cat-btn').forEach(b=>b.classList.remove('on'));
+  if(!wasOpen){panel.classList.add('on');btn.classList.add('on');}
+  setTimeout(resizeCanvas,80);
+}
+
+/* ───── Canvas sizing (viewport size only — NOT tied to zoom) ───── */
+function resizeCanvas(){
+  const sc=document.getElementById('canvas-scroller');if(!sc)return;
+  const r=sc.getBoundingClientRect();
+  DM.CW=Math.max(300,Math.floor(r.width));DM.CH=Math.max(200,Math.floor(r.height));
+  dmR();
+}
+
+/* ───── World <-> Screen ───── */
+function w2s(x,y){return {x:x*view.scale+view.x, y:y*view.scale+view.y};}
+function s2w(x,y){return {x:(x-view.x)/view.scale, y:(y-view.y)/view.scale};}
+
+/* ───── Zoom / Pan controls ───── */
+function zoomBtn(f){
+  const cx=DM.CW/2, cy=DM.CH/2;
+  const w=s2w(cx,cy);
+  view.scale=Math.max(0.05,Math.min(15,view.scale*f));
+  view.x=cx-w.x*view.scale; view.y=cy-w.y*view.scale;
+  dmR();
+}
+function fitView(){
+  let bx0=Infinity,by0=Infinity,bx1=-Infinity,by1=-Infinity;
+  DM.rooms.forEach(r=>r.verts.forEach(([x,y])=>{bx0=Math.min(bx0,x);bx1=Math.max(bx1,x);by0=Math.min(by0,y);by1=Math.max(by1,y);}));
+  if(!isFinite(bx0)){
+    if(DM.fpImg){bx0=0;by0=0;bx1=DM.fpNatW*DM.fpScale;by1=DM.fpNatH*DM.fpScale;}
+    else{resetView();return;}
+  }
+  const pad=50,w=Math.max(10,bx1-bx0),h=Math.max(10,by1-by0);
+  const availW=DM.CW-pad*2, availH=DM.CH-pad*2;
+  const s=Math.max(0.05,Math.min(availW/w,availH/h,10));
+  view.scale=s;
+  view.x=pad+(availW-w*s)/2-bx0*s;
+  view.y=pad+(availH-h*s)/2-by0*s;
+  dmR();
+}
+function resetView(){view.scale=1;view.x=0;view.y=0;dmR();}
+
+/* ───── Fullscreen ───── */
+function toggleFullscreen(){
+  fsMode=!fsMode;
+  const wrap=document.getElementById('dm-canvas-wrap');
+  wrap.classList.toggle('fs-mode',fsMode);
+  document.getElementById('tb-fs').style.display=fsMode?'none':'flex';
+  document.getElementById('tb-fs2').style.display=fsMode?'flex':'none';
+  try{
+    if(fsMode && wrap.requestFullscreen) wrap.requestFullscreen().catch(()=>{});
+    else if(!fsMode && document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  }catch(e){}
+  setTimeout(()=>{resizeCanvas();},120);
+}
+document.addEventListener('fullscreenchange',function(){
+  if(!document.fullscreenElement && fsMode){
+    fsMode=false;
+    const wrap=document.getElementById('dm-canvas-wrap');
+    if(wrap)wrap.classList.remove('fs-mode');
+    const b1=document.getElementById('tb-fs'),b2=document.getElementById('tb-fs2');
+    if(b1)b1.style.display='flex';if(b2)b2.style.display='none';
+    setTimeout(()=>{resizeCanvas();},80);
+  }
+});
+
+/* ───── Units / Snap ───── */
+function toggleUnits(){
+  DM.units=DM.units==='m'?'ft':'m';
+  document.getElementById('tb-units').innerHTML=`<i class="ti ti-ruler"></i>Units: ${DM.units}`;
+  dmR();
+}
+function toggleSnap(){
+  DM.snap=!DM.snap;
+  const btn=document.getElementById('tb-snap');
+  btn.innerHTML=`<i class="ti ti-grid-dots"></i>Snap: ${DM.snap?'On':'Off'}`;
+  btn.classList.toggle('on',DM.snap);
+}
+function snapPt(x,y){
+  if(!DM.snap||DM.sf<=0)return[x,y];
+  const gsz=(+val('grid-size'))/DM.sf; // world px per grid line
+  return [Math.round(x/gsz)*gsz, Math.round(y/gsz)*gsz];
+}
+
+/* ───── Import floor plan ───── */
+function trigImport(){document.getElementById('fp-file').click();}
+function loadFPImage(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=function(ev){const img=new Image();img.onload=function(){
+    DM.fpImg=img;DM.fpNatW=img.width;DM.fpNatH=img.height;
+    const sx=DM.CW/img.width,sy=DM.CH/img.height;
+    DM.fpScale=Math.min(sx,sy,2);
+    document.getElementById('fp-scale').value=DM.fpScale.toFixed(2);
+    document.getElementById('fp-scale-o').textContent=DM.fpScale.toFixed(2)+'×';
+    document.getElementById('fp-offx').value=0;document.getElementById('fp-offy').value=0;
+    fitView();
+  };img.src=ev.target.result;};
+  r.readAsDataURL(f);
+}
+function fpScaleChange(){DM.fpScale=+val('fp-scale');document.getElementById('fp-scale-o').textContent=DM.fpScale.toFixed(2)+'×';dmR();}
+function drawFloorPlan(ctx){
+  if(!DM.fpImg)return;
+  const op=+val('fp-opacity');document.getElementById('fp-op-o').textContent=Math.round(op*100)+'%';
+  const ox=+val('fp-offx'),oy=+val('fp-offy');
+  document.getElementById('fp-offx-o').textContent=ox+'px';document.getElementById('fp-offy-o').textContent=oy+'px';
+  const W=DM.fpNatW*DM.fpScale,H=DM.fpNatH*DM.fpScale;
+  ctx.save();ctx.globalAlpha=op;ctx.drawImage(DM.fpImg,ox,oy,W,H);ctx.globalAlpha=1;ctx.restore();
+}
+
+/* ───── Mode control ───── */
+function setMode(m){
+  if(m==='place-ap' && DM.distMode==='auto'){
+    setDistMode('manual');
+    document.getElementById('ap-stat').textContent='Switched to Manual mode — auto live-sync paused so your manual placements are kept.';
+  }
+  curMode=m;document.body.className=m?'mode-'+m:'';
+  if(m!=='draw-room')drawRoomVerts=[];
+  if(m!=='draw-wall')drawWallPt1=null;
+  if(m!=='scale')scalePoints=[];
+  if(m!=='measure')measurePts=[];
+  if(m!=='area')areaPts=[];
+  document.querySelectorAll('.ctb').forEach(b=>b.classList.remove('on'));
+  const map={scale:'ctb-scale','draw-room':'ctb-room','draw-wall':'ctb-wall','place-ap':'ctb-ap',measure:'ctb-measure',area:'ctb-area',pan:'ctb-pan','':'ctb-select'};
+  if(map[m]){const el=document.getElementById(map[m]);if(el)el.classList.add('on');}
+  const hint=document.getElementById('draw-hint-float');
+  const hints={
+    'draw-room':'<b>Drawing Room</b> — click vertices · hold <kbd>Shift</kbd> to snap 0°/90°/180°/270° · <kbd>Enter</kbd>/double-click to close · <kbd>Backspace</kbd> undo point · <kbd>Esc</kbd> cancel',
+    'draw-wall':'<b>Drawing Wall</b> — click 1st point, then 2nd point · hold <kbd>Shift</kbd> to snap 0°/90°/180°/270° · <kbd>Esc</kbd> cancel',
+    'scale':'<b>Set Scale</b> — click 2 reference points on the image',
+    'place-ap':'<b>Place AP</b> — click on the floor plan to add an access point',
+    'measure':'<b>Measure Distance</b> — click points · hold <kbd>Shift</kbd> to snap 0°/90°/180°/270° · <kbd>Enter</kbd> finish · <kbd>Backspace</kbd> undo · <kbd>Esc</kbd> cancel',
+    'area':'<b>Measure Area</b> — click vertices · hold <kbd>Shift</kbd> to snap 0°/90°/180°/270° · <kbd>Enter</kbd> close polygon · <kbd>Esc</kbd> cancel',
+    'pan':'<b>Pan / Hand Tool</b> — click and drag anywhere to move the view',
+  };
+  if(hints[m]){hint.innerHTML=hints[m];hint.classList.add('show');}else hint.classList.remove('show');
+  dmR();
+}
+function toggleHeatmap(){
+  DM.hmVisible=!DM.hmVisible;const btn=document.getElementById('hm-toggle');
+  if(DM.hmVisible){btn.innerHTML='<i class="ti ti-flame"></i>Heatmap ON';btn.classList.add('on');}
+  else{btn.innerHTML='<i class="ti ti-flame-off"></i>Heatmap OFF';btn.classList.remove('on');}
+  dmR();
+}
+
+/* ───── Geometry helpers ───── */
+function pip(x,y,poly){let inside=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const xi=poly[i][0],yi=poly[i][1],xj=poly[j][0],yj=poly[j][1];if(((yi>y)!=(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))inside=!inside;}return inside;}
+function segX(ax,ay,bx,by,cx,cy,dx,dy){const d=(bx-ax)*(dy-cy)-(by-ay)*(dx-cx);if(Math.abs(d)<1e-10)return false;const t=((cx-ax)*(dy-cy)-(cy-ay)*(dx-cx))/d,u=((cx-ax)*(by-ay)-(cy-ay)*(bx-ax))/d;return t>0.01&&t<0.99&&u>0.01&&u<0.99;}
+function wallLossAt(px,py,ax,ay){
+  // ONLY interior "Draw Wall" segments apply dB loss now — room boundaries are total blocks (handled separately)
+  let loss=0;
+  DM.walls.forEach(w=>{if(segX(px,py,ax,ay,w.x1,w.y1,w.x2,w.y2))loss+=w.loss;});
+  return loss;
+}
+function shoelaceArea(verts){let a=0;for(let i=0;i<verts.length;i++){const [x1,y1]=verts[i],[x2,y2]=verts[(i+1)%verts.length];a+=x1*y2-x2*y1;}return Math.abs(a)/2;}
+function perimeter(verts){let p=0;for(let i=0;i<verts.length;i++){const [x1,y1]=verts[i],[x2,y2]=verts[(i+1)%verts.length];p+=Math.hypot(x2-x1,y2-y1);}return p;}
+
+/* ───── RF ENGINE — rooms are TOTAL BLOCKS (point 5) ───── */
+function apEIRP(ap){
+  // Each AP now carries its own TX/antenna gain (point 2: individual element editing).
+  // Fallback to the current global RF Parameters for legacy/undefined APs.
+  const tx = (typeof ap.tx==='number') ? ap.tx : +val('dm-tx');
+  const ag = (typeof ap.antGain==='number') ? ap.antGain : +val('dm-ag');
+  return tx+ag;
+}
+function signalsAt(px,py){
+  const room=DM.rooms.find(r=>pip(px,py,r.verts));
+  if(!room)return{room:null,sigs:[]};
+  const sigs=DM.aps.filter(a=>a.active&&pip(a.x,a.y,room.verts)).map(ap=>{
+    const eirp=apEIRP(ap);
+    const dm=Math.max(.1,Math.hypot(px-ap.x,py-ap.y)*DM.sf);
+    const fspl=20*Math.log10(dm/1000)+20*Math.log10(5180e6)+20*Math.log10(4*Math.PI/3e8);
+    return eirp-fspl-wallLossAt(px,py,ap.x,ap.y);
+  }).sort((a,b)=>b-a);
+  return{room,sigs};
+}
+function rssiAt(px,py){const s=signalsAt(px,py);return s.sigs.length?Math.round(s.sigs[0]):-999;}
+function napsAt(px,py,thr){const s=signalsAt(px,py);return s.sigs.filter(v=>v>thr).length;}
+function ovAt(px,py){
+  const room=DM.rooms.find(r=>pip(px,py,r.verts));if(!room)return 0;
+  const chs={};
+  DM.aps.filter(a=>a.active&&pip(a.x,a.y,room.verts)).forEach(ap=>{
+    const eirp=apEIRP(ap);
+    const dm=Math.max(.1,Math.hypot(px-ap.x,py-ap.y)*DM.sf);
+    const fspl=20*Math.log10(dm/1000)+20*Math.log10(5180e6)+20*Math.log10(4*Math.PI/3e8);
+    const rx=eirp-fspl-wallLossAt(px,py,ap.x,ap.y);
+    if(rx>-90)chs[ap.ch]=(chs[ap.ch]||0)+1;
+  });
+  return Object.values(chs).reduce((a,v)=>a+(v>1?v:0),0);
+}
+
+/* ───── Colors ───── */
+function s2c(d,thr){
+  if(d<=thr)return null;
+  // Requirement grey-out: pixels below the Primary requirement are flagged grey (Ekahau-style)
+  if(DM.greyout){const req=+val('dm-req');if(d<req)return'rgba(120,126,138,.6)';}
+  const cs=val('dm-cs');
+  const {ex,gd,mg,pr}=DM.legend;
+  if(cs==='mono'){const v=Math.round(50+Math.min(1,(d-pr)/(ex-pr))*200);return`rgba(${v},${v},${v},.82)`;}
+  if(cs==='cool'){if(d<=mg)return'rgba(239,68,68,.75)';if(d<=gd)return'rgba(59,130,246,.75)';if(d<=ex)return'rgba(6,182,212,.78)';return'rgba(34,197,94,.82)';}
+  if(cs==='thermal'){if(d<=mg)return'rgba(239,68,68,.75)';if(d<=gd)return'rgba(249,115,22,.75)';if(d<=ex)return'rgba(234,179,8,.78)';return'rgba(34,197,94,.82)';}
+  if(d>ex)return'rgba(34,197,94,.83)';if(d>gd)return'rgba(132,204,22,.80)';if(d>mg)return'rgba(249,115,22,.78)';if(d>pr)return'rgba(239,68,68,.75)';return null;
+}
+function n2c(s){if(s<0)return null;if(s<10)return'rgba(107,114,128,.55)';if(s<20)return'rgba(239,68,68,.72)';if(s<30)return'rgba(234,179,8,.76)';if(s<40)return'rgba(34,197,94,.78)';return'rgba(34,197,94,.92)';}
+function d2c(sig,nf){const s=sig-nf;if(sig<-90||s<4)return null;if(s<10)return'rgba(239,68,68,.72)';if(s<18)return'rgba(249,115,22,.73)';if(s<25)return'rgba(234,179,8,.76)';if(s<35)return'rgba(132,204,22,.79)';return'rgba(34,197,94,.85)';}
+function o2c(n){return n===0?'rgba(34,197,94,.76)':n<=1?'rgba(234,179,8,.76)':n<=3?'rgba(249,115,22,.76)':'rgba(239,68,68,.80)';}
+function na2c(n){return n===0?'rgba(107,114,128,.55)':n===1?'rgba(249,115,22,.70)':n===2?'rgba(132,204,22,.78)':'rgba(34,197,94,.87)';}
+
+/* ═══ RULERS ═══ */
+function niceStep(unitPxAtZoom){
+  const steps=[0.1,0.25,0.5,1,2,5,10,20,50,100,200,500,1000];
+  for(const s of steps){if(s*unitPxAtZoom>55)return s;}
+  return steps[steps.length-1];
+}
+function drawRulers(){
+  if(!document.getElementById('o-rulers').checked)return;
+  const rh=document.getElementById('ruler-h'),rv=document.getElementById('ruler-v');
+  const rhW=rh.parentElement.clientWidth-22, rvH=rv.parentElement.clientHeight-20;
+  rh.width=Math.max(10,rhW);rh.height=20;rv.width=22;rv.height=Math.max(10,rvH);
+  const c1=rh.getContext('2d');c1.clearRect(0,0,rh.width,rh.height);
+  c1.fillStyle='#eef1f4';c1.fillRect(0,0,rh.width,rh.height);
+  c1.strokeStyle='#c3cad3';c1.fillStyle='#556677';c1.font='8.5px sans-serif';
+  const unitPx=(1/DM.sf); // world px per metre
+  const dispUnitPx = DM.units==='ft'? unitPx*M_PER_FT : unitPx;
+  const step=niceStep(dispUnitPx*view.scale);
+  const originU=(-view.x)/view.scale/unitPx/(DM.units==='ft'?1/FT_PER_M:1);
+  const wpxPerStep=step*(DM.units==='ft'?unitPx*M_PER_FT:unitPx);
+  const startU=Math.floor((s2w(0,0).x/unitPx/(DM.units==='ft'?1/FT_PER_M:1))/step)*step;
+  const endU=(s2w(rh.width,0).x/unitPx/(DM.units==='ft'?1/FT_PER_M:1));
+  for(let v=startU;v<=endU+step;v+=step){
+    const worldX=v*(DM.units==='ft'?unitPx*M_PER_FT:unitPx);
+    const sx=w2s(worldX,0).x;
+    if(sx<0||sx>rh.width)continue;
+    c1.beginPath();c1.moveTo(sx,12);c1.lineTo(sx,20);c1.lineWidth=1;c1.stroke();
+    c1.fillText((Math.abs(v)<0.001?0:v).toFixed(step<1?2:0),sx+2,10);
+  }
+  const c2=rv.getContext('2d');c2.clearRect(0,0,rv.width,rv.height);
+  c2.fillStyle='#eef1f4';c2.fillRect(0,0,rv.width,rv.height);
+  c2.strokeStyle='#c3cad3';c2.fillStyle='#556677';c2.font='8px sans-serif';
+  const startV=Math.floor((s2w(0,0).y/unitPx/(DM.units==='ft'?1/FT_PER_M:1))/step)*step;
+  const endV=(s2w(0,rv.height).y/unitPx/(DM.units==='ft'?1/FT_PER_M:1));
+  for(let v=startV;v<=endV+step;v+=step){
+    const worldY=v*(DM.units==='ft'?unitPx*M_PER_FT:unitPx);
+    const sy=w2s(0,worldY).y;
+    if(sy<0||sy>rv.height)continue;
+    c2.beginPath();c2.moveTo(12,sy);c2.lineTo(22,sy);c2.lineWidth=1;c2.stroke();
+    c2.save();c2.translate(10,sy);c2.rotate(-Math.PI/2);c2.textAlign='center';c2.fillText((Math.abs(v)<0.001?0:v).toFixed(step<1?2:0),0,0);c2.restore();
+  }
+}
+
+/* ═══ MAIN RENDER ═══ */
+function dmR(){
+  const cv=document.getElementById('dmc');if(!cv)return;
+  const ctx=cv.getContext('2d');
+  const tx=+val('dm-tx'),nf=+val('dm-nf'),req=+val('dm-req'),thr=+val('dm-thr'),step=+val('dm-res');
+  const W=DM.CW||600,H=DM.CH||400;const dpr=window.devicePixelRatio||1;
+  cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#c8cdd2';ctx.fillRect(0,0,W,H);
+
+  ctx.save();
+  ctx.translate(view.x,view.y);ctx.scale(view.scale,view.scale);
+
+  drawFloorPlan(ctx);
+
+  // grid
+  if((document.getElementById('o-grid').checked||document.getElementById('o-dotgrid').checked)&&DM.sf>0){
+    const gpx=(+val('grid-size'))/DM.sf;
+    const bx0=s2w(0,0).x,by0=s2w(0,0).y,bx1=s2w(W,H).x,by1=s2w(W,H).y;
+    const startX=Math.floor(bx0/gpx)*gpx, startY=Math.floor(by0/gpx)*gpx;
+    if(document.getElementById('o-grid').checked){
+      ctx.strokeStyle='rgba(0,0,0,.07)';ctx.lineWidth=.6/view.scale;
+      for(let x=startX;x<bx1;x+=gpx){ctx.beginPath();ctx.moveTo(x,by0);ctx.lineTo(x,by1);ctx.stroke();}
+      for(let y=startY;y<by1;y+=gpx){ctx.beginPath();ctx.moveTo(bx0,y);ctx.lineTo(bx1,y);ctx.stroke();}
+    }
+    if(document.getElementById('o-dotgrid').checked){
+      ctx.fillStyle='rgba(0,0,0,.18)';const rad=1.1/view.scale;
+      for(let x=startX;x<bx1;x+=gpx)for(let y=startY;y<by1;y+=gpx){ctx.beginPath();ctx.arc(x,y,rad,0,Math.PI*2);ctx.fill();}
+    }
+  }
+
+  let totC=0,covC=0,sigS=0,snrS=0,roamC=0,roamTot=0;
+
+  DM.rooms.forEach(room=>{
+    const v=room.verts;if(v.length<3)return;
+    const xs=v.map(p=>p[0]),ys=v.map(p=>p[1]);
+    const bx0=Math.min(...xs),bx1=Math.max(...xs),by0=Math.min(...ys),by1=Math.max(...ys);
+
+    ctx.save();ctx.beginPath();v.forEach((p,i)=>i===0?ctx.moveTo(p[0],p[1]):ctx.lineTo(p[0],p[1]));ctx.closePath();
+    // Point 4: heatmap OFF => fully transparent room (no white fill)
+    if(DM.hmVisible){ctx.fillStyle='rgba(255,255,255,0.88)';ctx.fill();}
+
+    const roomAPs=DM.aps.filter(a=>a.active&&pip(a.x,a.y,v));
+    if(DM.hmVisible&&roomAPs.length>0){
+      ctx.clip();
+      ctx.globalAlpha=+val('hm-opacity')||1;
+      for(let py=by0;py<by1;py+=step)for(let px=bx0;px<bx1;px+=step){
+        if(!pip(px+step*.5,py+step*.5,v))continue;
+        const s=signalsAt(px+step*.5,py+step*.5);
+        const best=s.sigs.length?s.sigs[0]:-999, second=s.sigs.length>1?s.sigs[1]:-999;
+        totC++;
+        if(best>thr){covC++;sigS+=best;snrS+=(best-nf);}
+        roamTot++;
+        if(best>=req && second>=req && Math.abs(best-second)<=10) roamC++;
+        let col=null;
+        if(vmCur==='signal')col=s2c(best,thr);
+        else if(vmCur==='snr')col=n2c(best-nf);
+        else if(vmCur==='datarate')col=d2c(best,nf);
+        else if(vmCur==='overlap')col=o2c(ovAt(px+step*.5,py+step*.5));
+        else if(vmCur==='numaps')col=na2c(s.sigs.filter(x=>x>thr).length);
+        if(col){ctx.fillStyle=col;ctx.fillRect(px,py,step,step);}
+      }
+      ctx.globalAlpha=1;
+    }else{
+      // still gather stats even when heatmap hidden (lower res pass)
+      for(let py=by0;py<by1;py+=step*2)for(let px=bx0;px<bx1;px+=step*2){
+        if(!pip(px,py,v))continue;
+        const s=signalsAt(px,py);const best=s.sigs.length?s.sigs[0]:-999,second=s.sigs.length>1?s.sigs[1]:-999;
+        totC++;if(best>thr){covC++;sigS+=best;snrS+=(best-nf);}
+        roamTot++;if(best>=req&&second>=req&&Math.abs(best-second)<=10)roamC++;
+      }
+    }
+    ctx.restore();
+
+    ctx.beginPath();v.forEach((p,i)=>i===0?ctx.moveTo(p[0],p[1]):ctx.lineTo(p[0],p[1]));ctx.closePath();
+    ctx.strokeStyle=room.color||'rgba(180,30,30,.85)';ctx.lineWidth=2/view.scale;ctx.setLineDash([6/view.scale,4/view.scale]);ctx.stroke();ctx.setLineDash([]);
+
+    const rcx=(bx0+bx1)/2,rcy=by0+13/view.scale;
+    const area=shoelaceArea(v)*DM.sf*DM.sf;
+    const lblTxt=room.label+'  ·  '+fmtArea(area);
+    ctx.font=(11/view.scale)+'px sans-serif';
+    const lw=ctx.measureText(lblTxt).width+10/view.scale;
+    ctx.fillStyle=(room.color||'#c0392b')+'dd';ctx.fillRect(rcx-lw/2,rcy-8/view.scale,lw,16/view.scale);
+    ctx.fillStyle='#fff';ctx.font='bold '+(9/view.scale)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(lblTxt,rcx,rcy);
+
+    if(document.getElementById('o-dims').checked){
+      for(let i=0;i<v.length;i++){
+        const a=v[i],b=v[(i+1)%v.length];
+        const mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2;
+        const dx=b[0]-a[0],dy=b[1]-a[1],lenM=Math.hypot(dx,dy)*DM.sf;
+        if(lenM<0.3)continue;
+        let angle=Math.atan2(dy,dx);if(angle>Math.PI/2||angle<-Math.PI/2)angle+=Math.PI;
+        ctx.save();ctx.translate(mx,my);ctx.rotate(angle);
+        const txt=fmtLen(lenM);ctx.font='bold '+(8/view.scale)+'px sans-serif';
+        const tw=ctx.measureText(txt).width+8/view.scale;
+        ctx.fillStyle='rgba(0,0,0,.75)';ctx.fillRect(-tw/2,-7/view.scale,tw,14/view.scale);
+        ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,0,.5/view.scale);
+        ctx.restore();
+      }
+    }
+    if(document.getElementById('o-vtx').checked){
+      v.forEach((p,i)=>{ctx.beginPath();ctx.arc(p[0],p[1],5/view.scale,0,Math.PI*2);ctx.fillStyle='#27ae60';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5/view.scale;ctx.stroke();ctx.fillStyle='#fff';ctx.font='bold '+(7/view.scale)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(i+1,p[0],p[1]);});
+    }
+  });
+
+  // interior walls
+  const WTYPES={'3':{n:'Drywall',c:'#f59e0b'},'3.5':{n:'Glass',c:'#06b6d4'},'6':{n:'Lt.Brick',c:'#f97316'},'10':{n:'Brick',c:'#ef4444'},'15':{n:'Concrete',c:'#7c3aed'},'22':{n:'Metal',c:'#1f2937'},'custom':{n:'Custom',c:'#22c55e'}};
+  DM.walls.forEach(w=>{
+    const wt=WTYPES[String(w.type)]||WTYPES['10'];
+    ctx.beginPath();ctx.moveTo(w.x1,w.y1);ctx.lineTo(w.x2,w.y2);
+    ctx.strokeStyle=wt.c;ctx.lineWidth=3/view.scale;ctx.setLineDash(w.type==='3.5'?[6/view.scale,3/view.scale]:[]);ctx.stroke();ctx.setLineDash([]);
+    const mx=(w.x1+w.x2)/2,my=(w.y1+w.y2)/2,lbl=wt.n+' '+w.loss+'dB';
+    ctx.font='bold '+(7/view.scale)+'px sans-serif';const lw=ctx.measureText(lbl).width+6/view.scale;
+    ctx.fillStyle=wt.c+'ee';ctx.fillRect(mx-lw/2,my-7/view.scale,lw,14/view.scale);
+    ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(lbl,mx,my+.5/view.scale);
+    [[w.x1,w.y1],[w.x2,w.y2]].forEach(([px,py])=>{ctx.beginPath();ctx.arc(px,py,3/view.scale,0,Math.PI*2);ctx.fillStyle=wt.c;ctx.fill();});
+  });
+
+  // APs
+  const showLbl=document.getElementById('o-lbl').checked;
+  DM.aps.forEach(ap=>{
+    ctx.globalAlpha=ap.active?1:.3;
+    if(document.getElementById('o-cnt').checked&&ap.active){
+      const ev=apEIRP(ap);
+      const FSPL_C=20*Math.log10(5180e6)+20*Math.log10(4*Math.PI/3e8);
+      [-55,-67,-75].forEach((lvl,ri)=>{
+        const dpx=Math.pow(10,(ev-lvl-FSPL_C)/20)*1000/DM.sf;
+        if(dpx>5){ctx.beginPath();ctx.arc(ap.x,ap.y,dpx,0,Math.PI*2);ctx.strokeStyle=['rgba(34,197,94,.4)','rgba(132,204,22,.35)','rgba(249,115,22,.35)'][ri];ctx.lineWidth=1/view.scale;ctx.setLineDash([3/view.scale,4/view.scale]);ctx.stroke();ctx.setLineDash([]);}
+      });
+    }
+    ctx.beginPath();ctx.arc(ap.x,ap.y,11/view.scale,0,Math.PI*2);ctx.fillStyle=ap.color;ctx.fill();
+    ctx.strokeStyle='#fff';ctx.lineWidth=2/view.scale;ctx.stroke();
+    ctx.fillStyle='#fff';ctx.font='bold '+(7/view.scale)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('AP',ap.x,ap.y);
+    if(showLbl){
+      const lbl=ap.label;ctx.font='bold '+(7/view.scale)+'px sans-serif';const lw2=ctx.measureText(lbl).width+8/view.scale;
+      ctx.fillStyle=ap.color+'ee';ctx.fillRect(ap.x-lw2/2,ap.y+13/view.scale,lw2,13/view.scale);
+      ctx.fillStyle='#fff';ctx.textBaseline='top';ctx.fillText(lbl,ap.x,ap.y+14/view.scale);
+      ctx.fillStyle='rgba(0,0,0,.5)';ctx.font=(6/view.scale)+'px sans-serif';ctx.fillText('Ch'+ap.ch+'·'+ap.band+'G',ap.x,ap.y+23/view.scale);
+    }
+    ctx.globalAlpha=1;
+  });
+
+  if(document.getElementById('o-roam').checked&&DM.aps.length>=2){
+    ctx.setLineDash([2/view.scale,4/view.scale]);ctx.strokeStyle='rgba(123,191,58,.3)';ctx.lineWidth=1/view.scale;
+    DM.aps.forEach((a,i)=>DM.aps.forEach((b,j)=>{if(j<=i||!a.active||!b.active)return;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}));
+    ctx.setLineDash([]);
+  }
+
+  // measurements (world space)
+  DM.measurements.forEach(m=>{
+    ctx.beginPath();m.pts.forEach((p,i)=>i===0?ctx.moveTo(p[0],p[1]):ctx.lineTo(p[0],p[1]));
+    if(m.type==='area')ctx.closePath();
+    ctx.strokeStyle=m.type==='area'?'rgba(168,85,247,.85)':'rgba(249,115,22,.85)';ctx.lineWidth=2/view.scale;ctx.stroke();
+    if(m.type==='area'){ctx.fillStyle='rgba(168,85,247,.12)';ctx.fill();}
+    m.pts.forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],3.5/view.scale,0,Math.PI*2);ctx.fillStyle=m.type==='area'?'#a855f7':'#f97316';ctx.fill();});
+    const lp=m.pts[m.pts.length-1]||m.pts[0];
+    if(lp){ctx.font='bold '+(9/view.scale)+'px sans-serif';const txt=m.type==='area'?fmtArea(m.value):fmtLen(m.value);const tw=ctx.measureText(txt).width+8/view.scale;
+      ctx.fillStyle=m.type==='area'?'rgba(168,85,247,.9)':'rgba(249,115,22,.9)';ctx.fillRect(lp[0]+6/view.scale,lp[1]-16/view.scale,tw,14/view.scale);
+      ctx.fillStyle='#fff';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(txt,lp[0]+10/view.scale,lp[1]-9/view.scale);}
+  });
+
+  // live drawing previews (in world space, need current mouse world pos)
+  let mw=s2w(mousePos.sx||0,mousePos.sy||0);
+  if(curMode==='draw-room'&&drawRoomVerts.length>0){
+    const prev=drawRoomVerts[drawRoomVerts.length-1];
+    const [mx,my]=constrainOrtho(prev,mw.x,mw.y);
+    ctx.beginPath();drawRoomVerts.forEach((p,i)=>i===0?ctx.moveTo(p[0],p[1]):ctx.lineTo(p[0],p[1]));
+    ctx.lineTo(mx,my);
+    ctx.strokeStyle=shiftHeld?'rgba(34,197,94,.9)':'rgba(0,180,255,.85)';ctx.lineWidth=2/view.scale;ctx.setLineDash([5/view.scale,4/view.scale]);ctx.stroke();ctx.setLineDash([]);
+    drawRoomVerts.forEach((p,i)=>{ctx.beginPath();ctx.arc(p[0],p[1],5/view.scale,0,Math.PI*2);ctx.fillStyle=i===0?'#22c55e':'rgba(0,180,255,.9)';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1/view.scale;ctx.stroke();});
+  }
+  if(curMode==='draw-wall'&&drawWallPt1){
+    const [mx,my]=constrainOrtho(drawWallPt1,mw.x,mw.y);
+    ctx.beginPath();ctx.moveTo(drawWallPt1[0],drawWallPt1[1]);ctx.lineTo(mx,my);
+    ctx.strokeStyle=shiftHeld?'rgba(34,197,94,.9)':'rgba(249,115,22,.85)';ctx.lineWidth=2/view.scale;ctx.setLineDash([5/view.scale,5/view.scale]);ctx.stroke();ctx.setLineDash([]);
+    ctx.beginPath();ctx.arc(drawWallPt1[0],drawWallPt1[1],4/view.scale,0,Math.PI*2);ctx.fillStyle='#f97316';ctx.fill();
+  }
+  if(curMode==='measure'&&measurePts.length>0){
+    const prev=measurePts[measurePts.length-1];
+    const [mx,my]=constrainOrtho(prev,mw.x,mw.y);
+    ctx.beginPath();measurePts.forEach((p,i)=>i===0?ctx.moveTo(p[0],p[1]):ctx.lineTo(p[0],p[1]));ctx.lineTo(mx,my);
+    ctx.strokeStyle=shiftHeld?'rgba(34,197,94,.9)':'rgba(249,115,22,.85)';ctx.lineWidth=2/view.scale;ctx.setLineDash([4/view.scale,4/view.scale]);ctx.stroke();ctx.setLineDash([]);
+    measurePts.forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],3.5/view.scale,0,Math.PI*2);ctx.fillStyle='#f97316';ctx.fill();});
+  }
+  if(curMode==='area'&&areaPts.length>0){
+    const prev=areaPts[areaPts.length-1];
+    const [mx,my]=constrainOrtho(prev,mw.x,mw.y);
+    ctx.beginPath();areaPts.forEach((p,i)=>i===0?ctx.moveTo(p[0],p[1]):ctx.lineTo(p[0],p[1]));ctx.lineTo(mx,my);
+    ctx.strokeStyle=shiftHeld?'rgba(34,197,94,.9)':'rgba(168,85,247,.85)';ctx.lineWidth=2/view.scale;ctx.setLineDash([4/view.scale,4/view.scale]);ctx.stroke();ctx.setLineDash([]);
+    areaPts.forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],3.5/view.scale,0,Math.PI*2);ctx.fillStyle='#a855f7';ctx.fill();});
+  }
+  if(curMode==='scale'){
+    scalePoints.forEach((p,i)=>{ctx.beginPath();ctx.arc(p[0],p[1],6/view.scale,0,Math.PI*2);ctx.fillStyle='#f97316';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5/view.scale;ctx.stroke();ctx.fillStyle='#fff';ctx.font='bold '+(8/view.scale)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(i+1,p[0],p[1]);});
+    if(scalePoints.length===1){ctx.beginPath();ctx.moveTo(scalePoints[0][0],scalePoints[0][1]);ctx.lineTo(mw.x,mw.y);ctx.strokeStyle='#f97316';ctx.lineWidth=2/view.scale;ctx.setLineDash([4/view.scale,3/view.scale]);ctx.stroke();ctx.setLineDash([]);}
+  }
+
+  ctx.restore(); // end world transform
+
+  // Shift ortho-lock indicator
+  if(shiftHeld&&['draw-room','draw-wall','measure','area'].includes(curMode)){
+    ctx.fillStyle='rgba(34,197,94,.95)';ctx.font='bold 10px sans-serif';ctx.textAlign='left';ctx.textBaseline='top';
+    ctx.fillText('⊥ ORTHO LOCK (0°/90°/180°/270°)',10,10);
+  }
+
+  // Scale bar (screen space, DOM overlay updated below)
+  const sbl=document.getElementById('scale-bar-el');if(sbl)sbl.textContent=`Scale: ${DM.sf.toFixed(4)} m/px · ${(1/DM.sf).toFixed(0)} px/m`;
+  document.getElementById('zoom-lbl').textContent=Math.round(view.scale*100)+'%';
+
+  drawRulers();
+
+  const covPct=totC>0?Math.round(covC/totC*100):0;
+  const avgSig=covC>0?Math.round(sigS/covC):0;
+  const avgSnr=covC>0?Math.round(snrS/covC):0;
+  const actC=DM.aps.filter(a=>a.active).length;
+  document.getElementById('dm-aps').textContent=actC;
+  document.getElementById('dm-cov').textContent=totC>0?covPct+'%':'—';
+  document.getElementById('dm-sig').textContent=covC>0?avgSig+' dBm':'—';
+  document.getElementById('dm-snr').textContent=covC>0?avgSnr+' dB':'—';
+  buildLeg();
+  updateChecklist(actC,covPct,avgSig,avgSnr,req,tx);
+  updateRoamingBox(roamTot>0?Math.round(roamC/roamTot*100):0,roamTot);
+  updateCap(); // point 2 fix: real-time sync
+}
+
+function buildLeg(){
+  const sb=document.getElementById('sig-scale-bar'),al=document.getElementById('dleg-alt');
+  if(vmCur==='signal'){
+    if(sb)sb.style.display='flex';if(al)al.style.display='none';
+    const {ex,gd,mg,pr}=DM.legend;
+    const row=document.getElementById('sig-dbm-row');
+    if(row)row.innerHTML=`<span>≥ ${ex} dBm</span><span>${ex}→${gd}</span><span>${gd}→${mg}</span><span>${mg}→${pr}</span><span>&lt; ${pr}</span>`;
+    return;
+  }
+  if(sb)sb.style.display='none';if(al)al.style.display='block';
+  const cfg={snr:{c:['#6b7280','#ef4444','#eab308','#22c55e','#16a34a'],l:['<0 dB','0–10','10–25','25–40','>40 dB']},datarate:{c:['#ef4444','#f97316','#eab308','#84cc16','#22c55e'],l:['1 Mbps','6','13','54','300+']},overlap:{c:['#22c55e','#eab308','#f97316','#ef4444'],l:['No CCI','1 CCI','2 CCI','3+ CCI']},numaps:{c:['#6b7280','#f97316','#84cc16','#22c55e'],l:['0 APs','1 AP','2 APs','3+']}};
+  const c=cfg[vmCur]||cfg.snr;
+  const sl=document.getElementById('dleg'),ll=document.getElementById('dlll');
+  if(sl)sl.innerHTML=c.c.map(col=>`<div class="dls" style="background:${col}"></div>`).join('');
+  if(ll)ll.innerHTML=c.l.map(t=>`<span>${t}</span>`).join('');
+}
+function updateChecklist(actC,covPct,avgSig,avgSnr,req,tx){
+  const sT=selApp?selApp.snr:25;const ctgt=+val('cov-tgt');
+  const activeAPs=DM.aps.filter(a=>a.active);
+  const maxTx=activeAPs.length?Math.max(...activeAPs.map(a=>(typeof a.tx==='number')?a.tx:tx)):tx;
+  const chks=[
+    {l:'No red areas (avg ≥ −73 dBm)',p:avgSig>=-73&&covPct>=90},
+    {l:'Coverage ≥ '+ctgt+'%',p:covPct>=ctgt},
+    {l:'Secondary AP (≥ 2 active)',p:actC>=2},
+    {l:'Avg SNR ≥ '+sT+' dB',p:avgSnr>=sT},
+    {l:'5 GHz APs present',p:DM.aps.some(a=>a.active&&a.band==='5')},
+    {l:'TX Power ≤ 20 dBm (all APs)',p:maxTx<=20},
+    {l:'Roaming ready',p:actC>=2&&avgSig>=req},
+  ];
+  const allPass=chks.every(c=>c.p);
+  const el=document.getElementById('design-chk');
+  if(el)el.innerHTML=(allPass?'<div class="oc" style="font-size:11px;padding:2px 6px;margin-bottom:2px">✅ <strong>All design criteria met!</strong></div>':'')+chks.map(c=>`<div class="chkr">${c.p?'✅':'❌'} <span style="color:${c.p?'#14532d':'#991b1b'}">${c.l}</span></div>`).join('');
+}
+function updateRoamingBox(pct,samples){
+  const el=document.getElementById('roam-result');if(!el)return;
+  if(samples===0){el.innerHTML='⏳ Draw rooms and place ≥2 APs per room to validate roaming.';return;}
+  const req=+val('dm-req');
+  const col=pct>=80?'#15803d':pct>=50?'#b45309':'#991b1b';
+  const icon=pct>=80?'✅':pct>=50?'⚠️':'❌';
+  el.innerHTML=`${icon} <strong style="color:${col}">${pct}%</strong> of sampled area has valid roaming coverage (Primary &amp; Secondary AP both ≥ ${req} dBm, difference ≤ 10 dB) — per Ekahau Handbook roaming validation rule.`;
+}
+function updateCap(){
+  const u=+val('cap-u'),t=+val('cap-t'),cr=+val('cap-c');
+  document.getElementById('cap-t-o').textContent=t+'%';document.getElementById('cap-c-o').textContent=cr;
+  const need=Math.ceil((u*(t/100))/cr),have=DM.aps.filter(a=>a.active).length,ok=have>=need;
+  const el=document.getElementById('cap-r');if(el)el.innerHTML=`Required: <strong>${need}</strong> APs (${u}×${t}%÷${cr})<br>Have: <strong style="color:${ok?'#15803d':'#991b1b'}">${have} active ${ok?'✅ sufficient':'❌ need '+(need-have)+' more'}</strong>`;
+}
+
+/* ───── Room management ───── */
+/* ───── Point 1: Quick Shapes for Room Geometry (rectangle, square, circle, triangle, L-shape, T-shape) ───── */
+function num(id,label,def){
+  return `<div style="display:flex;flex-direction:column;font-size:9px;color:var(--mu)"><span>${label}</span><input type="number" id="${id}" value="${def}" min="0.2" step="0.1" style="width:66px;font-size:10px;padding:2px 4px;border:1px solid var(--br2);border-radius:4px;background:#f8f9fb;color:var(--tx)"></div>`;
+}
+function onShapeTypeChange(){
+  const t=val('shape-type');const p=document.getElementById('shape-params');
+  if(t==='rect')p.innerHTML=num('shp-w','Width (m)',6)+num('shp-h','Height (m)',4);
+  else if(t==='square')p.innerHTML=num('shp-s','Side (m)',5);
+  else if(t==='circle')p.innerHTML=num('shp-r','Radius (m)',3);
+  else if(t==='triangle')p.innerHTML=num('shp-b','Base (m)',6)+num('shp-th','Height (m)',4);
+  else if(t==='lshape')p.innerHTML=num('shp-w','Width (m)',8)+num('shp-h','Height (m)',6)+num('shp-cw','Cut W (m)',3)+num('shp-ch','Cut H (m)',3);
+  else if(t==='tshape')p.innerHTML=num('shp-w','Width (m)',8)+num('shp-h','Height (m)',6)+num('shp-sw','Stem W (m)',3)+num('shp-sh','Stem H (m)',3);
+}
+function genRectVerts(wM,hM){const w=wM/2,h=hM/2;return[[-w,-h],[w,-h],[w,h],[-w,h]];}
+function genCircleVerts(rM,n){n=n||16;const v=[];for(let i=0;i<n;i++){const a=i/n*2*Math.PI;v.push([rM*Math.cos(a),rM*Math.sin(a)]);}return v;}
+function genTriangleVerts(bM,hM){return[[-bM/2,hM/2],[bM/2,hM/2],[0,-hM/2]];}
+function genLShapeVerts(wM,hM,cutWM,cutHM){
+  const w=wM,h=hM,cw=Math.min(Math.max(0.2,cutWM),w*0.9),ch=Math.min(Math.max(0.2,cutHM),h*0.9);
+  const pts=[[0,0],[w-cw,0],[w-cw,ch],[w,ch],[w,h],[0,h]];
+  return pts.map(([x,y])=>[x-w/2,y-h/2]);
+}
+function genTShapeVerts(wM,hM,stemWM,stemHM){
+  const barH=Math.max(0.3,hM-Math.max(0.3,Math.min(stemHM,hM-0.3)));
+  const sw=Math.min(Math.max(0.2,stemWM),wM*0.9);
+  const pts=[[0,0],[wM,0],[wM,barH],[(wM+sw)/2,barH],[(wM+sw)/2,hM],[(wM-sw)/2,hM],[(wM-sw)/2,barH],[0,barH]];
+  return pts.map(([x,y])=>[x-wM/2,y-hM/2]);
+}
+function shapeCenterWorld(){
+  if(DM.CW&&DM.CH)return s2w(DM.CW/2,DM.CH/2);
+  return{x:0,y:0};
+}
+function insertShapeRoom(){
+  const t=val('shape-type');let vertsM=null;
+  try{
+    if(t==='rect')vertsM=genRectVerts(+val('shp-w'),+val('shp-h'));
+    else if(t==='square'){const s=+val('shp-s');vertsM=genRectVerts(s,s);}
+    else if(t==='circle')vertsM=genCircleVerts(+val('shp-r'));
+    else if(t==='triangle')vertsM=genTriangleVerts(+val('shp-b'),+val('shp-th'));
+    else if(t==='lshape')vertsM=genLShapeVerts(+val('shp-w'),+val('shp-h'),+val('shp-cw'),+val('shp-ch'));
+    else if(t==='tshape')vertsM=genTShapeVerts(+val('shp-w'),+val('shp-h'),+val('shp-sw'),+val('shp-sh'));
+  }catch(e){console.error(e);}
+  if(!vertsM||!vertsM.length){alert('Enter valid dimensions first.');return;}
+  const c=shapeCenterWorld();
+  const worldVerts=vertsM.map(([x,y])=>[x/DM.sf+c.x, y/DM.sf+c.y]);
+  addRoom(worldVerts);
+  fitView();
+}
+
+function addRoom(verts){
+  const id=DM.rooms.length+1,color=ROOM_COLORS[(id-1)%ROOM_COLORS.length];
+  DM.rooms.push({id,verts:verts.map(v=>[...v]),color,label:'Room-'+id});
+  buildRoomList();buildVertexRoomSel();dmR();scheduleAutoSync();
+}
+function clearAllRooms(){DM.rooms=[];buildRoomList();buildVertexRoomSel();dmR();scheduleAutoSync();}
+function removeRoom(id){DM.rooms=DM.rooms.filter(r=>r.id!==id);buildRoomList();buildVertexRoomSel();dmR();scheduleAutoSync();}
+function renameRoom(id,newLabel){
+  const room=DM.rooms.find(r=>r.id===id);if(!room)return;
+  room.label=(newLabel||'').trim()||room.label;
+  buildRoomList();buildVertexRoomSel();dmR();
+}
+function buildRoomList(){
+  const el=document.getElementById('room-list');if(!el)return;
+  document.getElementById('cat-rooms-n').textContent='('+DM.rooms.length+')';
+  el.innerHTML=!DM.rooms.length?'<div style="font-size:9px;color:var(--mu)">No rooms yet — use "Draw Room" tool</div>':DM.rooms.map(r=>{
+    const area=shoelaceArea(r.verts)*DM.sf*DM.sf, per=perimeter(r.verts)*DM.sf;
+    return `<div class="room-item"><div class="room-dot" style="background:${r.color}"></div><div style="flex:1;min-width:0"><input type="text" value="${r.label}" onchange="renameRoom(${r.id},this.value)" style="font-size:10px;font-weight:600;color:var(--tx);border:1px solid transparent;background:transparent;width:100%;padding:1px 2px;border-radius:3px" onfocus="this.style.border='1px solid var(--br2)';this.style.background='#fff'" onblur="this.style.border='1px solid transparent';this.style.background='transparent'"><br><span class="room-geo">${fmtArea(area)} · ${fmtLen(per)} perim. · ${r.verts.length}pts</span></div><button class="room-del" onclick="removeRoom(${r.id})">×</button></div>`;
+  }).join('');
+}
+
+/* Vertex coordinate table (point 2 feature) */
+function buildVertexRoomSel(){
+  const sel=document.getElementById('vtx-room-sel');if(!sel)return;
+  sel.innerHTML=DM.rooms.map(r=>`<option value="${r.id}">${r.label}</option>`).join('');
+  if(DM.rooms.length && !DM.rooms.find(r=>r.id===selRoomId)) selRoomId=DM.rooms[0].id;
+  if(selRoomId)sel.value=selRoomId;
+  buildVertexTable();
+}
+function buildVertexTable(){
+  const sel=document.getElementById('vtx-room-sel');if(sel)selRoomId=+sel.value;
+  const room=DM.rooms.find(r=>r.id===selRoomId);
+  const tb=document.getElementById('vtx-tbody'),geo=document.getElementById('vtx-geo');
+  if(!room){if(tb)tb.innerHTML='<tr><td colspan="4" style="color:var(--mu);font-size:10px">No room selected</td></tr>';if(geo)geo.textContent='';return;}
+  if(tb)tb.innerHTML=room.verts.map((v,i)=>`<tr><td>${i+1}</td><td><input type="number" value="${(v[0]*DM.sf).toFixed(2)}" step="0.1" onchange="editVertex(${i},'x',this.value)"></td><td><input type="number" value="${(v[1]*DM.sf).toFixed(2)}" step="0.1" onchange="editVertex(${i},'y',this.value)"></td><td><button class="room-del" onclick="deleteVertex(${i})">×</button></td></tr>`).join('');
+  const area=shoelaceArea(room.verts)*DM.sf*DM.sf, per=perimeter(room.verts)*DM.sf;
+  if(geo)geo.textContent=`Area: ${fmtArea(area)}  ·  Perimeter: ${fmtLen(per)}  ·  ${room.verts.length} vertices`;
+}
+function editVertex(i,axis,valStr){
+  const room=DM.rooms.find(r=>r.id===selRoomId);if(!room)return;
+  const m=parseFloat(valStr);if(isNaN(m))return;
+  const px=m/DM.sf;
+  if(axis==='x')room.verts[i][0]=px;else room.verts[i][1]=px;
+  buildRoomList();buildVertexTable();dmR();scheduleAutoSync();
+}
+function deleteVertex(i){
+  const room=DM.rooms.find(r=>r.id===selRoomId);if(!room||room.verts.length<=3)return;
+  room.verts.splice(i,1);buildRoomList();buildVertexTable();dmR();scheduleAutoSync();
+}
+
+/* Walls */
+function onWallTypeChange(){document.getElementById('custom-loss-row').style.display=val('wall-type-sel')==='custom'?'flex':'none';}
+function getWallLoss(){const s=document.getElementById('wall-type-sel');return s.value==='custom'?+val('wall-loss-sl'):parseFloat(s.value)||10;}
+function getWallType(){return val('wall-type-sel');}
+function removeWall(i){DM.walls.splice(i,1);buildWallList();dmR();scheduleAutoSync();}
+const WALL_TYPE_OPTS=[{v:'3',n:'Drywall',c:'#f59e0b',dB:3},{v:'3.5',n:'Glass',c:'#06b6d4',dB:3.5},{v:'6',n:'Lt.Brick',c:'#f97316',dB:6},{v:'10',n:'Brick',c:'#ef4444',dB:10},{v:'15',n:'Concrete',c:'#7c3aed',dB:15},{v:'22',n:'Metal',c:'#1f2937',dB:22}];
+function updateWallType(i,newType){
+  const w=DM.walls[i];if(!w)return;
+  w.type=newType;
+  const preset=WALL_TYPE_OPTS.find(o=>o.v===newType);
+  if(preset)w.loss=preset.dB; // custom loss kept editable separately below
+  buildWallList();dmR();scheduleAutoSync();
+}
+function updateWallLossIndiv(i,val_){
+  const w=DM.walls[i];if(!w)return;
+  const v=parseFloat(val_);if(isNaN(v))return;
+  w.loss=v;w.type='custom';
+  buildWallList();dmR();scheduleAutoSync();
+}
+function buildWallList(){
+  const el=document.getElementById('wall-list');if(!el)return;
+  document.getElementById('cat-walls-n').textContent='('+DM.walls.length+')';
+  const WC={'3':'#f59e0b','3.5':'#06b6d4','6':'#f97316','10':'#ef4444','15':'#7c3aed','22':'#1f2937','custom':'#22c55e'};
+  el.innerHTML=!DM.walls.length?'<div style="font-size:9px;color:var(--mu)">No walls yet</div>':DM.walls.map((w,i)=>{
+    const co=WC[String(w.type)]||'#22c55e';
+    const opts=WALL_TYPE_OPTS.map(o=>`<option value="${o.v}"${String(w.type)===o.v?' selected':''}>${o.n} (${o.dB}dB)</option>`).join('')+`<option value="custom"${w.type==='custom'?' selected':''}>Custom</option>`;
+    return`<div class="wall-item" style="flex-wrap:wrap;align-items:center">
+      <div class="wall-dot" style="background:${co}"></div>
+      <select onchange="updateWallType(${i},this.value)" style="font-size:9px;padding:2px 3px;border:1px solid var(--br2);border-radius:3px;background:#fff;color:var(--tx);flex:1;min-width:90px">${opts}</select>
+      <input type="number" value="${w.loss}" min="1" max="40" step="0.5" onchange="updateWallLossIndiv(${i},this.value)" style="width:40px;font-size:9px;padding:2px 3px;border:1px solid var(--br2);border-radius:3px;background:#f8f9fb;color:var(--tx)">
+      <span style="font-size:8px;color:var(--mu)">dB</span>
+      <button class="wall-del" onclick="removeWall(${i})">×</button>
+    </div>`;
+  }).join('');
+}
+
+/* APs */
+function buildAPList(){
+  const el=document.getElementById('ap-list-wrap');if(!el)return;
+  document.getElementById('cat-aps-n').textContent='('+DM.aps.length+')';
+  if(!DM.aps.length){el.innerHTML='<div style="font-size:9px;color:var(--mu)">No APs yet</div>';return;}
+  const modelOpts=(sel)=>{
+    let o='<option value=""'+(!sel?' selected':'')+'>— Custom (below) —</option>';
+    Object.keys(AP_PRESETS).forEach(k=>{o+=`<option value="${k}"${sel===k?' selected':''}>${AP_PRESETS[k].name}</option>`;});
+    return o;
+  };
+  el.innerHTML=DM.aps.map(ap=>{
+    const tx=(typeof ap.tx==='number')?ap.tx:+val('dm-tx');
+    const ag=(typeof ap.antGain==='number')?ap.antGain:+val('dm-ag');
+    return `<div class="ap-item${ap._open?' on':''}" id="ap-item-${ap.id}">
+    <div class="ap-hd" onclick="toggleAP(${ap.id})">
+      <div class="ap-dot" style="background:${ap.color}"></div><span class="ap-nm">${ap.label}</span><span class="ap-inf">${ap.band}G·Ch${ap.ch}·${tx+ag}dBm EIRP</span>
+      <label class="tw" onclick="event.stopPropagation()" style="margin-left:3px"><input type="checkbox" ${ap.active?'checked':''} onchange="toggleAPActive(${ap.id})"><span class="tsl"></span></label>
+    </div>
+    <div class="ap-ed">
+      <div class="ap-field"><span>Band:</span><select onchange="updateAPField(${ap.id},'band',this.value);reChAP(${ap.id})"><option${ap.band==='2.4'?' selected':''}>2.4</option><option${ap.band==='5'?' selected':''}>5</option><option${ap.band==='6'?' selected':''}>6</option></select></div>
+      <div class="ap-field"><span>Ch:</span><select onchange="updateAPField(${ap.id},'ch',+this.value)">${getChanOpts(ap.band,ap.ch)}</select></div>
+      <div class="ap-field"><span>X(m):</span><input type="number" class="vi" value="${(ap.x*DM.sf).toFixed(2)}" onchange="updateAPField(${ap.id},'x',(+this.value)/DM.sf)"></div>
+      <div class="ap-field"><span>Y(m):</span><input type="number" class="vi" value="${(ap.y*DM.sf).toFixed(2)}" onchange="updateAPField(${ap.id},'y',(+this.value)/DM.sf)"></div>
+      <div style="height:1px;background:var(--br);margin:5px 0"></div>
+      <div class="ap-field"><span>Model:</span><select onchange="applyAPModelIndiv(${ap.id},this.value)" style="font-size:9px">${modelOpts(ap.model)}</select></div>
+      <div class="ap-field"><span>TX (dBm):</span><input type="number" class="vi" value="${tx}" min="1" max="30" onchange="updateAPField(${ap.id},'tx',+this.value)"></div>
+      <div class="ap-field"><span>Ant (dBi):</span><input type="number" class="vi" value="${ag}" min="0" max="15" onchange="updateAPField(${ap.id},'antGain',+this.value)"></div>
+      <div class="ap-field"><span style="color:var(--brand);font-weight:600">EIRP:</span><span style="font-weight:600">${tx+ag} dBm</span></div>
+      <button class="btn btne" onclick="removeAP(${ap.id})" style="width:100%;justify-content:center;margin-top:3px;font-size:10px"><i class="ti ti-trash"></i>Remove</button>
+    </div></div>`;
+  }).join('');
+}
+function applyAPModelIndiv(id,modelKey){
+  const ap=DM.aps.find(a=>a.id===id);if(!ap)return;
+  ap.model=modelKey;
+  if(modelKey&&AP_PRESETS[modelKey]){const p=AP_PRESETS[modelKey];ap.tx=p.tx;ap.antGain=p.antGain;}
+  buildAPList();dmR();
+}
+function getChanOpts(band,sel){const chs={'2.4':[1,6,11],'5':[36,40,44,48,52,56,100,104,108,112,116,120,124,128,132,136,140,149,153,157,161],'6':[1,5,9,13,17,21,25,29,33,37]};return(chs[band]||chs['5']).map(c=>`<option${c==sel?' selected':''}>${c}</option>`).join('');}
+function toggleAP(id){const ap=DM.aps.find(a=>a.id===id);if(ap){ap._open=!ap._open;buildAPList();}}
+function toggleAPActive(id){const ap=DM.aps.find(a=>a.id===id);if(ap){ap.active=!ap.active;dmR();}}
+function updateAPField(id,f,v){const ap=DM.aps.find(a=>a.id===id);if(ap){ap[f]=v;if(f==='tx'||f==='antGain')ap.model=''; /* manual override clears preset link */ dmR();buildAPList();}}
+function reChAP(id){const ap=DM.aps.find(a=>a.id===id);if(!ap)return;const chs={'2.4':[1,6,11],'5':[36,40,44,48],'6':[1,5,9,13]};ap.ch=(chs[ap.band]||[36])[0];buildAPList();dmR();}
+function clearAPs(){DM.aps=[];buildAPList();dmR();}
+function removeAP(id){DM.aps=DM.aps.filter(a=>a.id!==id);buildAPList();dmR();}
+
+/* Scale apply */
+function applyScale(){
+  if(scalePoints.length<2)return;
+  const dist=+val('scale-dist');if(!dist||dist<=0)return;
+  const dx=scalePoints[1][0]-scalePoints[0][0],dy=scalePoints[1][1]-scalePoints[0][1];
+  const pxDist=Math.hypot(dx,dy);if(pxDist<2){scalePoints=[];return;}
+  DM.sf=dist/pxDist;DM.scaleSet=true;
+  document.getElementById('scale-chip').textContent=`Scale: ${DM.sf.toFixed(4)} m/px (${(1/DM.sf).toFixed(0)} px/m)`;
+  scalePoints=[];curMode='';document.body.className='';
+  document.querySelectorAll('.ctb').forEach(b=>b.classList.remove('on'));
+  document.getElementById('draw-hint-float').classList.remove('show');
+  buildRoomList();buildVertexTable();dmR();scheduleAutoSync();
+}
+
+/* This is a hidden input we need for scale-dist since toolbar no longer shows the field inline;
+   create it via prompt instead for simplicity in v6 flow */
+function askScaleDistance(){
+  const d=prompt('Enter the real-world distance (in metres) between the two points you just clicked:','10');
+  return d;
+}
+
+/* Auto AP — now room-aware (point 2 fix, respects total-blocking) */
+let autoTimer=null;
+function onPatChange(){document.getElementById('ap-cnt-row').style.display=val('ap-pat')==='manual-count'?'flex':'none';}
+function trigAutoAPs(){clearTimeout(autoTimer);autoTimer=setTimeout(autoAPs,60);}
+function autoAPs(){
+  try{
+  if(!DM.rooms.length){alert('Draw at least one room first (Rooms category → Draw Room).');return;}
+  const pat=val('ap-pat');
+  const req=+val('dm-req'),tx=+val('dm-tx');
+  // Auto mode's goal is a map that reads Excellent/Good everywhere — so placement targets the
+  // Legend Settings "Good" cutoff (whatever the user has it set to), not just the bare Requirement.
+  const targetLevel=DM.legend.gd;
+  const covTarget=+val('cov-tgt')/100;
+  const pg=document.getElementById('ap-prog-fill'),st2=document.getElementById('ap-stat');
+
+  function rxFrom(ax,ay,px,py){const ag=+val('dm-ag');const eirp=tx+ag;const dm=Math.max(.1,Math.hypot(px-ax,py-ay)*DM.sf);const fspl=20*Math.log10(dm/1000)+20*Math.log10(5180e6)+20*Math.log10(4*Math.PI/3e8);return eirp-fspl-wallLossAt(px,py,ax,ay);}
+
+  let pos=[];
+  if(pat==='smart'||pat==='manual-count'){
+    const fixedCount=pat==='manual-count'?+val('ap-cnt'):null;
+    st2.textContent='Calculating…';pg.style.width='0%';
+
+    // Point 1: Smart mode must also satisfy the Capacity Planner requirement, not just coverage.
+    const capU=+val('cap-u')||0,capT=+val('cap-t')||0,capC=+val('cap-c')||30;
+    const capReq=(pat==='smart'&&capU>0)?Math.ceil((capU*(capT/100))/capC):0;
+    const roomAreas=DM.rooms.map(r=>shoelaceArea(r.verts)*DM.sf*DM.sf);
+    const totalArea=roomAreas.reduce((a,v)=>a+v,0)||1;
+
+    DM.rooms.forEach((room,ridx)=>{
+      const v=room.verts,xs=v.map(p=>p[0]),ys=v.map(p=>p[1]);
+      const bx0=Math.min(...xs),bx1=Math.max(...xs),by0=Math.min(...ys),by1=Math.max(...ys);
+      const sampleSt=12;
+      const pts=[];for(let py=by0+sampleSt*.5;py<by1;py+=sampleSt)for(let px=bx0+sampleSt*.5;px<bx1;px+=sampleSt)if(pip(px,py,v))pts.push({x:px,y:py});
+      if(!pts.length)return;
+      const step=Math.max(18,Math.round(Math.min(bx1-bx0,by1-by0)/10));
+      const cands=[];for(let cy=by0+step*.5;cy<by1;cy+=step)for(let cx=bx0+step*.5;cx<bx1;cx+=step)if(pip(cx,cy,v))cands.push({x:cx,y:cy});
+      const bestRx=new Float32Array(pts.length).fill(-999);const covered=new Uint8Array(pts.length);
+      const roomMax=fixedCount?Math.max(1,Math.round(fixedCount/DM.rooms.length)):30;
+      // Minimum APs this room must receive to satisfy its proportional share of the capacity requirement
+      const roomCapMin=capReq>0?Math.max(1,Math.ceil(capReq*roomAreas[ridx]/totalArea)):0;
+      const roomPos=[];
+      for(let iter=0;iter<Math.max(roomMax,roomCapMin);iter++){
+        let bScore=-1,bPos=null;
+        cands.forEach(c=>{let sc=0;for(let i=0;i<pts.length;i++){if(covered[i])continue;if(rxFrom(c.x,c.y,pts[i].x,pts[i].y)>targetLevel)sc++;}if(sc>bScore){bScore=sc;bPos=c;}});
+        if(bPos&&bScore>0){
+          pos.push(bPos);roomPos.push(bPos);
+          for(let i=0;i<pts.length;i++){const rx=rxFrom(bPos.x,bPos.y,pts[i].x,pts[i].y);if(rx>bestRx[i])bestRx[i]=rx;if(bestRx[i]>targetLevel)covered[i]=1;}
+        }else if(roomPos.length<roomCapMin){
+          // Coverage is already saturated but capacity still requires more radios here —
+          // add a well-spaced AP (farthest from existing ones) to add secondary/roaming capacity rather than stop.
+          let fPos=null,fDist=-1;
+          cands.forEach(c=>{let minD=Infinity;roomPos.forEach(p=>{const d=Math.hypot(c.x-p.x,c.y-p.y);if(d<minD)minD=d;});if(roomPos.length===0)minD=1;if(minD>fDist){fDist=minD;fPos=c;}});
+          if(!fPos)break;
+          pos.push(fPos);roomPos.push(fPos);
+        }else break;
+        const cov=covered.reduce((a,c)=>a+c,0)/pts.length;
+        pg.style.width=Math.round((ridx+cov)/DM.rooms.length*100)+'%';
+        if(!fixedCount&&cov>=covTarget&&roomPos.length>=roomCapMin)break;
+      }
+    });
+    const capOk=capReq===0||pos.length>=capReq;
+    st2.textContent=capReq>0
+      ? `✅ ${pos.length} APs placed across ${DM.rooms.length} room(s) — targeting Good/Excellent (≥ ${targetLevel} dBm) — capacity needs ${capReq} AP(s): ${capOk?'✅ met':'⚠️ short by '+(capReq-pos.length)}`
+      : `✅ ${pos.length} APs placed across ${DM.rooms.length} room(s) — targeting Good/Excellent (≥ ${targetLevel} dBm per Legend Settings)`;
+  }else if(pat==='grid'){
+    DM.rooms.forEach(room=>{
+      const v=room.verts,xs=v.map(p=>p[0]),ys=v.map(p=>p[1]);
+      const bx0=Math.min(...xs),bx1=Math.max(...xs),by0=Math.min(...ys),by1=Math.max(...ys);
+      const FSPL_C=20*Math.log10(5180e6)+20*Math.log10(4*Math.PI/3e8);
+      const mRange=Math.pow(10,(tx-targetLevel-FSPL_C)/20)*1000/DM.sf;
+      const sp=Math.max(25,Math.min(mRange*.75,Math.min(bx1-bx0,by1-by0)/2));
+      const cols=Math.ceil((bx1-bx0)/sp)+1,rows=Math.ceil((by1-by0)/sp)+1;
+      for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+        const off=(r%2)*sp*0.5;const px=bx0+sp*0.5+c*sp+off,py=by0+sp*0.5+r*sp*0.87;
+        if(px<=bx1+sp&&py<=by1+sp){const sx=Math.max(bx0+8,Math.min(bx1-8,px)),sy=Math.max(by0+8,Math.min(by1-8,py));if(pip(sx,sy,v))pos.push({x:Math.round(sx),y:Math.round(sy)});}
+      }
+    });
+    st2.textContent=`✅ ${pos.length} APs placed on uniform grid — spaced for Good/Excellent (≥ ${targetLevel} dBm)`;
+  }else{
+    DM.rooms.forEach(room=>{const cx=room.verts.reduce((a,v)=>a+v[0],0)/room.verts.length;const cy=room.verts.reduce((a,v)=>a+v[1],0)/room.verts.length;pos.push({x:Math.round(cx),y:Math.round(cy)});});
+    st2.textContent=`✅ ${pos.length} AP(s) placed at room centres`;
+  }
+  if(!pos.length){pos.push({x:Math.round((DM.rooms[0].verts[0][0])),y:Math.round(DM.rooms[0].verts[0][1])});}
+  const bands=['5','5','2.4','5','5','2.4','5','5','2.4','5','5','5','5','5','5','5','5','5','5','5'];
+  const cm={'2.4':[1,6,11],'5':[36,40,44,48,52,56,149,153,157,161],'6':[1,5,9,13]};
+  DM.aps=pos.map((p,i)=>{const b=bands[i%bands.length];const ch=cm[b][i%cm[b].length];return{id:i+1,x:p.x,y:p.y,ch,band:b,label:'AP-'+String(i+1).padStart(2,'0'),active:true,color:APC[i%APC.length],tx:+val('dm-tx'),antGain:+val('dm-ag'),model:val('ap-hw-model')};});
+  buildAPList();dmR();
+  }catch(err){console.error('Auto AP error:',err);alert('Auto distribution failed: '+err.message);}
+}
+
+/* Measurements */
+function addMeasurement(type,pts,value){
+  const id=DM.measurements.length+1;
+  DM.measurements.push({id,type,pts:pts.map(p=>[...p]),value});
+  buildMeasList();
+}
+function removeMeasurement(id){DM.measurements=DM.measurements.filter(m=>m.id!==id);buildMeasList();dmR();}
+function clearMeasurements(){DM.measurements=[];buildMeasList();dmR();}
+function buildMeasList(){
+  const el=document.getElementById('meas-list');if(!el)return;
+  document.getElementById('cat-measure-n').textContent='('+DM.measurements.length+')';
+  if(!DM.measurements.length){el.innerHTML='<div style="font-size:9px;color:var(--mu)">No measurements yet</div>';return;}
+  el.innerHTML=DM.measurements.map(m=>`<div class="meas-item"><i class="ti ${m.type==='area'?'ti-shape':'ti-ruler-2'}" style="color:${m.type==='area'?'#a855f7':'#f97316'}"></i>#${m.id} ${m.type==='area'?'Area':'Distance'}: <strong>${m.type==='area'?fmtArea(m.value):fmtLen(m.value)}</strong><button class="meas-del" onclick="removeMeasurement(${m.id})">×</button></div>`).join('');
+}
+function finishMeasure(){
+  if(measurePts.length<2){measurePts=[];dmR();return;}
+  let d=0;for(let i=1;i<measurePts.length;i++)d+=Math.hypot(measurePts[i][0]-measurePts[i-1][0],measurePts[i][1]-measurePts[i-1][1]);
+  addMeasurement('distance',measurePts,d*DM.sf);
+  measurePts=[];setMode('measure');
+}
+function finishArea(){
+  if(areaPts.length<3){areaPts=[];dmR();return;}
+  const a=shoelaceArea(areaPts)*DM.sf*DM.sf;
+  addMeasurement('area',areaPts,a);
+  areaPts=[];setMode('area');
+}
+
+/* Export PNG */
+function exportPNG(){
+  const cv=document.getElementById('dmc');
+  const a=document.createElement('a');a.href=cv.toDataURL('image/png');a.download='wifi-heatmap-view.png';a.click();
+}
+
+/* ═══ CANVAS EVENTS ═══ */
+(function(){
+  const cv=document.getElementById('dmc'),scroller=document.getElementById('canvas-scroller'),tip=document.getElementById('tip');
+  let altHeld=false, spaceHeld=false;
+  window.addEventListener('keydown',e=>{
+    if(e.key==='Alt'){altHeld=true;}
+    if(e.key==='Shift'){shiftHeld=true;if(['draw-room','draw-wall','measure','area'].includes(curMode))dmR();}
+    if(e.code==='Space'&&document.getElementById('sec-distmap').classList.contains('on')){spaceHeld=true;e.preventDefault();}
+    const tag=(document.activeElement.tagName||'').toLowerCase();
+    if(tag==='input'||tag==='select'||tag==='textarea')return;
+    if(!document.getElementById('sec-distmap').classList.contains('on'))return;
+    if(e.key==='Escape'){setMode('');}
+    else if(e.key==='Enter'){
+      if(curMode==='draw-room'&&drawRoomVerts.length>=3){addRoom(drawRoomVerts);drawRoomVerts=[];setMode('draw-room');}
+      else if(curMode==='measure')finishMeasure();
+      else if(curMode==='area')finishArea();
+    }else if(e.key==='Backspace'){
+      if(curMode==='draw-room')drawRoomVerts.pop();
+      else if(curMode==='measure')measurePts.pop();
+      else if(curMode==='area')areaPts.pop();
+      dmR();
+    }else if(e.key==='v'||e.key==='V')setMode('');
+    else if(e.key==='h'||e.key==='H')setMode('pan');
+    else if(e.key==='r'||e.key==='R')setMode('draw-room');
+    else if(e.key==='w'||e.key==='W')setMode('draw-wall');
+    else if(e.key==='p'||e.key==='P')setMode('place-ap');
+    else if(e.key==='m'||e.key==='M')setMode('measure');
+    else if(e.key==='a'||e.key==='A')setMode('area');
+    else if(e.key==='s'||e.key==='S')setMode('scale');
+    else if(e.key==='f'||e.key==='F')toggleFullscreen();
+  });
+  window.addEventListener('keyup',e=>{if(e.key==='Alt')altHeld=false;if(e.code==='Space')spaceHeld=false;if(e.key==='Shift'){shiftHeld=false;if(['draw-room','draw-wall','measure','area'].includes(curMode))dmR();}});
+
+  function gp(e){const r=cv.getBoundingClientRect();const sx=e.clientX-r.left,sy=e.clientY-r.top;const w=s2w(sx,sy);return{x:w.x,y:w.y,sx,sy};}
+
+  // wheel zoom
+  scroller.addEventListener('wheel',function(e){
+    e.preventDefault();
+    const r=cv.getBoundingClientRect();const mx=e.clientX-r.left,my=e.clientY-r.top;
+    const w=s2w(mx,my);
+    const factor=e.deltaY<0?1.12:0.893;
+    view.scale=Math.max(0.05,Math.min(15,view.scale*factor));
+    view.x=mx-w.x*view.scale;view.y=my-w.y*view.scale;
+    dmR();
+  },{passive:false});
+
+  let panning=false,panStart=null;
+  cv.addEventListener('mousedown',function(e){
+    if(altHeld||spaceHeld||e.button===1||curMode==='pan'){panning=true;panStart={x:e.clientX,y:e.clientY,vx:view.x,vy:view.y};document.body.classList.add('panning');e.preventDefault();return;}
+    if(curMode)return; // drawing modes handled on click
+    const {x,y}=gp(e);
+    DM.aps.forEach(ap=>{if(Math.hypot(ap.x-x,ap.y-y)<14/view.scale){dAP=ap;dox=x-ap.x;doy=y-ap.y;}});
+  });
+  window.addEventListener('mousemove',function(e){
+    if(panning){view.x=panStart.vx+(e.clientX-panStart.x);view.y=panStart.vy+(e.clientY-panStart.y);dmR();return;}
+    const {x,y,sx,sy}=gp(e);mousePos={x,y,sx,sy};
+    document.getElementById('cursor-pos').textContent=`X:${fmtLen(x*DM.sf)} Y:${fmtLen(y*DM.sf)}`;
+    if(['draw-room','draw-wall','measure','area','scale'].includes(curMode)){dmR();return;}
+    if(dAP){dAP.x=x-dox;dAP.y=y-doy;dmR();return;}
+    const room=DM.rooms.find(r=>pip(x,y,r.verts));
+    if(!room){tip.style.display='none';return;}
+    const s=signalsAt(x,y);
+    if(!s.sigs.length){
+      tip.innerHTML=`<span style="display:inline-block;padding:2px 8px;border-radius:100px;background:#6b7280;color:#fff;font-weight:700;font-size:10px">NO COVERAGE</span><br><span style="color:#aab;font-size:10px">No active AP in this room yet</span>`;
+      tip.style.display='block';tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-10)+'px';
+      return;
+    }
+    const sig=Math.round(s.sigs[0]);
+    const nf=+val('dm-nf'),snr=Math.max(0,sig-nf),req=+val('dm-req'),thr=+val('dm-thr');
+    const col=sig>=req?'#22c55e':sig>thr?'#f59e0b':'#ef4444';
+    const badge=sig>=req?'OK':sig>thr?'MARGINAL':'HOLE';
+    const badgeIcon=sig>=req?'✅':sig>thr?'⚠️':'❌';
+    const best=window.MCS.filter(m=>m.snr<=snr).pop();
+    tip.innerHTML=`<span style="display:inline-block;padding:2px 8px;border-radius:100px;background:${col};color:#fff;font-weight:700;font-size:10px;margin-bottom:4px">${badgeIcon} ${badge}</span><br>Signal: <strong style="color:${col}">${sig} dBm</strong> &nbsp;·&nbsp; SNR: <strong>${snr} dB</strong><br>Max Rate: <strong>${best?best.rate+' Mbps':'—'}</strong>`;
+    tip.style.display='block';tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-10)+'px';
+  });
+  window.addEventListener('mouseup',function(){panning=false;document.body.classList.remove('panning');dAP=null;});
+  cv.addEventListener('mouseleave',()=>{tip.style.display='none';});
+  scroller.addEventListener('mouseleave',()=>{tip.style.display='none';});
+
+
+  cv.addEventListener('dblclick',function(e){
+    if(curMode!=='draw-room')return;
+    // A double-click fires AFTER two 'click' events already ran, each pushing a vertex.
+    // Drop the stray vertex added by the 2nd click before closing, or it corrupts this
+    // room AND leaks into the next one (the "can't draw more" bug).
+    if(drawRoomVerts.length>0)drawRoomVerts.pop();
+    if(drawRoomVerts.length>=3)addRoom(drawRoomVerts);
+    drawRoomVerts=[];
+    setMode('draw-room');
+    dmR();
+  });
+
+  cv.addEventListener('click',function(e){
+    if(altHeld||spaceHeld||curMode==='pan')return;
+    const {x:rawX,y:rawY}=gp(e);
+    const [x,y]=snapPt(rawX,rawY);
+
+    if(curMode==='scale'){
+      scalePoints.push([x,y]);
+      if(scalePoints.length===2){
+        const d=askScaleDistance();
+        if(d && !isNaN(parseFloat(d))){
+          document.getElementById('scale-dist')?.remove(); // noop safety
+          const tmp=document.createElement('input');tmp.id='scale-dist';tmp.value=d;tmp.style.display='none';document.body.appendChild(tmp);
+          applyScale();
+          tmp.remove();
+        } else scalePoints=[];
+      }
+      dmR();return;
+    }
+    if(curMode==='draw-room'){
+      let [cx,cy]=drawRoomVerts.length?constrainOrtho(drawRoomVerts[drawRoomVerts.length-1],x,y):[x,y];
+      if(drawRoomVerts.length>=3){const fp=drawRoomVerts[0];if(Math.hypot(cx-fp[0],cy-fp[1])<12/view.scale){addRoom(drawRoomVerts);drawRoomVerts=[];setMode('draw-room');return;}}
+      drawRoomVerts.push([cx,cy]);dmR();return;
+    }
+    if(curMode==='draw-wall'){
+      if(!drawWallPt1)drawWallPt1=[x,y];
+      else{const [cx,cy]=constrainOrtho(drawWallPt1,x,y);DM.walls.push({x1:drawWallPt1[0],y1:drawWallPt1[1],x2:cx,y2:cy,loss:getWallLoss(),type:getWallType()});drawWallPt1=null;buildWallList();dmR();scheduleAutoSync();}
+      return;
+    }
+    if(curMode==='place-ap'){
+      const id=DM.aps.length+1,band=id%2===0?'5':'2.4',ch=band==='5'?[36,40,44,48,52][id%5]:[1,6,11][id%3];
+      DM.aps.push({id,x,y,ch,band,label:'AP-'+String(id).padStart(2,'0'),active:true,color:APC[(id-1)%APC.length],tx:+val('dm-tx'),antGain:+val('dm-ag'),model:val('ap-hw-model')});
+      buildAPList();dmR();return;
+    }
+    if(curMode==='measure'){const [cx,cy]=measurePts.length?constrainOrtho(measurePts[measurePts.length-1],x,y):[x,y];measurePts.push([cx,cy]);dmR();return;}
+    if(curMode==='area'){const [cx,cy]=areaPts.length?constrainOrtho(areaPts[areaPts.length-1],x,y):[x,y];areaPts.push([cx,cy]);dmR();return;}
+
+    // inspect (default select mode)
+    const inR=DM.rooms.some(r=>pip(rawX,rawY,r.verts));if(!inR)return;
+    const s=signalsAt(rawX,rawY);const sig=s.sigs.length?Math.round(s.sigs[0]):-999;
+    const nf=+val('dm-nf'),snr=Math.max(0,sig-nf),req=+val('dm-req'),thr=+val('dm-thr');
+    const best=window.MCS.filter(m=>m.snr<=snr).pop();
+    const col=sig>=req?'#22c55e':sig>thr?'#f59e0b':'#ef4444';
+    document.getElementById('dinfo').innerHTML=`📍 (${fmtLen(rawX*DM.sf)}, ${fmtLen(rawY*DM.sf)}) · Signal: <strong style="color:${col}">${sig} dBm</strong> · SNR: <strong>${snr} dB</strong> · Rate: <strong>${best?best.rate+' Mbps':'—'}</strong> · ${sig>=req?'✅ Meets req':sig>thr?'⚠️ Marginal':'❌ Hole'}`;
+  });
+
+  cv.addEventListener('contextmenu',function(e){e.preventDefault();const {x,y}=gp(e);let cl=null,cd=Infinity;DM.aps.forEach(ap=>{const d=Math.hypot(ap.x-x,ap.y-y);if(d<cd){cd=d;cl=ap;}});if(cl&&cd<18/view.scale){DM.aps=DM.aps.filter(a=>a.id!==cl.id);buildAPList();dmR();}});
+
+  let dAP=null,dox=0,doy=0;
+})();
+
+/* Report */
+function updateRptHeader(){
+  const proj=val('rpt-proj')||'—',dt=val('rpt-date'),con=val('rpt-consult')||'—';
+  document.getElementById('rpt-hdr-project').textContent='Project: '+proj;
+  document.getElementById('rpt-hdr-date').textContent='Date: '+(dt?new Date(dt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'—');
+  document.getElementById('rpt-hdr-consultant').textContent='Consultant: '+con;
+}
+function buildReport(){
+  updateRptHeader();
+  const tx=+val('dm-tx'),ag=+val('dm-ag'),eirp=tx+ag;
+  const nf=+val('dm-nf'),req=+val('dm-req'),wl=+val('dm-wl');
+  const aps=DM.aps,actC=aps.filter(a=>a.active).length;
+  const covPct=parseInt(document.getElementById('dm-cov').textContent)||0;
+  const avgSig=parseInt(document.getElementById('dm-sig').textContent)||0;
+  const avgSnr=parseInt(document.getElementById('dm-snr').textContent)||0;
+  const hwKey=val('ap-hw-model');
+  const modelName=(AP_PRESETS[hwKey]||AP_PRESETS['custom']).name;
+  const appName=selApp?selApp.icon+' '+selApp.name:'Enterprise default';
+  const snrTarget=selApp?selApp.snr:25;
+  const capU=+val('cap-u')||100,capT=+val('cap-t')||60,capC=+val('cap-c')||30;
+  const capReq=Math.ceil((capU*(capT/100))/capC);
+  const roamPct=parseInt((document.getElementById('roam-result').textContent.match(/(\d+)%/)||[0,0])[1])||0;
+
+  document.getElementById('rpt-req-tbody').innerHTML=[
+    ['Signal Strength Min',req+' dBm',req+' dBm','Ekahau Best Practices'],
+    ['Secondary Signal Strength Min','—',req+' dBm (≥2 APs)','Roaming requirement'],
+    ['SNR Min','20.0 dB',snrTarget+' dB',appName],
+    ['Data Rate Min','24 Mbps','24 Mbps','MCS7 baseline'],
+    ['Channel Interference Max','2 APs @ −85 dBm','1 AP @ −85 dBm','Ekahau Best Practices'],
+    ['Round Trip Time (RTT) Max','200 ms','200 ms','Ekahau Best Practices'],
+    ['Packet Loss Max','0.0 %','0.0 %','Ekahau Best Practices'],
+    ['Noise Floor',nf+' dBm',nf+' dBm','RF Parameters'],
+    ['EIRP',eirp+' dBm',eirp+' dBm','TX '+tx+' + Ant '+ag+' dBi'],
+  ].map(r=>`<tr><td><strong>${r[0]}</strong></td><td>${r[1]}</td><td>${r[2]}</td><td style="font-size:10px;color:var(--mu)">${r[3]}</td></tr>`).join('');
+
+  document.getElementById('rpt-stats').innerHTML=[
+    {v:actC,u:'APs',l:'Active radios'},{v:covPct+'%',u:'',l:'Coverage'},{v:avgSig,u:'dBm',l:'Avg signal'},{v:avgSnr,u:'dB',l:'Avg SNR'},
+    {v:eirp,u:'dBm',l:'EIRP'},{v:wl,u:'dB',l:'Wall loss'},{v:DM.rooms.length,u:'',l:'Rooms'},{v:roamPct+'%',u:'',l:'Roaming coverage'},
+  ].map(s=>`<div class="rpt-stat"><div class="rpt-stat-v">${s.v}<span class="rpt-stat-u"> ${s.u}</span></div><div class="rpt-stat-l">${s.l}</div></div>`).join('');
+
+  document.getElementById('rpt-ap-tbody').innerHTML=!aps.length?'<tr><td colspan="8" style="color:var(--mu);font-style:italic">No APs placed</td></tr>':aps.map((ap,i)=>{const col=ap.color||'#3b82f6';const st=ap.active?'<span class="rpt-pass">✅ Active</span>':'<span style="color:var(--mu)">⏸ Disabled</span>';const xm=(ap.x*DM.sf).toFixed(1),ym=(ap.y*DM.sf).toFixed(1);const apTx=(typeof ap.tx==='number')?ap.tx:tx;const apAg=(typeof ap.antGain==='number')?ap.antGain:ag;const apEirpV=apTx+apAg;const apModelName=(ap.model&&AP_PRESETS[ap.model])?AP_PRESETS[ap.model].name:modelName;return`<tr><td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${col};margin-right:3px"></span>${i+1}</td><td><strong>${ap.label}</strong><br><span style="font-size:10px;color:var(--mu)">${xm}m,${ym}m</span></td><td>${ap.band}GHz</td><td>${ap.ch}</td><td>${apTx}dBm</td><td>${apEirpV}dBm</td><td style="font-size:10px">${apModelName}</td><td>${st}</td></tr>`;}).join('');
+  document.getElementById('rpt-ap-footer').innerHTML=`Total: <strong>${actC}</strong> active · Model: <strong>${modelName}</strong> · EIRP: <strong>${eirp} dBm</strong>`;
+
+  document.getElementById('rpt-heatmap-tbody').innerHTML=[
+    {t:'Signal Strength',req:'≥ '+req+' dBm',meas:avgSig+' dBm avg · '+covPct+'% cov.',pass:covPct>=90&&avgSig>=req},
+    {t:'SNR',req:'≥ '+snrTarget+' dB',meas:avgSnr+' dB avg',pass:avgSnr>=snrTarget},
+    {t:'Roaming Validation',req:'Primary&Secondary≥req, Δ≤10dB',meas:roamPct+'% of area',pass:roamPct>=80},
+    {t:'Number of APs',req:'≥ 2 per area',meas:actC+' active APs',pass:actC>=2},
+    {t:'Capacity',req:'≥ '+capReq+' APs',meas:actC+' active',pass:actC>=capReq},
+    {t:'Network Health',req:'No coverage holes',meas:covPct+'% at '+req+' dBm',pass:covPct>=90},
+    {t:'5 GHz Presence',req:'Required',meas:aps.some(a=>a.active&&a.band==='5')?'✅ Present':'❌ None',pass:aps.some(a=>a.active&&a.band==='5')},
+    {t:'TX Power',req:'≤ 20 dBm',meas:tx+' dBm',pass:tx<=20},
+  ].map(r=>`<tr class="${r.pass?'':'rpt-fail-bg'}"><td><strong>${r.t}</strong></td><td style="font-size:11px">${r.req}</td><td style="font-size:11px">${r.meas}</td><td class="${r.pass?'rpt-pass':'rpt-fail'}">${r.pass?'✅ Pass':'❌ Fail'}</td></tr>`).join('');
+
+  const ctgt=+val('cov-tgt')||90;
+  const chks=[
+    {l:'No red/gray areas (avg ≥ −73 dBm)',tgt:'Avg ≥ −73',meas:avgSig+' dBm',p:avgSig>=-73&&covPct>=90},
+    {l:'Coverage ≥ '+ctgt+'% at '+req+' dBm',tgt:ctgt+'%',meas:covPct+'%',p:covPct>=ctgt},
+    {l:'Secondary AP (≥ 2 active APs)',tgt:'≥ 2 APs',meas:actC+' APs',p:actC>=2},
+    {l:'Roaming validation ≥80% of area',tgt:'≥80%',meas:roamPct+'%',p:roamPct>=80},
+    {l:'Avg SNR ≥ '+snrTarget+' dB',tgt:snrTarget+' dB',meas:avgSnr+' dB',p:avgSnr>=snrTarget},
+    {l:'5 GHz APs present',tgt:'≥ 1',meas:aps.some(a=>a.active&&a.band==='5')?'Yes':'No',p:aps.some(a=>a.active&&a.band==='5')},
+    {l:'TX Power ≤ 20 dBm',tgt:'≤ 20 dBm',meas:tx+' dBm',p:tx<=20},
+    {l:'Capacity ('+capU+'×'+capT+'%÷'+capC+')',tgt:'≥ '+capReq+' APs',meas:actC+' active',p:actC>=capReq},
+  ];
+  document.getElementById('rpt-chk-tbody').innerHTML=chks.map((c,i)=>`<tr class="${c.p?'':'rpt-fail-bg'}"><td style="font-weight:700;color:var(--mu)">${i+1}</td><td>${c.l}</td><td style="font-size:11px">${c.tgt}</td><td style="font-size:11px">${c.meas}</td><td class="${c.p?'rpt-pass':'rpt-fail'}">${c.p?'✅ Pass':'❌ Fail'}</td></tr>`).join('');
+
+  const allPass=chks.every(c=>c.p);const fl=chks.filter(c=>!c.p).map(c=>'<li>'+c.l+'</li>').join('');
+  const proj=val('rpt-proj')||'The proposed deployment';const loc=val('rpt-loc')||'the surveyed area';
+  document.getElementById('rpt-conclusion').innerHTML=allPass?`<div class="rpt-conclusion"><strong>✅ Design Validated — All criteria met.</strong><br>${proj} meets all Ekahau Best Practices for Wi-Fi coverage across ${loc}.<br><br><strong>Summary:</strong> ${actC} active APs (${modelName}) · Coverage <strong>${covPct}%</strong> at ≥ ${req} dBm · Avg SNR <strong>${avgSnr} dB</strong> · Roaming <strong>${roamPct}%</strong> · EIRP ${eirp} dBm.</div>`:`<div class="rpt-conclusion"><strong>⚠️ Partial validation — ${chks.length-chks.filter(c=>!c.p).length}/${chks.length} criteria met.</strong><br>${proj} for ${loc} requires attention.</div><div class="rpt-warn"><strong>Items requiring action:</strong><ul style="margin:.4rem 0 0 1.2rem;line-height:2">${fl}</ul>Run <strong>Auto Distribution</strong> to resolve gaps.</div>`;
+  document.getElementById('rpt-gen-time').textContent='Report generated: '+new Date().toLocaleString();
+}
+
+/* ═══ INIT ═══ */
+(function(){
+  buildSigScale();buildAppBars();buildIntList();updateSig();updateSNR();updateDR();updateLoad();buildFreqBands();updateOverlap();updateCP();buildSpectrum();buildAppReq();buildRoomList();buildWallList();buildAPList();buildVertexRoomSel();buildMeasList();updateCap();onWallTypeChange();updateEIRP();renderLegendGradient();onShapeTypeChange();
+  window.addEventListener('resize',()=>{if(document.getElementById('sec-distmap').classList.contains('on'))resizeCanvas();});
+  setTimeout(()=>{resizeCanvas();},100);
+})();
+</script>
+</body>
+</html>

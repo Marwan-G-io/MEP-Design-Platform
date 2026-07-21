@@ -1,0 +1,2391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visual Screen Design Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --bg:#f4f4f8;--bg2:#ebebf2;--bg3:#e2e2ed;--panel:#ffffff;
+  --border:rgba(124,58,237,0.14);--border2:rgba(124,58,237,0.22);
+  --accent:#7c3aed;--accent-hover:#6d28d9;--accent2:#5b21b6;--accent3:#7c3aed;
+  --accent-glow:rgba(124,58,237,0.2);
+  --text:#1a1230;--text2:#4b4570;--text3:#8878b0;
+  --card-bg:#ffffff;--card-border:rgba(124,58,237,0.16);
+  --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;--display:'Syne',sans-serif;
+  --radius:12px;--radius-lg:18px;--radius-xl:22px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-weight:300;line-height:1.6;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;
+  background-image:radial-gradient(ellipse 80% 50% at 50% -20%, rgba(124,58,237,0.06) 0%, transparent 60%);
+  pointer-events:none;z-index:0;}
+.page{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:0 0 4rem;}
+
+/* ── TOP NAVBAR (PA/VA Tools bar) ─────────────────── */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:64px;background:rgba(255,255,255,0.96);border-bottom:1px solid rgba(124,58,237,0.15);position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);box-shadow:0 1px 12px rgba(124,58,237,0.08);}
+.topbar-brand{display:flex;align-items:center;gap:12px;}
+.topbar-icon{width:36px;height:36px;background:linear-gradient(135deg,#6d28d9,#8b5cf6);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.topbar-icon i{color:#fff;font-size:16px;}
+.topbar-title{font-family:var(--display);font-size:17px;font-weight:700;color:var(--text);letter-spacing:-.01em;}
+.topbar-sub{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-top:1px;}
+.topbar-back{display:flex;align-items:center;gap:7px;padding:7px 16px;background:rgba(124,58,237,0.07);border:1px solid rgba(124,58,237,0.22);border-radius:20px;font-family:var(--mono);font-size:11px;color:var(--accent);cursor:pointer;transition:all .2s;text-decoration:none;}
+.topbar-back:hover{background:rgba(124,58,237,0.12);border-color:rgba(124,58,237,0.45);}
+.topbar-back i{font-size:10px;}
+
+/* ── TOOL CONTENT WRAPPER ──────────────────────────── */
+.tool-content{padding:22px 28px 0;}
+.version-badge{font-family:var(--mono);font-size:10px;background:rgba(124,58,237,0.07);border:1px solid rgba(124,58,237,0.22);color:var(--accent);padding:4px 10px;border-radius:20px;display:inline-flex;align-items:center;gap:5px;}
+/* ── METHOD TABS ───────────────────────────────────── */
+.method-tabs{display:flex;gap:4px;background:rgba(124,58,237,0.06);border:1px solid rgba(124,58,237,0.18);border-radius:14px;padding:4px;margin-bottom:22px;width:fit-content;flex-wrap:wrap;}
+.tab{padding:8px 22px;border-radius:10px;font-size:12px;font-weight:500;cursor:pointer;color:var(--text2);transition:all .2s;font-family:var(--mono);border:none;background:transparent;letter-spacing:.03em;}
+.tab.active{background:#fff;color:var(--accent2);border:1px solid rgba(124,58,237,0.3);box-shadow:0 2px 8px rgba(124,58,237,0.12);}
+.tab:hover:not(.active){color:var(--accent);background:rgba(124,58,237,0.06);}
+.tab-page{display:none;}
+.tab-page.visible{display:block;}
+.main-grid{display:grid;grid-template-columns:360px 1fr;gap:16px;align-items:start;}
+@media(max-width:900px){.main-grid{grid-template-columns:1fr;}}
+
+/* ── PANELS ────────────────────────────────────────── */
+.panel{background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:0 2px 12px rgba(124,58,237,0.06);}
+.panel-header{padding:14px 18px;border-bottom:1px solid rgba(124,58,237,0.1);display:flex;align-items:center;gap:10px;background:rgba(124,58,237,0.03);}
+.panel-header i{font-size:14px;color:var(--accent);}
+.panel-header h3{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);}
+.panel-body{padding:18px;}
+.field{margin-bottom:18px;}
+.field:last-child{margin-bottom:0;}
+.field-label{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--text2);margin-bottom:8px;font-family:var(--mono);}
+.field-label span.val{color:var(--accent2);font-weight:500;background:rgba(124,58,237,0.08);padding:2px 8px;border-radius:4px;font-size:11px;border:1px solid rgba(124,58,237,0.18);}
+input[type=range]{-webkit-appearance:none;width:100%;height:3px;background:rgba(124,58,237,0.18);border-radius:2px;outline:none;cursor:pointer;border:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);border:2px solid #fff;cursor:pointer;box-shadow:0 0 0 3px rgba(124,58,237,0.15);transition:box-shadow .2s;}
+input[type=range]:hover::-webkit-slider-thumb{box-shadow:0 0 0 5px rgba(124,58,237,0.25);}
+select{width:100%;padding:8px 12px;background:#fff;border:1px solid rgba(124,58,237,0.22);border-radius:var(--radius);color:var(--text);font-size:12px;font-family:var(--mono);outline:none;cursor:pointer;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237c3aed' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px;transition:border-color .2s;}
+select:hover,select:focus{border-color:rgba(124,58,237,0.5);background-color:rgba(124,58,237,0.03);}
+select option{background:#fff;color:#1a1230;padding:8px;}
+input[type=number]{width:100%;padding:8px 12px;background:#fff;border:1px solid rgba(124,58,237,0.22);border-radius:var(--radius);color:var(--text);font-size:12px;font-family:var(--mono);outline:none;transition:border-color .2s;}
+input[type=number]:focus{border-color:rgba(124,58,237,0.5);}
+.divider{height:1px;background:rgba(124,58,237,0.1);margin:14px 0;}
+
+/* ── METRIC CARDS ──────────────────────────────────── */
+.metric-strip{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;}
+.metric-card{background:#fff;border:1px solid rgba(124,58,237,0.14);border-radius:var(--radius);padding:14px 12px;text-align:center;position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(124,58,237,0.06);}
+.metric-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),#a78bfa);}
+.metric-card .mval{font-family:var(--display);font-size:26px;font-weight:700;line-height:1;letter-spacing:-.02em;color:var(--accent);}
+.metric-card .munit{font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:2px;}
+.metric-card .mlbl{font-size:11px;color:var(--text2);margin-top:4px;}
+.metric-card.blue .mval{color:var(--accent);}
+.metric-card.teal .mval{color:#6d28d9;}
+.metric-card.orange .mval{color:#7c3aed;}
+.metric-card.purple .mval{color:var(--accent);}
+.metric-card.blue::after,.metric-card.teal::after,.metric-card.orange::after,.metric-card.purple::after{background:linear-gradient(90deg,var(--accent),#a78bfa);}
+
+/* ── RESULT TABLE ──────────────────────────────────── */
+.result-table{width:100%;border-collapse:collapse;}
+.result-table tr{border-bottom:1px solid rgba(124,58,237,0.08);}
+.result-table tr:last-child{border-bottom:none;}
+.result-table td{padding:9px 4px;font-size:12px;vertical-align:middle;}
+.result-table td:first-child{color:var(--text2);font-family:var(--mono);width:55%;}
+.result-table td:last-child{color:var(--text);font-weight:500;text-align:right;font-family:var(--mono);}
+.result-table tr.highlight td{background:rgba(124,58,237,0.05);}
+.result-table tr.highlight td:first-child{color:var(--accent);}
+.result-table tr.highlight td:last-child{color:var(--accent);}
+
+/* ── BADGES ────────────────────────────────────────── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:10px;font-family:var(--mono);font-weight:500;}
+.badge-ok{background:rgba(124,58,237,0.08);color:var(--accent);border:1px solid rgba(124,58,237,0.25);}
+.badge-warn{background:rgba(217,119,6,0.08);color:#b45309;border:1px solid rgba(217,119,6,0.25);}
+.badge-err{background:rgba(220,38,38,0.07);color:#dc2626;border:1px solid rgba(220,38,38,0.2);}
+.badge-purple{background:rgba(124,58,237,0.08);color:var(--accent);border:1px solid rgba(124,58,237,0.22);}
+
+/* ── CHART ─────────────────────────────────────────── */
+.chart-wrap{position:relative;height:240px;width:100%;}
+.chart-legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);font-family:var(--mono);}
+.legend-dot{width:20px;height:2px;border-radius:1px;flex-shrink:0;}
+
+/* ── EQ BOX ────────────────────────────────────────── */
+.eq-box{background:rgba(124,58,237,0.03);border:1px solid rgba(124,58,237,0.14);border-radius:var(--radius);padding:14px 16px;font-family:var(--mono);font-size:11px;color:var(--accent2);line-height:2;white-space:pre-wrap;word-break:break-all;}
+.eq-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-family:var(--mono);margin-bottom:6px;}
+
+/* ── SCREEN PREVIEW ────────────────────────────────── */
+.screen-preview{background:rgba(124,58,237,0.05);border:2px solid var(--accent);border-radius:6px;position:relative;transition:all .3s ease;display:flex;align-items:center;justify-content:center;min-width:80px;min-height:45px;}
+.screen-diag-label{font-family:var(--mono);font-size:20px;font-weight:700;color:rgba(124,58,237,0.45);letter-spacing:-.03em;}
+.screen-chosen-box{background:rgba(124,58,237,0.04);border:1px solid rgba(124,58,237,0.25);border-radius:var(--radius);padding:10px 14px;text-align:center;width:100%;}
+.screen-chosen-box .chosen-size{font-family:var(--display);font-size:28px;font-weight:700;color:var(--accent);}
+.screen-chosen-box .chosen-label{font-family:var(--mono);font-size:10px;color:var(--text2);margin-top:2px;}
+.screen-chosen-box .chosen-dims{font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:4px;}
+
+/* ── CALLOUTS ──────────────────────────────────────── */
+.callout{display:flex;gap:10px;background:rgba(124,58,237,0.04);border:1px solid rgba(124,58,237,0.16);border-radius:var(--radius);padding:12px 14px;margin-top:12px;}
+.callout.warn{background:rgba(217,119,6,0.04);border-color:rgba(217,119,6,0.2);}
+.callout.warn i{color:#b45309;}
+.callout.ok{background:rgba(124,58,237,0.05);border-color:rgba(124,58,237,0.25);}
+.callout.ok i{color:var(--accent);}
+.callout.purple{background:rgba(124,58,237,0.04);border-color:rgba(124,58,237,0.22);}
+.callout.purple i{color:var(--accent);}
+.callout i{color:var(--accent);font-size:14px;flex-shrink:0;margin-top:2px;}
+.callout p{font-size:11px;color:var(--text2);line-height:1.6;}
+
+.right-col{display:flex;flex-direction:column;gap:16px;}
+.sec-label{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.sec-label::after{content:'';flex:1;height:1px;background:rgba(124,58,237,0.15);}
+
+/* ── DISCAS / VAD widgets ──────────────────────────── */
+.discas-range-box{display:flex;gap:8px;margin-bottom:14px;}
+.discas-item{flex:1;background:rgba(124,58,237,0.04);border:1px solid rgba(124,58,237,0.16);border-radius:8px;padding:10px;text-align:center;}
+.discas-item .dval{font-family:var(--display);font-size:20px;font-weight:700;color:var(--accent);}
+.discas-item .dlbl{font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:2px;}
+.vad-result-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.vad-item{background:rgba(124,58,237,0.04);border:1px solid rgba(124,58,237,0.14);border-radius:8px;padding:12px;text-align:center;}
+.vad-item .vval{font-family:var(--display);font-size:22px;font-weight:700;}
+.vad-item .vunit{font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:2px;}
+.vad-item .vlbl{font-size:11px;color:var(--text2);margin-top:4px;}
+
+/* ── COMBINATION PANEL ─────────────────────────── */
+.combo-panel{background:rgba(124,58,237,0.04);border:1px solid rgba(124,58,237,0.22);border-radius:var(--radius-lg);padding:18px;margin-top:4px;}
+.combo-title{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.combo-title::after{content:'';flex:1;height:1px;background:rgba(124,58,237,0.18);}
+.combo-options{display:flex;flex-wrap:wrap;gap:10px;}
+.combo-card{background:#fff;border:1px solid rgba(124,58,237,0.18);border-radius:var(--radius);padding:12px 14px;flex:1;min-width:160px;position:relative;box-shadow:0 2px 8px rgba(124,58,237,0.06);}
+.combo-card.best{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 4px 20px rgba(124,58,237,0.15);}
+.combo-card .combo-badge{position:absolute;top:-8px;right:10px;background:var(--accent);color:#fff;font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:10px;}
+.combo-card .cc-count{font-family:var(--display);font-size:28px;font-weight:700;color:var(--accent);line-height:1;}
+.combo-card .cc-size{font-family:var(--mono);font-size:13px;color:var(--text);margin-top:2px;}
+.combo-card .cc-layout{font-family:var(--mono);font-size:10px;color:var(--text2);margin-top:4px;}
+.combo-card .cc-total{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px;}
+
+/* ── SIGHTLINE ──────────────────────────────────── */
+.sightline-wrap{position:relative;background:rgba(124,58,237,0.02);border-radius:var(--radius);overflow:hidden;padding:0;}
+#d1-sightline{display:block;width:100%;height:320px;}
+.sightline-legend{display:flex;flex-wrap:wrap;gap:14px;padding:12px 16px;border-top:1px solid rgba(124,58,237,0.1);background:rgba(124,58,237,0.02);}
+.sl-legend-item{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--text2);}
+.sl-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+.sl-line{width:22px;height:2px;flex-shrink:0;border-radius:1px;}
+.sl-dash{width:22px;height:0;border-top:2px dashed;flex-shrink:0;}
+
+/* ── SUBTABS ────────────────────────────────────────── */
+.subtab{padding:7px 18px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;color:var(--text2);transition:all .2s;font-family:var(--mono);border:none;background:transparent;letter-spacing:.03em;display:flex;align-items:center;gap:6px;}
+.subtab.active{background:#fff;color:var(--accent);border:1px solid rgba(124,58,237,0.3);box-shadow:0 2px 8px rgba(124,58,237,0.12);}
+.subtab:hover:not(.active){color:var(--accent);background:rgba(124,58,237,0.06);}
+.subpage{display:none;}
+.subpage.visible{display:block;}
+footer{margin-top:3rem;padding:1.5rem 28px;border-top:1px solid rgba(124,58,237,0.12);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;background:#f4f4f8;}
+footer p{font-family:var(--mono);font-size:10px;color:var(--text3);}
+/* ── ROOM TYPE BUTTONS ──────────────────────────────── */
+.room-type-btn{padding:9px 18px;border-radius:10px;font-size:12px;font-weight:500;cursor:pointer;color:var(--text2);transition:all .2s;font-family:var(--mono);border:1px solid rgba(124,58,237,0.18);background:#fff;letter-spacing:.02em;display:flex;align-items:center;gap:7px;box-shadow:0 1px 4px rgba(124,58,237,0.06);}
+.room-type-btn i{font-size:13px;color:var(--text3);}
+.room-type-btn.active{background:rgba(124,58,237,0.08);color:var(--accent);border-color:rgba(124,58,237,0.4);box-shadow:0 2px 10px rgba(124,58,237,0.14);}
+.room-type-btn.active i{color:var(--accent);}
+.room-type-btn:hover:not(.active){border-color:rgba(124,58,237,0.3);color:var(--accent);background:rgba(124,58,237,0.04);}
+/* ── rd-typebtn (Room Design page type selector) ── */
+.rd-typebtn{padding:8px 16px;border-radius:10px;font-size:12px;font-weight:500;cursor:pointer;color:var(--text2);transition:all .2s;font-family:var(--mono);border:1px solid rgba(124,58,237,0.18);background:#fff;letter-spacing:.03em;display:inline-flex;align-items:center;gap:6px;box-shadow:0 1px 4px rgba(124,58,237,0.06);}
+.rd-typebtn.active{background:rgba(124,58,237,0.09);color:var(--accent);border-color:rgba(124,58,237,0.42);box-shadow:0 2px 10px rgba(124,58,237,0.14);}
+.rd-typebtn:hover:not(.active){background:rgba(124,58,237,0.05);color:var(--accent);border-color:rgba(124,58,237,0.3);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.panel,.metric-card{animation:fadeUp .35s ease both;}
+.metric-card:nth-child(2){animation-delay:.05s;}
+.metric-card:nth-child(3){animation-delay:.1s;}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- TOP NAV BAR -->
+<nav class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-icon"><i class="fa fa-display"></i></div>
+    <div>
+      <div class="topbar-title">PA/VA TOOLS</div>
+      <div class="topbar-sub">Visual Screen Design Tool</div>
+    </div>
+  </div>
+  <a class="topbar-back" href="#"><i class="fa fa-arrow-left"></i> ICT Design Tools</a>
+</nav>
+
+<!-- TOOL CONTENT AREA -->
+<div class="tool-content">
+
+<div class="method-tabs">
+  <button class="tab active" data-m="discas" onclick="setMethod('discas')">DISCAS / Readability</button>
+  <button class="tab" data-m="468" onclick="setMethod('468')">4-6-8 Rule</button>
+  <button class="tab" data-m="vad" onclick="setMethod('vad')">Font Legibility / Pixel Pitch</button>
+  <button class="tab" data-m="room" onclick="setMethod('room')">Room Design</button>
+</div>
+
+<!-- ═══════════════════ PAGE 1: DISCAS ═══════════════════ -->
+<div id="page-discas" class="tab-page visible">
+<div class="main-grid">
+  <div style="display:flex;flex-direction:column;gap:16px;">
+    <div class="panel">
+      <div class="panel-header"><i class="fa fa-ruler"></i><h3>Viewing Parameters</h3></div>
+      <div class="panel-body">
+        <div class="field">
+          <div class="field-label">Farthest viewing distance <span class="val" id="d1-dist-val">8.0 m</span></div>
+          <input type="range" id="d1-dist" min="1" max="30" step="0.5" value="8" oninput="calcDiscas()">
+        </div>
+        <div class="field">
+          <div class="field-label">Space type</div>
+          <select id="d1-space" onchange="applyPreset('discas')">
+            <option value="">— Custom —</option>
+            <option value="meeting">Small meeting room</option>
+            <option value="boardroom">Boardroom</option>
+            <option value="auditorium">Auditorium</option>
+            <option value="control">Control room</option>
+            <option value="lobby">Lobby / digital signage</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="field-label">Aspect ratio</div>
+          <select id="d1-aspect" onchange="calcDiscas()">
+            <option value="1.778" selected>16:9 — Standard widescreen</option>
+            <option value="2.370">21:9 — Ultrawide</option>
+            <option value="1.333">4:3 — Legacy / classroom</option>
+            <option value="1.000">1:1 — Square</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><i class="fa fa-eye"></i><h3>Readability & DISCAS Settings</h3></div>
+      <div class="panel-body">
+        <div class="field">
+          <div class="field-label">Readability standard (arc-min)</div>
+          <select id="d1-readstd" onchange="calcDiscas()">
+            <option value="5">Minimum legibility (5 arc-min)</option>
+            <option value="10">Comfortable reading (10 arc-min)</option>
+            <option value="16" selected>Professional safety margin (16 arc-min)</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="field-label">Layout factor (text rows in frame) <span class="val" id="d1-lf-val">30</span></div>
+          <input type="range" id="d1-lf" min="20" max="40" step="1" value="30" oninput="calcDiscas();const h=document.getElementById('d1-lf-hint');if(h)h.style.display='none';">
+          <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:4px;">
+            <span>20 sparse</span><span>30 PPT</span><span>40 dense</span>
+          </div>
+          <div id="d1-lf-hint" style="font-family:var(--mono);font-size:10px;color:var(--accent);background:rgba(124,58,237,0.05);border:1px solid rgba(124,58,237,0.18);border-radius:6px;padding:5px 10px;margin-top:8px;display:none;"></div>
+        </div>
+        <div class="field">
+          <div class="field-label">DISCAS denominator to highlight</div>
+          <select id="d1-discas-k" onchange="calcDiscas()">
+            <option value="6">D/6 — Presentations (permissive)</option>
+            <option value="7" selected>D/7 — Balanced</option>
+            <option value="8">D/8 — Comfortable video</option>
+            <option value="9">D/9 — High detail</option>
+            <option value="10">D/10 — Critical data / control rooms</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><i class="fa fa-tv"></i><h3>Display Resolution</h3></div>
+      <div class="panel-body">
+        <div class="field">
+          <div class="field-label">Resolution preset</div>
+          <select id="d1-res" onchange="calcDiscas()">
+            <option value="1280,720">HD (1280×720)</option>
+            <option value="1920,1080" selected>Full HD (1920×1080)</option>
+            <option value="2560,1440">QHD (2560×1440)</option>
+            <option value="3840,2160">4K UHD (3840×2160)</option>
+            <option value="7680,4320">8K (7680×4320)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div><!-- /left col -->
+
+  <div class="right-col">
+    <div class="metric-strip">
+      <div class="metric-card blue"><div class="mval" id="d1-m-charH">—</div><div class="munit">mm</div><div class="mlbl">Min char height</div></div>
+      <div class="metric-card teal"><div class="mval" id="d1-m-screenH">—</div><div class="munit">meters</div><div class="mlbl">Calc screen height</div></div>
+      <div class="metric-card orange"><div class="mval" id="d1-m-diag">—</div><div class="munit">inches (calculated)</div><div class="mlbl">Calc diagonal</div></div>
+    </div>
+
+    <!-- Screen preview + chosen -->
+    <div class="panel">
+      <div class="panel-header"><i class="fa fa-desktop"></i><h3>Screen Size — Calculated vs. Standard</h3></div>
+      <div class="panel-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center;">
+          <div style="text-align:center;">
+            <div class="eq-label">CALCULATED</div>
+            <div style="padding:18px 10px 32px;display:flex;justify-content:center;">
+              <div style="position:relative;display:inline-block;margin-right:58px;margin-bottom:28px;">
+                <div class="screen-preview" id="d1-preview" style="width:160px;height:90px;">
+                  <span class="screen-diag-label" id="d1-diag-label">—"</span>
+                </div>
+                <div id="d1-dim-h" style="position:absolute;right:-56px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:10px;color:var(--accent2);white-space:nowrap;text-align:left;line-height:1.6;">—</div>
+                <div id="d1-dim-w" style="position:absolute;bottom:-26px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:10px;color:var(--accent);white-space:nowrap;">—</div>
+              </div>
+            </div>
+          </div>
+          <div style="text-align:center;">
+            <div class="eq-label">NEAREST STANDARD SIZE</div>
+            <div class="screen-chosen-box" id="d1-chosen-box">
+              <div class="chosen-size" id="d1-chosen-size">—</div>
+              <div class="chosen-label">Recommended standard screen</div>
+              <div class="chosen-dims" id="d1-chosen-dims">—</div>
+            </div>
+            <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:8px;" id="d1-roundup-note">—</div>
+          </div>
+        </div>
+        <!-- Combination panel (shown only when needed) -->
+        <div id="d1-combo-wrap" style="display:none;margin-top:4px;">
+          <div class="combo-panel">
+            <div class="combo-title"><i class="fa fa-layer-group"></i> Multi-Screen Combination — Required size exceeds 85" maximum</div>
+            <div class="combo-options" id="d1-combo-options"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DISCAS range -->
+    <div class="panel">
+      <div class="panel-header"><i class="fa fa-arrows-left-right-to-line"></i><h3>DISCAS Range (D/6 → D/10)</h3></div>
+      <div class="panel-body">
+        <div class="discas-range-box">
+          <div class="discas-item"><div class="dval" id="d1-d6">—</div><div class="dlbl">D/6 (permissive)</div></div>
+          <div class="discas-item"><div class="dval" id="d1-d7">—</div><div class="dlbl">D/7</div></div>
+          <div class="discas-item"><div class="dval" id="d1-d8">—</div><div class="dlbl">D/8</div></div>
+          <div class="discas-item"><div class="dval" id="d1-d9">—</div><div class="dlbl">D/9</div></div>
+          <div class="discas-item"><div class="dval" id="d1-d10">—</div><div class="dlbl">D/10 (strict)</div></div>
+        </div>
+        <div class="callout"><i class="fa fa-circle-info"></i>
+          <p>DISCAS range D/6→D/10 gives the acceptable screen height band. Selected D/<span id="d1-selected-k">7</span> is highlighted. Readability formula (human eye geometry + 16 arc-min safety margin) typically falls within this band.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="panel">
+      <div class="panel-header"><i class="fa fa-chart-line"></i><h3>Screen Height vs Viewing Distance</h3></div>
+      <div class="panel-body">
+        <div class="chart-wrap"><canvas id="d1-chart"></canvas></div>
+        <div class="chart-legend" style="margin-top:12px;">
+          <div class="legend-item"><div class="legend-dot" style="background:#2e7fff;height:2px;"></div>Readability</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#00c7a8;border-top:2px dashed #00c7a8;height:0;"></div>DISCAS D/6</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#b06cff;border-top:2px dashed #b06cff;height:0;"></div>DISCAS D/10</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ffcc2e;border-top:2px dashed #ffcc2e;height:0;"></div>Selected D/K</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#fff;width:10px;height:10px;border-radius:50%;"></div>Current point</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIGHTLINE — improved -->
+    <div class="panel">
+      <div class="panel-header"><i class="fa fa-diagram-project"></i><h3>Sightline Diagram</h3></div>
+      <div class="sightline-wrap">
+        <canvas id="d1-sightline"></canvas>
+        <div class="sightline-legend">
+          <div class="sl-legend-item"><div class="sl-dot" style="background:var(--accent2);"></div>Viewer eye position</div>
+          <div class="sl-legend-item"><div class="sl-line" style="background:var(--accent);"></div>Screen face</div>
+          <div class="sl-legend-item"><div class="sl-dash" style="border-color:var(--accent2);"></div>Sightlines (top / bottom)</div>
+          <div class="sl-legend-item"><div class="sl-dash" style="border-color:var(--accent3);"></div>≥ 1200 mm AFF</div>
+          <div class="sl-legend-item"><div class="sl-dash" style="border-color:rgba(255,255,255,0.25);"></div>Viewing distance</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detailed results -->
+    <div class="panel">
+      <div class="panel-header"><i class="fa fa-table-list"></i><h3>Detailed Results</h3></div>
+      <div class="panel-body">
+        <div class="sec-label">Readability calculation</div>
+        <table class="result-table">
+          <tr><td>Arc-min → radians</td><td id="d1-r-rad">—</td></tr>
+          <tr><td>Min character height (H = D × tan θ)</td><td id="d1-r-char">—</td></tr>
+          <tr><td>Screen height (H_char × LF)</td><td id="d1-r-sh">—</td></tr>
+          <tr><td>Screen width</td><td id="d1-r-width">—</td></tr>
+          <tr class="highlight"><td>Calculated diagonal</td><td id="d1-r-diag">—</td></tr>
+          <tr class="highlight"><td>Nearest standard size (rounded up)</td><td id="d1-r-chosen">—</td></tr>
+          <tr><td>Bottom of screen min AFF</td><td>≥ 1200 mm</td></tr>
+        </table>
+        <div class="divider"></div>
+        <div class="sec-label">DISCAS range</div>
+        <table class="result-table">
+          <tr><td>D/6</td><td id="d1-rr-d6">—</td></tr>
+          <tr><td>D/7</td><td id="d1-rr-d7">—</td></tr>
+          <tr><td>D/8</td><td id="d1-rr-d8">—</td></tr>
+          <tr><td>D/9</td><td id="d1-rr-d9">—</td></tr>
+          <tr><td>D/10</td><td id="d1-rr-d10">—</td></tr>
+          <tr><td>Within D/6→D/10 range?</td><td id="d1-r-inrange">—</td></tr>
+        </table>
+        <div class="divider"></div>
+        <div class="sec-label">Pixel analysis (on chosen standard screen)</div>
+        <table class="result-table">
+          <tr><td>Chosen screen height</td><td id="d1-r-csh">—</td></tr>
+          <tr><td>Pixel pitch — PPh (horizontal)</td><td id="d1-r-pph">—</td></tr>
+          <tr><td>Pixel pitch — PPv (vertical)</td><td id="d1-r-pixel">—</td></tr>
+          <tr><td>Pixel subtended angle at D</td><td id="d1-r-angle">—</td></tr>
+          <tr><td>VAD (3.438 × PPv)</td><td id="d1-r-vad">—</td></tr>
+          <tr><td>Pixel visibility</td><td id="d1-r-vis">—</td></tr>
+        </table>
+        <div class="divider"></div>
+        <div class="sec-label">Step-by-step equation trace</div>
+        <div class="eq-box" id="d1-eq-box">—</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div><!-- /page-discas -->
+
+<!-- ═══════════════════ PAGE 2: 4-6-8 ═══════════════════ -->
+<div id="page-468" class="tab-page">
+<div class="main-grid">
+  <div style="display:flex;flex-direction:column;gap:16px;">
+    <div class="panel">
+      <div class="panel-header"><i class="fa fa-ruler"></i><h3>Viewing Parameters</h3></div>
+      <div class="panel-body">
+        <div class="field">
+          <div class="field-label">Farthest viewing distance <span class="val" id="d2-dist-val">8.0 m</span></div>
+          <input type="range" id="d2-dist" min="1" max="30" step="0.5" value="8" oninput="calc468()">
+        </div>
+        <div class="field">
+          <div class="field-label">Space type</div>
+          <select id="d2-space" onchange="applyPreset('468')">
+            <option value="">— Custom —</option>
+            <option value="meeting">Small meeting room</option>
+            <option value="boardroom">Boardroom</option>
+            <option value="auditorium">Auditorium</option>
+            <option value="control">Control room</option>
+            <option value="lobby">Lobby / digital signage</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="field-label">Aspect ratio</div>
+          <select id="d2-aspect" onchange="calc468()">
+            <option value="1.778" selected>16:9 — Standard widescreen</option>
+            <option value="2.370">21:9 — Ultrawide</option>
+            <option value="1.333">4:3 — Legacy / classroom</option>
+            <option value="1.000">1:1 — Square</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><i class="fa fa-film"></i><h3>4-6-8 Rule Settings</h3></div>
+      <div class="panel-body">
+        <div class="field">
+          <div class="field-label">Content type (K factor)</div>
+          <select id="d2-k" onchange="calc468()">
+            <option value="4">K = 4 — CAD / technical drawings</option>
+            <option value="6" selected>K = 6 — Presentations & text</option>
+            <option value="8">K = 8 — Video / images</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="field-label">Resolution preset</div>
+          <select id="d2-res" onchange="calc468()">
+            <option value="1280,720">HD (1280×720)</option>
+            <option value="1920,1080" selected>Full HD (1920×1080)</option>
+            <option value="2560,1440">QHD (2560×1440)</option>
+            <option value="3840,2160">4K UHD (3840×2160)</option>
+            <option value="7680,4320">8K (7680×4320)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="right-col">
+    <div class="metric-strip">
+      <div class="metric-card orange"><div class="mval" id="d2-m-sh">—</div><div class="munit">m (H=D/K)</div><div class="mlbl">Screen height</div></div>
+      <div class="metric-card blue"><div class="mval" id="d2-m-diag">—</div><div class="munit">inches (calc)</div><div class="mlbl">Calculated diagonal</div></div>
+      <div class="metric-card teal"><div class="mval" id="d2-m-chosen">—</div><div class="munit">inches (standard)</div><div class="mlbl">Nearest std screen</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><i class="fa fa-desktop"></i><h3>Screen Size — Calculated vs. Standard</h3></div>
+      <div class="panel-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center;">
+          <div style="text-align:center;">
+            <div class="eq-label">CALCULATED (H = D ÷ K)</div>
+            <div style="padding:18px 10px 32px;display:flex;justify-content:center;">
+              <div style="position:relative;display:inline-block;margin-right:58px;margin-bottom:28px;">
+                <div class="screen-preview" id="d2-preview" style="width:160px;height:90px;">
+                  <span class="screen-diag-label" id="d2-diag-label">—"</span>
+                </div>
+                <div id="d2-dim-h" style="position:absolute;right:-56px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:10px;color:var(--accent2);white-space:nowrap;line-height:1.6;">—</div>
+                <div id="d2-dim-w" style="position:absolute;bottom:-26px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:10px;color:var(--accent);white-space:nowrap;">—</div>
+              </div>
+            </div>
+          </div>
+          <div style="text-align:center;">
+            <div class="eq-label">NEAREST STANDARD SIZE</div>
+            <div class="screen-chosen-box">
+              <div class="chosen-size" id="d2-chosen-size">—</div>
+              <div class="chosen-label">Recommended standard screen</div>
+              <div class="chosen-dims" id="d2-chosen-dims">—</div>
+            </div>
+            <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:8px;" id="d2-roundup-note">—</div>
+          </div>
+        </div>
+        <div id="d2-combo-wrap" style="display:none;margin-top:4px;">
+          <div class="combo-panel">
+            <div class="combo-title"><i class="fa fa-layer-group"></i> Multi-Screen Combination — Required size exceeds 85" maximum</div>
+            <div class="combo-options" id="d2-combo-options"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><i class="fa fa-list-ol"></i><h3>All K Factors Comparison</h3></div>
+      <div class="panel-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+          <div class="discas-item" id="d2-k4-box"><div class="dval" id="d2-k4-h">—</div><div class="dlbl">K=4 (CAD)</div><div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:3px;" id="d2-k4-diag">—</div></div>
+          <div class="discas-item" id="d2-k6-box"><div class="dval" id="d2-k6-h">—</div><div class="dlbl">K=6 (Pres.)</div><div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:3px;" id="d2-k6-diag">—</div></div>
+          <div class="discas-item" id="d2-k8-box"><div class="dval" id="d2-k8-h">—</div><div class="dlbl">K=8 (Video)</div><div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:3px;" id="d2-k8-diag">—</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><i class="fa fa-chart-line"></i><h3>Screen Height vs Viewing Distance</h3></div>
+      <div class="panel-body">
+        <div class="chart-wrap"><canvas id="d2-chart"></canvas></div>
+        <div class="chart-legend" style="margin-top:12px;">
+          <div class="legend-item"><div class="legend-dot" style="background:#2e7fff;height:2px;"></div>K=4 (CAD)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ff6b35;height:2px;"></div>K=6 (Presentations)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#00c7a8;height:2px;"></div>K=8 (Video)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#fff;width:10px;height:10px;border-radius:50%;"></div>Current point</div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><i class="fa fa-table-list"></i><h3>Detailed Results</h3></div>
+      <div class="panel-body">
+        <div class="sec-label">4-6-8 Calculation (selected K)</div>
+        <table class="result-table">
+          <tr><td>Formula: H = D ÷ K</td><td id="d2-r-formula">—</td></tr>
+          <tr class="highlight"><td>Screen height</td><td id="d2-r-sh">—</td></tr>
+          <tr><td>Screen width</td><td id="d2-r-w">—</td></tr>
+          <tr class="highlight"><td>Calculated diagonal</td><td id="d2-r-diag">—</td></tr>
+          <tr class="highlight"><td>Nearest standard (rounded up)</td><td id="d2-r-chosen">—</td></tr>
+          <tr><td>Bottom of screen min AFF</td><td>≥ 1200 mm</td></tr>
+        </table>
+        <div class="divider"></div>
+        <div class="sec-label">All K factors</div>
+        <table class="result-table">
+          <tr><td>K=4 height / diagonal</td><td id="d2-rr-k4">—</td></tr>
+          <tr><td>K=6 height / diagonal</td><td id="d2-rr-k6">—</td></tr>
+          <tr><td>K=8 height / diagonal</td><td id="d2-rr-k8">—</td></tr>
+        </table>
+        <div class="divider"></div>
+        <div class="sec-label">Pixel analysis (on chosen standard screen)</div>
+        <table class="result-table">
+          <tr><td>Chosen screen height</td><td id="d2-r-csh">—</td></tr>
+          <tr><td>Pixel pitch PPh</td><td id="d2-r-pph">—</td></tr>
+          <tr><td>Pixel pitch PPv</td><td id="d2-r-ppv">—</td></tr>
+          <tr><td>Pixel subtended angle</td><td id="d2-r-angle">—</td></tr>
+          <tr><td>VAD (3.438 × PPv)</td><td id="d2-r-vad">—</td></tr>
+          <tr><td>Pixel visibility</td><td id="d2-r-vis">—</td></tr>
+        </table>
+        <div class="divider"></div>
+        <div class="sec-label">Step-by-step equation trace</div>
+        <div class="eq-box" id="d2-eq-box">—</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div><!-- /page-468 -->
+
+<!-- ═══════════════════ PAGE 3: VAD ═══════════════════ -->
+<div id="page-vad" class="tab-page">
+
+<!-- ══ SUB-TABS: Pixel/PPI  |  Font Legibility ══ -->
+<div style="display:flex;gap:6px;margin-bottom:20px;background:rgba(124,58,237,0.04);border:1px solid rgba(124,58,237,0.12);border-radius:10px;padding:4px;width:fit-content;">
+  <button class="subtab active" id="st-ppi" onclick="setSubTab('ppi')"><i class="fa fa-magnifying-glass"></i> Pixel / PPI</button>
+  <button class="subtab" id="st-font" onclick="setSubTab('font')"><i class="fa fa-font"></i> Font Legibility</button>
+</div>
+
+<!-- ══════════ SUB-PAGE: PIXEL / PPI ══════════ -->
+<div id="subpage-ppi" class="subpage visible">
+<div class="main-grid">
+  <!-- LEFT INPUTS -->
+  <div style="display:flex;flex-direction:column;gap:16px;">
+    <div class="panel">
+      <div class="panel-header"><i class="fa fa-display"></i><h3>Display Parameters</h3></div>
+      <div class="panel-body">
+        <div class="field">
+          <div class="field-label">Closest viewer distance (mm)</div>
+          <input type="number" id="p-dist" value="2975" min="100" max="30000" step="25" oninput="calcP()">
+        </div>
+        <div class="field">
+          <div class="field-label">Display technology</div>
+          <select id="p-tech" onchange="calcP()">
+            <option value="lcd" selected>LCD flat panel</option>
+            <option value="led">Direct-view LED</option>
+            <option value="proj">Rear projection cube</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="field-label">Screen diagonal (inches)</div>
+          <input type="number" id="p-diag" value="55" min="10" max="300" step="1" oninput="calcP()">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div class="field">
+            <div class="field-label">Horizontal pixels</div>
+            <input type="number" id="p-hpx" value="1920" min="320" max="15360" step="1" oninput="calcP()">
+          </div>
+          <div class="field">
+            <div class="field-label">Vertical pixels</div>
+            <input type="number" id="p-vpx" value="1080" min="240" max="8640" step="1" oninput="calcP()">
+          </div>
+        </div>
+        <div class="field" id="led-pitch-field" style="display:none;">
+          <div class="field-label">LED pixel pitch (mm) — LED only</div>
+          <input type="number" id="p-pitch" value="1.27" min="0.4" max="20" step="0.1" oninput="calcP()">
+        </div>
+      </div>
+    </div>
+  </div><!-- /left -->
+
+  <!-- RIGHT: Reference + Results -->
+  <div class="right-col">
+    <!-- Extron PPI Reference Table -->
+    <div class="panel">
+      <div class="panel-header"><i class="fa fa-table"></i><h3>Extron PPI Reference — Min PPI vs Viewing Distance</h3></div>
+      <div class="panel-body">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:10px;">1 ARC MIN = 0.0167° — Min PPI = 1 / (dist_in × 0.000291)</div>
+        <table style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px;">
+          <thead><tr style="border-bottom:1px solid rgba(124,58,237,0.2);">
+            <th style="text-align:left;padding:6px 8px;color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:.08em;">Distance</th>
+            <th style="text-align:center;padding:6px 8px;color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:.08em;">Min PPI</th>
+            <th style="text-align:center;padding:6px 8px;color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:.08em;">Status</th>
+          </tr></thead>
+          <tbody id="ppi-ref-body">
+            <tr id="ppi-r1"><td style="padding:7px 8px;border-bottom:1px solid rgba(124,58,237,0.1);">5 ft / 1.5 m</td><td style="text-align:center;padding:7px 8px;border-bottom:1px solid rgba(124,58,237,0.1);">57 PPI</td><td style="text-align:center;padding:7px 8px;border-bottom:1px solid rgba(124,58,237,0.1);" id="ppi-s1">—</td></tr>
+            <tr id="ppi-r2"><td style="padding:7px 8px;border-bottom:1px solid rgba(124,58,237,0.1);">10 ft / 3 m</td><td style="text-align:center;padding:7px 8px;border-bottom:1px solid rgba(124,58,237,0.1);">28 PPI</td><td style="text-align:center;padding:7px 8px;border-bottom:1px solid rgba(124,58,237,0.1);" id="ppi-s2">—</td></tr>
+            <tr id="ppi-r3"><td style="padding:7px 8px;border-bottom:1px solid rgba(124,58,237,0.1);">16 ft / 4.5 m</td><td style="text-align:center;padding:7px 8px;border-bottom:1px solid rgba(124,58,237,0.1);">19 PPI</td><td style="text-align:center;padding:7px 8px;border-bottom:1px solid rgba(124,58,237,0.1);" id="ppi-s3">—</td></tr>
+            <tr id="ppi-r4"><td style="padding:7px 8px;">20 ft / 6 m</td><td style="text-align:center;padding:7px 8px;">14 PPI</td><td style="text-align:center;padding:7px 8px;" id="ppi-s4">—</td></tr>
+          </tbody>
+        </table>
+        <div class="divider"></div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Brightness Reference</div>
+        <table style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px;">
+          <tr><td style="padding:5px 4px;border-bottom:1px solid rgba(124,58,237,0.08);color:var(--text2);">LED outdoor</td><td style="text-align:right;padding:5px 4px;border-bottom:1px solid rgba(124,58,237,0.08);color:var(--accent2);">2000–14000 nits</td></tr>
+          <tr><td style="padding:5px 4px;border-bottom:1px solid rgba(124,58,237,0.08);color:var(--text2);">Rear proj. cube</td><td style="text-align:right;padding:5px 4px;border-bottom:1px solid rgba(124,58,237,0.08);color:var(--accent2);">300–1000 nits</td></tr>
+          <tr><td style="padding:5px 4px;border-bottom:1px solid rgba(124,58,237,0.08);color:var(--text2);">LCD panel</td><td style="text-align:right;padding:5px 4px;border-bottom:1px solid rgba(124,58,237,0.08);color:var(--accent2);">450–700 nits</td></tr>
+          <tr><td style="padding:5px 4px;color:var(--text2);">Control room lux</td><td style="text-align:right;padding:5px 4px;color:var(--accent2);">300–750 lux</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- LED section (conditional) -->
+    <div class="panel" id="led-section" style="display:none;border-color:rgba(180,83,9,0.25);">
+      <div class="panel-header" style="border-color:rgba(180,83,9,0.2);"><i class="fa fa-bolt" style="color:#b45309;"></i><h3 style="color:#b45309;">LED Min & Optimum Viewing Distances</h3></div>
+      <div class="panel-body">
+        <table style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px;">
+          <thead><tr style="border-bottom:1px solid rgba(251,191,36,0.15);">
+            <th style="text-align:left;padding:5px 6px;color:var(--text3);font-size:10px;">Pitch</th>
+            <th style="text-align:center;padding:5px 6px;color:var(--text3);font-size:10px;">Min dist</th>
+            <th style="text-align:center;padding:5px 6px;color:var(--text3);font-size:10px;">Optimum</th>
+            <th style="text-align:center;padding:5px 6px;color:var(--text3);font-size:10px;">Your dist</th>
+          </tr></thead>
+          <tbody id="led-body">
+            <tr id="led-r1"><td style="padding:5px 6px;border-bottom:1px solid rgba(124,58,237,0.08);color:var(--text2);">10 mm</td><td style="text-align:center;padding:5px 6px;border-bottom:1px solid rgba(124,58,237,0.08);color:var(--text2);">34.4 m</td><td style="text-align:center;padding:5px 6px;border-bottom:1px solid rgba(124,58,237,0.08);color:var(--text2);">57.2 m</td><td style="text-align:center;padding:5px 6px;border-bottom:1px solid rgba(124,58,237,0.08);" id="led-s1">—</td></tr>
+            <tr id="led-r2"><td style="padding:5px 6px;border-bottom:1px solid rgba(124,58,237,0.08);color:var(--text2);">5 mm</td><td style="text-align:center;padding:5px 6px;border-bottom:1px solid rgba(124,58,237,0.08);color:var(--text2);">17.2 m</td><td style="text-align:center;padding:5px 6px;border-bottom:1px solid rgba(124,58,237,0.08);color:var(--text2);">28.7 m</td><td style="text-align:center;padding:5px 6px;border-bottom:1px solid rgba(124,58,237,0.08);" id="led-s2">—</td></tr>
+            <tr id="led-r3"><td style="padding:5px 6px;border-bottom:1px solid rgba(124,58,237,0.08);color:var(--text2);">2.5 mm</td><td style="text-align:center;padding:5px 6px;border-bottom:1px solid rgba(124,58,237,0.08);color:var(--text2);">8.6 m</td><td style="text-align:center;padding:5px 6px;border-bottom:1px solid rgba(124,58,237,0.08);color:var(--text2);">14.3 m</td><td style="text-align:center;padding:5px 6px;border-bottom:1px solid rgba(124,58,237,0.08);" id="led-s3">—</td></tr>
+            <tr id="led-r4"><td style="padding:5px 6px;border-bottom:1px solid rgba(124,58,237,0.08);color:var(--text2);">1.5 mm</td><td style="text-align:center;padding:5px 6px;border-bottom:1px solid rgba(124,58,237,0.08);color:var(--text2);">5.1 m</td><td style="text-align:center;padding:5px 6px;border-bottom:1px solid rgba(124,58,237,0.08);color:var(--text2);">8.6 m</td><td style="text-align:center;padding:5px 6px;border-bottom:1px solid rgba(124,58,237,0.08);" id="led-s4">—</td></tr>
+            <tr id="led-r5"><td style="padding:5px 6px;border-bottom:1px solid rgba(124,58,237,0.08);color:var(--text2);">0.9 mm</td><td style="text-align:center;padding:5px 6px;border-bottom:1px solid rgba(124,58,237,0.08);color:var(--text2);">3.1 m</td><td style="text-align:center;padding:5px 6px;border-bottom:1px solid rgba(124,58,237,0.08);color:var(--text2);">5.1 m</td><td style="text-align:center;padding:5px 6px;border-bottom:1px solid rgba(124,58,237,0.08);" id="led-s5">—</td></tr>
+            <tr id="led-r6"><td style="padding:5px 6px;color:var(--text2);">0.6 mm</td><td style="text-align:center;padding:5px 6px;color:var(--text2);">2.1 m</td><td style="text-align:center;padding:5px 6px;color:var(--text2);">3.4 m</td><td style="text-align:center;padding:5px 6px;" id="led-s6">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 4 metric cards -->
+    <div class="metric-strip" style="grid-template-columns:1fr 1fr 1fr 1fr;">
+      <div class="metric-card blue"><div class="mval" id="p-ppi">—</div><div class="munit">pixels/inch</div><div class="mlbl">Display PPI</div></div>
+      <div class="metric-card teal"><div class="mval" id="p-minppi">—</div><div class="munit">at this distance</div><div class="mlbl">Min PPI required</div></div>
+      <div class="metric-card orange"><div class="mval" id="p-pp">—</div><div class="munit">mm/pixel</div><div class="mlbl">Pixel pitch</div></div>
+      <div class="metric-card purple" id="p-verdict-card"><div class="mval" id="p-verdict">—</div><div class="munit" id="p-badge-txt">—</div><div class="mlbl">PPI Verdict</div></div>
+    </div>
+
+    <!-- Formula box -->
+    <div class="panel">
+      <div class="panel-header"><i class="fa fa-function"></i><h3>Formulas & Live Calculation</h3></div>
+      <div class="panel-body">
+        <div class="eq-box" style="font-size:11px;line-height:1.9;">PPI = √(H² + V²) / diagonal(in)  |  Min PPI = 1 / (dist_in × 0.000291)
+VAD = pixel_pitch(mm) × 3438  |  Pixel pitch = 25.4 / PPI
+<span id="p-formula-line" style="color:var(--accent2);">—</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div><!-- /subpage-ppi -->
+
+<!-- ══════════ SUB-PAGE: FONT LEGIBILITY ══════════ -->
+<div id="subpage-font" class="subpage">
+<div class="main-grid">
+  <!-- LEFT INPUTS -->
+  <div style="display:flex;flex-direction:column;gap:16px;">
+    <div class="panel">
+      <div class="panel-header"><i class="fa fa-font"></i><h3>Font & Viewing Parameters</h3></div>
+      <div class="panel-body">
+        <div class="field">
+          <div class="field-label">Text height on screen (mm)</div>
+          <input type="number" id="fn-th" value="25" min="1" max="500" step="1" oninput="calcF()">
+        </div>
+        <div class="field">
+          <div class="field-label">Nearest viewer distance (mm)</div>
+          <input type="number" id="fn-near" value="2975" min="100" max="30000" step="25" oninput="calcF()">
+        </div>
+        <div class="field">
+          <div class="field-label">Furthest viewer distance (mm)</div>
+          <input type="number" id="fn-far" value="5892" min="100" max="50000" step="25" oninput="calcF()">
+        </div>
+        <div class="field">
+          <div class="field-label">Display PPI</div>
+          <input type="number" id="fn-ppi" value="42" min="1" max="600" step="1" oninput="calcF()">
+        </div>
+        <div class="field">
+          <div class="field-label">Videowall array (no. of screens)</div>
+          <input type="number" id="fn-arr" value="1" min="1" max="64" step="1" oninput="calcF()">
+        </div>
+        <div class="divider"></div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Compliance Standards</div>
+        <table style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px;">
+          <tr><td style="padding:6px 4px;border-bottom:1px solid rgba(124,58,237,0.1);color:var(--text2);">Min arc minutes (legible)</td><td style="text-align:right;padding:6px 4px;border-bottom:1px solid rgba(124,58,237,0.1);color:var(--accent2);">10 arc min</td></tr>
+          <tr><td style="padding:6px 4px;border-bottom:1px solid rgba(124,58,237,0.1);color:var(--text2);">Recommended comfortable</td><td style="text-align:right;padding:6px 4px;border-bottom:1px solid rgba(124,58,237,0.1);color:var(--accent2);">15–20 arc min</td></tr>
+          <tr><td style="padding:6px 4px;color:var(--text2);">Rule of thumb</td><td style="text-align:right;padding:6px 4px;color:var(--accent2);">25 mm / 4.5 m dist</td></tr>
+        </table>
+      </div>
+    </div>
+  </div><!-- /left -->
+
+  <!-- RIGHT -->
+  <div class="right-col">
+    <!-- Arc Minute Visualiser -->
+    <div class="panel">
+      <div class="panel-header"><i class="fa fa-eye"></i><h3>Arc Minute Visualiser</h3></div>
+      <div class="panel-body">
+        <!-- Nearest -->
+        <div style="margin-bottom:18px;">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Nearest Viewer</div>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+            <div style="flex:1;height:12px;background:rgba(124,58,237,0.08);border-radius:6px;overflow:hidden;border:1px solid rgba(124,58,237,0.2);">
+              <div id="arc-near" style="height:100%;background:var(--accent);border-radius:6px;width:70%;transition:width .3s;"></div>
+            </div>
+            <div style="font-family:var(--display);font-size:18px;font-weight:700;color:var(--text);min-width:52px;text-align:right;" id="arc-near-v">—</div>
+            <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">arc min</div>
+          </div>
+          <div id="fn-nbadge"></div>
+        </div>
+        <!-- Furthest -->
+        <div style="margin-bottom:18px;">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Furthest Viewer</div>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+            <div style="flex:1;height:12px;background:rgba(124,58,237,0.08);border-radius:6px;overflow:hidden;border:1px solid rgba(124,58,237,0.2);">
+              <div id="arc-far" style="height:100%;background:#d97706;border-radius:6px;width:37%;transition:width .3s;"></div>
+            </div>
+            <div style="font-family:var(--display);font-size:18px;font-weight:700;color:var(--text);min-width:52px;text-align:right;" id="arc-far-v">—</div>
+            <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">arc min</div>
+          </div>
+          <div id="fn-fbadge"></div>
+        </div>
+        <div class="divider"></div>
+        <!-- Recommended font spec -->
+        <div style="font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Recommended Font Specification</div>
+        <table style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px;">
+          <tr style="border-bottom:1px solid rgba(124,58,237,0.1);"><td style="padding:7px 4px;color:var(--text2);">Recommended text height</td><td style="text-align:right;padding:7px 4px;color:var(--accent2);font-weight:500;" id="fn-recth">—</td></tr>
+          <tr style="border-bottom:1px solid rgba(124,58,237,0.1);"><td style="padding:7px 4px;color:var(--text2);">Pixel height required</td><td style="text-align:right;padding:7px 4px;color:var(--accent2);font-weight:500;" id="fn-px">—</td></tr>
+          <tr style="border-bottom:1px solid rgba(124,58,237,0.1);"><td style="padding:7px 4px;color:var(--text2);">Approx. point size</td><td style="text-align:right;padding:7px 4px;color:var(--accent2);font-weight:500;" id="fn-pt">—</td></tr>
+          <tr><td style="padding:7px 4px;color:var(--text2);">Array scaling factor</td><td style="text-align:right;padding:7px 4px;color:var(--accent2);font-weight:500;" id="fn-arr-s">—</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- 4 metric cards -->
+    <div class="metric-strip" style="grid-template-columns:1fr 1fr 1fr 1fr;">
+      <div class="metric-card blue"><div class="mval" id="fn-m1">—</div><div class="munit">arc minutes</div><div class="mlbl">Nearest arc min</div></div>
+      <div class="metric-card teal"><div class="mval" id="fn-m2">—</div><div class="munit">arc minutes</div><div class="mlbl">Furthest arc min</div></div>
+      <div class="metric-card" id="fn-m3c"><div class="mval" id="fn-m3" style="color:var(--accent2);">—</div><div class="munit"> </div><div class="mlbl">Nearest verdict</div></div>
+      <div class="metric-card" id="fn-m4c"><div class="mval" id="fn-m4" style="color:var(--accent2);">—</div><div class="munit"> </div><div class="mlbl">Furthest verdict</div></div>
+    </div>
+
+    <!-- Formula box -->
+    <div class="panel">
+      <div class="panel-header"><i class="fa fa-function"></i><h3>Formulas & Live Calculation</h3></div>
+      <div class="panel-body">
+        <div class="eq-box" style="font-size:11px;line-height:1.9;">Arc min = 60 × arctan(text_height_mm / dist_mm)
+Rec. text height = 25 mm × (max_dist / 4500)  |  Pixel height = text_mm × PPI / 25.4
+<span id="fn-formula-line" style="color:var(--accent2);">—</span></div>
+      </div>
+    </div>
+
+    <!-- Detailed results -->
+    <div class="panel">
+      <div class="panel-header"><i class="fa fa-table-list"></i><h3>Detailed Results</h3></div>
+      <div class="panel-body">
+        <div class="sec-label">Arc minute analysis</div>
+        <table class="result-table">
+          <tr class="highlight"><td>Nearest arc min (60 × atan(th/near))</td><td id="fn-r-near">—</td></tr>
+          <tr class="highlight"><td>Furthest arc min (60 × atan(th/far))</td><td id="fn-r-far">—</td></tr>
+          <tr><td>Nearest verdict</td><td id="fn-r-nv">—</td></tr>
+          <tr><td>Furthest verdict</td><td id="fn-r-fv">—</td></tr>
+        </table>
+        <div class="divider"></div>
+        <div class="sec-label">Font specification</div>
+        <table class="result-table">
+          <tr><td>Recommended text height</td><td id="fn-r-recth">—</td></tr>
+          <tr><td>Pixel height (th × PPI / 25.4)</td><td id="fn-r-px">—</td></tr>
+          <tr><td>Approx. point size (px / 1.33)</td><td id="fn-r-pt">—</td></tr>
+          <tr><td>Array scaling</td><td id="fn-r-arr">—</td></tr>
+        </table>
+        <div class="divider"></div>
+        <div class="sec-label">Equation trace</div>
+        <div class="eq-box" id="fn-eq-box">—</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div><!-- /subpage-font -->
+
+</div><!-- /page-vad -->
+
+<!-- PAGE 4: ROOM DESIGN -->
+<div id="page-room" class="tab-page">
+
+<!-- SECTION HEADER -->
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:22px;padding-bottom:14px;border-bottom:1px solid rgba(124,58,237,0.18);">
+  <div style="width:34px;height:34px;background:linear-gradient(135deg,rgba(124,58,237,0.5),rgba(124,58,237,0.25));border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa fa-door-open" style="color:var(--accent);font-size:14px;"></i></div>
+  <div>
+    <div style="font-family:var(--display);font-size:17px;font-weight:700;color:var(--text);">MEETING / CONFERENCE / BOARD ROOM DESIGN</div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;">Live Layout · Screen Sizing · Seating Capacity</div>
+  </div>
+</div>
+
+<!-- ROOM TYPE SELECTOR -->
+<div style="display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;">
+  <button class="rd-typebtn" data-type="huddle" onclick="rdSetType('huddle')"><i class="fa fa-comment-dots" style="font-size:10px;"></i> Huddle Space</button>
+  <button class="rd-typebtn active" data-type="meeting" onclick="rdSetType('meeting')"><i class="fa fa-users" style="font-size:10px;"></i> Meeting Room</button>
+  <button class="rd-typebtn" data-type="conference" onclick="rdSetType('conference')"><i class="fa fa-handshake" style="font-size:10px;"></i> Conference Room</button>
+  <button class="rd-typebtn" data-type="boardroom" onclick="rdSetType('boardroom')"><i class="fa fa-briefcase" style="font-size:10px;"></i> Board Room</button>
+  <button class="rd-typebtn" data-type="training" onclick="rdSetType('training')"><i class="fa fa-chalkboard-user" style="font-size:10px;"></i> Training Room</button>
+  <button class="rd-typebtn" data-type="multipurpose" onclick="rdSetType('multipurpose')"><i class="fa fa-building-columns" style="font-size:10px;"></i> Multipurpose Hall</button>
+  <button class="rd-typebtn" data-type="auditorium" onclick="rdSetType('auditorium')"><i class="fa fa-chalkboard" style="font-size:10px;"></i> Auditorium</button>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div style="display:grid;grid-template-columns:340px 1fr;gap:16px;align-items:start;">
+
+  <!-- LEFT: INPUTS -->
+  <div style="display:flex;flex-direction:column;gap:14px;">
+
+    <!-- Room Parameters -->
+    <div class="panel">
+      <div class="panel-header"><i class="fa fa-ruler-combined"></i><h3>Room Parameters</h3></div>
+      <div class="panel-body">
+        <div class="field">
+          <div class="field-label">Room width W (m) <span class="val" id="rd-w-val">5.5 m</span></div>
+          <input type="range" id="rd-w" min="2" max="40" step="0.5" value="5.5" oninput="rdCalc()">
+        </div>
+        <div class="field">
+          <div class="field-label">Room depth D (m) <span class="val" id="rd-d-val">6.5 m</span></div>
+          <input type="range" id="rd-d" min="2" max="50" step="0.5" value="6.5" oninput="rdCalc()">
+        </div>
+        <div class="field">
+          <div class="field-label">Ceiling height (m) <span class="val" id="rd-h-val">2.8 m</span></div>
+          <input type="range" id="rd-h" min="2.4" max="12" step="0.1" value="2.8" oninput="rdCalc()">
+        </div>
+        <div class="field">
+          <div class="field-label">Number of seats</div>
+          <input type="number" id="rd-seats" value="10" min="2" max="600" step="1" oninput="rdCalc()">
+        </div>
+        <div class="field">
+          <div class="field-label">Table layout</div>
+          <select id="rd-layout" onchange="rdCalc()">
+            <option value="boardroom">Boardroom (rectangular)</option>
+            <option value="ushaped">U-Shape</option>
+            <option value="classroom">Classroom rows</option>
+            <option value="rounds">Round tables</option>
+            <option value="single">Single round / oval</option>
+            <option value="theater">Theater / Auditorium rows</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="field-label">Table orientation</div>
+          <select id="rd-rotation" onchange="rdCalc()">
+            <option value="0">Long axis toward screen (default)</option>
+            <option value="90">Rotate 90° — head seat faces screen</option>
+            <option value="-90">Rotate −90° — head seat faces screen (mirrored)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- AV Equipment -->
+    <div class="panel">
+      <div class="panel-header"><i class="fa fa-display"></i><h3>AV Equipment</h3></div>
+      <div class="panel-body">
+        <div class="field">
+          <div class="field-label">Primary screen diagonal (in) <span class="val" id="rd-scr-val">65"</span></div>
+          <input type="range" id="rd-scr" min="32" max="400" step="1" value="65" oninput="rdCalc()">
+        </div>
+        <div class="field">
+          <div class="field-label">Screen type</div>
+          <select id="rd-scrtype" onchange="rdCalc()">
+            <option value="lcd" selected>LCD Flat Panel</option>
+            <option value="proj">Projection Screen</option>
+            <option value="led">Direct-view LED</option>
+            <option value="dual">Dual screens (side-by-side)</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="field-label">Screen mounting</div>
+          <select id="rd-mount" onchange="rdCalc()">
+            <option value="wall">Wall-mounted</option>
+            <option value="ceiling">Ceiling-mounted / Dropped</option>
+            <option value="floor">Floor / Credenza</option>
+            <option value="cart">Mobile cart</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="field-label">AV rack / credenza</div>
+          <select id="rd-rack" onchange="rdCalc()">
+            <option value="none">No rack</option>
+            <option value="credenza" selected>Credenza (under screen)</option>
+            <option value="rack">19" Equipment rack</option>
+            <option value="rackwall">Rack in AV room</option>
+          </select>
+        </div>
+        <div style="border-top:1px solid rgba(124,58,237,0.1);padding-top:12px;margin-top:4px;">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Connection Points</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <label style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:11px;color:var(--text2);cursor:pointer;"><input type="checkbox" id="rd-hdmi" checked onchange="rdCalc()" style="accent-color:var(--accent);"> HDMI</label>
+            <label style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:11px;color:var(--text2);cursor:pointer;"><input type="checkbox" id="rd-vga" onchange="rdCalc()" style="accent-color:var(--accent);"> VGA</label>
+            <label style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:11px;color:var(--text2);cursor:pointer;"><input type="checkbox" id="rd-usb" checked onchange="rdCalc()" style="accent-color:var(--accent);"> USB-C</label>
+            <label style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:11px;color:var(--text2);cursor:pointer;"><input type="checkbox" id="rd-lan" checked onchange="rdCalc()" style="accent-color:var(--accent);"> 2× LAN</label>
+            <label style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:11px;color:var(--text2);cursor:pointer;"><input type="checkbox" id="rd-avfloor" onchange="rdCalc()" style="accent-color:var(--accent);"> AV Floor Box</label>
+            <label style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:11px;color:var(--text2);cursor:pointer;"><input type="checkbox" id="rd-wireless" checked onchange="rdCalc()" style="accent-color:var(--accent);"> Wireless</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /left -->
+
+  <!-- RIGHT: OUTPUT PANELS -->
+  <div style="display:flex;flex-direction:column;gap:14px;">
+
+    <!-- Room Category + Screen Analysis -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+      <div class="panel">
+        <div class="panel-header"><i class="fa fa-layer-group"></i><h3>Room Category & Specs</h3></div>
+        <div class="panel-body">
+          <div style="background:rgba(124,58,237,0.06);border:1px solid rgba(124,58,237,0.2);border-radius:8px;padding:10px 14px;margin-bottom:14px;">
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;">Room category</div>
+            <div style="font-family:var(--display);font-size:17px;font-weight:700;color:var(--accent);" id="rd-category">Conference Room</div>
+          </div>
+          <table style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px;">
+            <tr style="border-bottom:1px solid rgba(124,58,237,0.08);"><td style="padding:6px 4px;color:var(--text2);">Room area (W×D)</td><td style="text-align:right;padding:6px 4px;color:var(--text);" id="rd-area">—</td></tr>
+            <tr style="border-bottom:1px solid rgba(124,58,237,0.08);"><td style="padding:6px 4px;color:var(--text2);">m² per person</td><td style="text-align:right;padding:6px 4px;color:var(--text);" id="rd-mpp">—</td></tr>
+            <tr style="border-bottom:1px solid rgba(124,58,237,0.08);"><td style="padding:6px 4px;color:var(--text2);">Table area est.</td><td style="text-align:right;padding:6px 4px;color:var(--text);" id="rd-tblarea">—</td></tr>
+            <tr style="border-bottom:1px solid rgba(124,58,237,0.08);"><td style="padding:6px 4px;color:var(--text2);">Circulation zone</td><td style="text-align:right;padding:6px 4px;color:var(--text);" id="rd-circ">—</td></tr>
+            <tr><td style="padding:6px 4px;color:var(--text2);">Max recommended seats</td><td style="text-align:right;padding:6px 4px;color:var(--accent);font-weight:500;" id="rd-maxseats">—</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><i class="fa fa-eye"></i><h3>Screen & Viewing Analysis</h3></div>
+        <div class="panel-body">
+          <table style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px;">
+            <tr style="border-bottom:1px solid rgba(124,58,237,0.08);"><td style="padding:6px 4px;color:var(--text2);">Nearest viewer</td><td style="text-align:right;padding:6px 4px;color:var(--text);" id="rd-vnear">—</td></tr>
+            <tr style="border-bottom:1px solid rgba(124,58,237,0.08);"><td style="padding:6px 4px;color:var(--text2);">Furthest viewer</td><td style="text-align:right;padding:6px 4px;color:var(--text);" id="rd-vfar">—</td></tr>
+            <tr style="border-bottom:1px solid rgba(124,58,237,0.08);"><td style="padding:6px 4px;color:var(--text2);">Recommended screen</td><td style="text-align:right;padding:6px 4px;color:var(--accent);font-weight:500;" id="rd-recscr">—</td></tr>
+            <tr style="border-bottom:1px solid rgba(124,58,237,0.08);"><td style="padding:6px 4px;color:var(--text2);">Screen width</td><td style="text-align:right;padding:6px 4px;color:var(--text);" id="rd-scrw">—</td></tr>
+            <tr style="border-bottom:1px solid rgba(124,58,237,0.08);"><td style="padding:6px 4px;color:var(--text2);">Screen height</td><td style="text-align:right;padding:6px 4px;color:var(--text);" id="rd-scrh">—</td></tr>
+            <tr style="border-bottom:1px solid rgba(124,58,237,0.08);"><td style="padding:6px 4px;color:var(--text2);">Viewing angle (far)</td><td style="text-align:right;padding:6px 4px;color:var(--text);" id="rd-vangle">—</td></tr>
+            <tr><td style="padding:6px 4px;color:var(--text2);">Screen bottom AFF</td><td style="text-align:right;padding:6px 4px;color:var(--text);">≥ 1100 mm</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Metric Cards -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+      <div class="metric-card blue"><div class="mval" id="rd-m-area">—</div><div class="munit">m²</div><div class="mlbl">Room Area</div></div>
+      <div class="metric-card teal"><div class="mval" id="rd-m-seats">—</div><div class="munit">seats</div><div class="mlbl">Seating Cap.</div></div>
+      <div class="metric-card orange"><div class="mval" id="rd-m-scr">—</div><div class="munit">inches</div><div class="mlbl">Screen Size</div></div>
+      <div class="metric-card" id="rd-m-comp-card" style="border-color:rgba(124,58,237,0.2);">
+        <div class="mval" id="rd-m-comp" style="color:#5b21b6;font-size:18px;">—</div>
+        <div class="munit" id="rd-m-comp-sub"> </div>
+        <div class="mlbl">Compliance</div>
+      </div>
+    </div>
+
+    <!-- AV SPECIFICATION SUMMARY -->
+    <div class="panel">
+      <div class="panel-header"><i class="fa fa-list-check"></i><h3>AV Specification Summary</h3></div>
+      <div class="panel-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div>
+            <div style="font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Display & Sources</div>
+            <table style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px;">
+              <tr style="border-bottom:1px solid rgba(124,58,237,0.08);"><td style="padding:5px 4px;color:var(--text2);">Screen diagonal</td><td style="text-align:right;padding:5px 4px;color:var(--accent);" id="rd-spec-scr">—</td></tr>
+              <tr style="border-bottom:1px solid rgba(124,58,237,0.08);"><td style="padding:5px 4px;color:var(--text2);">Screen type</td><td style="text-align:right;padding:5px 4px;color:var(--accent);" id="rd-spec-type">—</td></tr>
+              <tr style="border-bottom:1px solid rgba(124,58,237,0.08);"><td style="padding:5px 4px;color:var(--text2);">Mounting</td><td style="text-align:right;padding:5px 4px;color:var(--accent);" id="rd-spec-mount">—</td></tr>
+              <tr style="border-bottom:1px solid rgba(124,58,237,0.08);"><td style="padding:5px 4px;color:var(--text2);">AV rack</td><td style="text-align:right;padding:5px 4px;color:var(--accent);" id="rd-spec-rack">—</td></tr>
+              <tr><td style="padding:5px 4px;color:var(--text2);">Connections</td><td style="text-align:right;padding:5px 4px;color:var(--accent);" id="rd-spec-conn">—</td></tr>
+            </table>
+          </div>
+          <div>
+            <div style="font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Environment</div>
+            <table style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px;">
+              <tr style="border-bottom:1px solid rgba(124,58,237,0.08);"><td style="padding:5px 4px;color:var(--text2);">Temperature</td><td style="text-align:right;padding:5px 4px;color:var(--accent);">20–24 °C</td></tr>
+              <tr style="border-bottom:1px solid rgba(124,58,237,0.08);"><td style="padding:5px 4px;color:var(--text2);">Humidity</td><td style="text-align:right;padding:5px 4px;color:var(--accent);">40–60 %</td></tr>
+              <tr style="border-bottom:1px solid rgba(124,58,237,0.08);"><td style="padding:5px 4px;color:var(--text2);">Lighting level</td><td style="text-align:right;padding:5px 4px;color:var(--accent);">300–500 lux</td></tr>
+              <tr style="border-bottom:1px solid rgba(124,58,237,0.08);"><td style="padding:5px 4px;color:var(--text2);">Noise level</td><td style="text-align:right;padding:5px 4px;color:var(--accent);">≤ 40 dB(A)</td></tr>
+              <tr><td style="padding:5px 4px;color:var(--text2);">Floor loading</td><td style="text-align:right;padding:5px 4px;color:var(--accent);">≥ 3 kN/m²</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROOM CONTENTS & EQUIPMENT SCHEDULE (from current tool) -->
+    <div class="panel">
+      <div class="panel-header"><i class="fa fa-list-check"></i><h3>Room Contents & Equipment Schedule</h3></div>
+      <div class="panel-body">
+        <div id="rd-contents-list" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;"></div>
+        <div class="divider"></div>
+        <div class="eq-box" id="rd-eq-box-contents" style="font-size:11px;line-height:1.8;">—</div>
+      </div>
+    </div>
+
+    <!-- LIVE PLAN VIEW -->
+    <div class="panel">
+      <div class="panel-header" style="justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:10px;"><i class="fa fa-drafting-compass"></i><h3>Live Layout Drawing — Plan View</h3></div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--text3);" id="rd-drawing-label">—</div>
+      </div>
+      <div class="panel-body" style="padding:12px;">
+        <canvas id="rd-canvas" style="width:100%;border-radius:8px;background:#f5f4f8;display:block;"></canvas>
+        <div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;color:var(--text3);"><div style="width:12px;height:12px;background:rgba(99,130,200,0.4);border:1px solid rgba(99,130,200,0.7);border-radius:2px;flex-shrink:0;"></div>Table</div>
+          <div style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;color:var(--text3);"><div style="width:12px;height:12px;background:rgba(220,80,80,0.25);border:1px solid rgba(220,80,80,0.5);border-radius:50%;flex-shrink:0;"></div>Seating</div>
+          <div style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;color:var(--text3);"><div style="width:12px;height:12px;background:rgba(124,58,237,0.4);border:1px solid rgba(124,58,237,0.7);border-radius:2px;flex-shrink:0;"></div>Screen</div>
+          <div style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;color:var(--text3);"><div style="width:12px;height:12px;background:rgba(180,120,20,0.25);border:1px solid rgba(180,120,20,0.5);border-radius:2px;flex-shrink:0;"></div>AV Rack / Credenza</div>
+          <div style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;color:var(--text3);"><div style="width:12px;height:12px;background:rgba(20,160,100,0.12);border:1px dashed rgba(20,160,100,0.4);border-radius:1px;flex-shrink:0;"></div>Circulation</div>
+          <div style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;color:var(--text3);"><div style="width:12px;height:8px;background:rgba(100,90,160,0.3);border:1px solid rgba(100,90,160,0.5);flex-shrink:0;"></div>AV/T Point</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ELEVATION VIEW -->
+    <div class="panel">
+      <div class="panel-header"><i class="fa fa-arrow-up-from-bracket"></i><h3>Elevation — Front Wall</h3></div>
+      <div class="panel-body" style="padding:12px;">
+        <canvas id="rd-elev-canvas" style="width:100%;border-radius:8px;background:#f5f4f8;display:block;"></canvas>
+      </div>
+    </div>
+
+    <!-- COMPLIANCE CHECK -->
+    <div class="panel">
+      <div class="panel-header"><i class="fa fa-clipboard-check"></i><h3>Compliance Check</h3></div>
+      <div class="panel-body">
+        <table style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px;" id="rd-compliance-table">
+          <tr style="border-bottom:1px solid rgba(124,58,237,0.08);"><td style="padding:7px 8px;color:var(--text2);">Room area</td><td style="text-align:right;padding:7px 8px;color:var(--text);" id="rdcc-area">—</td><td style="text-align:right;padding:7px 8px;width:30px;" id="rdcc-area-v">—</td></tr>
+          <tr style="border-bottom:1px solid rgba(124,58,237,0.08);"><td style="padding:7px 8px;color:var(--text2);">Width ≥ 3 m</td><td style="text-align:right;padding:7px 8px;color:var(--text);" id="rdcc-w">—</td><td style="text-align:right;padding:7px 8px;" id="rdcc-w-v">—</td></tr>
+          <tr style="border-bottom:1px solid rgba(124,58,237,0.08);"><td style="padding:7px 8px;color:var(--text2);">Depth ≥ 4 m</td><td style="text-align:right;padding:7px 8px;color:var(--text);" id="rdcc-d">—</td><td style="text-align:right;padding:7px 8px;" id="rdcc-d-v">—</td></tr>
+          <tr style="border-bottom:1px solid rgba(124,58,237,0.08);"><td style="padding:7px 8px;color:var(--text2);">m²/person</td><td style="text-align:right;padding:7px 8px;color:var(--text);" id="rdcc-mpp">—</td><td style="text-align:right;padding:7px 8px;" id="rdcc-mpp-v">—</td></tr>
+          <tr style="border-bottom:1px solid rgba(124,58,237,0.08);"><td style="padding:7px 8px;color:var(--text2);">Screen size adequate</td><td style="text-align:right;padding:7px 8px;color:var(--text);" id="rdcc-scr">—</td><td style="text-align:right;padding:7px 8px;" id="rdcc-scr-v">—</td></tr>
+          <tr style="border-bottom:1px solid rgba(124,58,237,0.08);"><td style="padding:7px 8px;color:var(--text2);">Ceiling height</td><td style="text-align:right;padding:7px 8px;color:var(--text);" id="rdcc-ceil">—</td><td style="text-align:right;padding:7px 8px;" id="rdcc-ceil-v">—</td></tr>
+          <tr><td style="padding:7px 8px;color:var(--text2);">Seats vs room size</td><td style="text-align:right;padding:7px 8px;color:var(--text);" id="rdcc-seats">—</td><td style="text-align:right;padding:7px 8px;" id="rdcc-seats-v">—</td></tr>
+        </table>
+        <div class="divider"></div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;">Area Utilisation</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;">
+          <div style="background:rgba(124,58,237,0.05);border:1px solid rgba(124,58,237,0.14);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-family:var(--display);font-size:18px;font-weight:700;color:var(--accent);" id="rd-util-seats">—</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">% seating</div>
+          </div>
+          <div style="background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.15);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-family:var(--display);font-size:18px;font-weight:700;color:#059669;" id="rd-util-circ">—</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">% circulation</div>
+          </div>
+          <div style="background:rgba(180,120,20,0.05);border:1px solid rgba(180,120,20,0.15);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-family:var(--display);font-size:18px;font-weight:700;color:#b45309;" id="rd-util-av">—</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">% AV / wall</div>
+          </div>
+          <div style="background:rgba(99,102,241,0.05);border:1px solid rgba(99,102,241,0.15);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-family:var(--display);font-size:18px;font-weight:700;color:#4f46e5;" id="rd-util-other">—</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">% other</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORMULA / EQUATION BOX -->
+    <div class="eq-box" style="font-size:11px;line-height:1.9;" id="rd-eq-box">—</div>
+
+  </div><!-- /right -->
+</div><!-- /main grid -->
+</div><!-- /page-room -->
+
+<footer>
+  <p>Visual Screen Design Tool — DISCAS · 4-6-8 · Font Legibility · Room Design</p>
+  <p>Human Eye Geometry + Text Scaling + Pixel Density</p>
+</footer>
+</div><!-- /tool-content -->
+</div><!-- /page -->
+
+<script>
+/* ══ SCREEN TABLE ══ */
+const SCREEN_TABLE=[
+  {size:32, wIn:27.9,wCm:70.9, hIn:15.7,hCm:39.9},
+  {size:40, wIn:34.9,wCm:88.6, hIn:19.6,hCm:49.8},
+  {size:43, wIn:37.5,wCm:95.3, hIn:21.1,hCm:53.6},
+  {size:55, wIn:47.9,wCm:121.7,hIn:27.0,hCm:68.6},
+  {size:60, wIn:52.3,wCm:132.8,hIn:29.4,hCm:74.7},
+  {size:65, wIn:56.7,wCm:144.0,hIn:31.9,hCm:81.0},
+  {size:70, wIn:61.0,wCm:154.9,hIn:34.3,hCm:87.1},
+  {size:75, wIn:65.4,wCm:166.1,hIn:36.8,hCm:93.5},
+  {size:80, wIn:69.7,wCm:177.0,hIn:39.2,hCm:99.6},
+  {size:85, wIn:74.1,wCm:188.2,hIn:41.7,hCm:105.9},
+];
+const MAX_STD=85;
+function getScreenBySize(s){return SCREEN_TABLE.find(r=>r.size===s)||null;}
+function findStandardScreen(diagIn){
+  for(let s of SCREEN_TABLE) if(s.size>=diagIn) return s;
+  return null; // exceeds max
+}
+
+/* ══ COMBINATION LOGIC ══
+   If diagIn > 85", find equal-size multi-screen combos (1×N, 2×N, etc.)
+   that cover the required screen height.
+   Strategy: target total height ≥ calculated H.
+   For a stack of N screens (same size, arranged vertically), total H = N × screen_H.
+   We find the smallest standard screen where N × hCm ≥ required H, for N = 2,3,4.
+   Also try side-by-side: total W = N × screen_W (useful for width if AR mismatch).
+   We prefer fewest screens with smallest standard size.
+*/
+function findCombinations(reqHm, reqWm, AR){
+  const reqHcm = reqHm*100;
+  const reqWcm = reqWm*100;
+  const combos = [];
+  for(let n=2;n<=6;n++){
+    // Vertical stack of N same-size screens (portrait stack covers height)
+    for(let s of SCREEN_TABLE){
+      const totalH = n * s.hCm;
+      const totalW = s.wCm; // single column
+      if(totalH >= reqHcm && totalW >= reqWcm*0.5){ // width check relaxed
+        combos.push({n, arrangement:`${n}×1 vertical`, screen:s, totalH, totalW, score: n*s.size});
+        break;
+      }
+    }
+    // Horizontal row of N same-size screens (covers width)
+    for(let s of SCREEN_TABLE){
+      const totalW = n * s.wCm;
+      const totalH = s.hCm;
+      if(totalH >= reqHcm*0.6 && totalW >= reqWcm){ // pragmatic: row covers width
+        combos.push({n, arrangement:`1×${n} horizontal`, screen:s, totalH, totalW, score: n*s.size});
+        break;
+      }
+    }
+    // Grid N×N
+    const g = Math.ceil(Math.sqrt(n));
+    for(let s of SCREEN_TABLE){
+      const totalH = g * s.hCm;
+      const totalW = g * s.wCm;
+      if(totalH >= reqHcm && totalW >= reqWcm){
+        combos.push({n:g*g, arrangement:`${g}×${g} grid`, screen:s, totalH, totalW, score: g*g*s.size});
+        break;
+      }
+    }
+  }
+  // Deduplicate by score, keep 3 best unique
+  const seen=new Set();
+  const unique=[];
+  for(let c of combos.sort((a,b)=>a.score-b.score)){
+    const key=c.arrangement+c.screen.size;
+    if(!seen.has(key)&&unique.length<3){seen.add(key);unique.push(c);}
+  }
+  return unique;
+}
+
+function renderCombos(wrapId, optionsId, reqHm, reqWm, AR){
+  const combos = findCombinations(reqHm, reqWm, AR);
+  const wrap = document.getElementById(wrapId);
+  const opts = document.getElementById(optionsId);
+  if(!wrap||!opts) return;
+  if(combos.length===0){wrap.style.display='none';return;}
+  wrap.style.display='block';
+  opts.innerHTML = combos.map((c,i)=>`
+    <div class="combo-card${i===0?' best':''}">
+      ${i===0?'<div class="combo-badge">BEST FIT</div>':''}
+      <div class="cc-count">${c.n}</div>
+      <div class="cc-size">${c.screen.size}" screens</div>
+      <div class="cc-layout">${c.arrangement}</div>
+      <div class="cc-total">Total: ${c.totalW.toFixed(0)} × ${c.totalH.toFixed(0)} cm</div>
+      <div class="cc-total" style="color:var(--text3);">${c.screen.wCm} × ${c.screen.hCm} cm each</div>
+    </div>
+  `).join('');
+}
+
+let charts={d1:null,d2:null,d3:null};
+let currentMethod='discas';
+
+function setMethod(m){
+  currentMethod=m;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.m===m));
+  document.querySelectorAll('.tab-page').forEach(p=>p.classList.remove('visible'));
+  document.getElementById('page-'+m).classList.add('visible');
+  if(m==='discas') calcDiscas();
+  else if(m==='468') calc468();
+  else if(m==='room'){rdSetType(rdCurrentType);}
+  else{calcP();calcF();}
+}
+
+const PRESETS={
+  meeting:   {dist:4,  k:6, lf:28, res:'1920,1080', aspect:1.778, sh:0.5, ss:55},
+  boardroom: {dist:6,  k:6, lf:30, res:'1920,1080', aspect:1.778, sh:0.7, ss:65},
+  auditorium:{dist:20, k:6, lf:25, res:'3840,2160', aspect:1.778, sh:2.0, ss:85},
+  control:   {dist:3,  k:4, lf:35, res:'3840,2160', aspect:1.778, sh:0.5, ss:43},
+  lobby:     {dist:8,  k:8, lf:22, res:'1920,1080', aspect:1.778, sh:0.9, ss:65},
+};
+const LF_HINTS={
+  meeting:   'Small Meeting Room — LF 28: standard presentations, moderate text density',
+  boardroom: 'Boardroom — LF 30: balanced PPT layout, clear text rows',
+  auditorium:'Auditorium — LF 25: large visual content, fewer text rows needed',
+  control:   'Control Room — LF 35: dense data displays, maximum text rows',
+  lobby:     'Lobby / Signage — LF 22: sparse layout, large graphics dominate',
+};
+function applyPreset(page){
+  const sid=page==='discas'?'d1-space':page==='468'?'d2-space':'d3-space';
+  const p=document.getElementById(sid).value;
+  if(!PRESETS[p]){
+    // Clear hint when reset to custom
+    const hint=document.getElementById('d1-lf-hint');
+    if(hint){hint.style.display='none';hint.textContent='';}
+    return;
+  }
+  const s=PRESETS[p];
+  if(page==='discas'){
+    setV('d1-dist',s.dist);setV('d1-lf',s.lf);setV('d1-res',s.res);setV('d1-aspect',s.aspect);
+    // Show LF hint
+    const hint=document.getElementById('d1-lf-hint');
+    if(hint){hint.textContent='↳ '+LF_HINTS[p];hint.style.display='block';}
+    calcDiscas();
+  }
+  else if(page==='468'){setV('d2-dist',s.dist);setV('d2-k',s.k);setV('d2-res',s.res);setV('d2-aspect',s.aspect);calc468();}
+  else{calcP();calcF();}
+}
+function setV(id,v){const el=document.getElementById(id);if(el)el.value=v;}
+function gv(id){return document.getElementById(id)?.value;}
+function gvf(id){return parseFloat(gv(id))||0;}
+
+/* ── SCREEN PREVIEW ── */
+function updatePreview(previewId,diagLabelId,dimHId,dimWId,shm,swm,diagIn){
+  const maxW=230,maxH=140;
+  const AR=swm/shm;
+  let pw,ph;
+  if(AR>maxW/maxH){pw=maxW;ph=Math.round(maxW/AR);}else{ph=maxH;pw=Math.round(maxH*AR);}
+  pw=Math.max(pw,70);ph=Math.max(ph,40);
+  const prev=document.getElementById(previewId);
+  if(prev){prev.style.width=pw+'px';prev.style.height=ph+'px';}
+  const dl=document.getElementById(diagLabelId);
+  if(dl)dl.textContent=diagIn.toFixed(0)+'"';
+  const dh=document.getElementById(dimHId);
+  if(dh)dh.innerHTML=(shm*100).toFixed(0)+' cm<br>'+(shm*39.37).toFixed(1)+'"';
+  const dw=document.getElementById(dimWId);
+  if(dw)dw.textContent=(swm*100).toFixed(0)+' cm / '+(swm*39.37).toFixed(1)+'"';
+}
+function updateChosen(sizeId,dimsId,noteId,diagIn,chosen){
+  const cs=document.getElementById(sizeId);
+  const cd=document.getElementById(dimsId);
+  const cn=document.getElementById(noteId);
+  if(!chosen){
+    if(cs)cs.textContent='> 85" — See combinations ↓';
+    if(cd)cd.textContent='Exceeds largest standard size';
+    if(cn)cn.textContent='';
+    return;
+  }
+  if(cs)cs.textContent=chosen.size+'"';
+  if(cd)cd.textContent=chosen.wCm+' cm × '+chosen.hCm+' cm ('+chosen.wIn+'" × '+chosen.hIn+'")';
+  if(cn){
+    if(chosen.size<=Math.ceil(diagIn))
+      cn.textContent='↑ Rounded up from '+diagIn.toFixed(1)+'" calculated';
+    else
+      cn.textContent='✓ Matches standard exactly';
+  }
+}
+
+/* ── PIXEL ANALYSIS on a standard screen ── */
+function pixelAnalysis(screenRow, resH, resVpx, D){
+  const shMm = screenRow.hCm*10;
+  const swMm = screenRow.wCm*10;
+  const ppv  = shMm/resVpx;
+  const pph  = swMm/resH;
+  const VAD  = 3.438*(ppv/1000);
+  const angle= (ppv/1000)/D*(180*60/Math.PI);
+  return {ppv,pph,VAD,angle,pixOk:angle<1,shMm,swMm};
+}
+
+function pixelBadge(ok,angle){
+  if(ok) return '<span class="badge badge-ok"><i class="fa fa-check"></i> Invisible ('+angle.toFixed(2)+' arc-min < 1)</span>';
+  if(angle<2) return '<span class="badge badge-warn"><i class="fa fa-triangle-exclamation"></i> Marginal ('+angle.toFixed(2)+' arc-min) — upgrade resolution</span>';
+  return '<span class="badge badge-err"><i class="fa fa-xmark"></i> Visible pixels ('+angle.toFixed(2)+' arc-min > 1)</span>';
+}
+
+/* ══════════════════════════════════════════
+   PAGE 1 — DISCAS
+══════════════════════════════════════════ */
+function calcDiscas(){
+  const D=gvf('d1-dist');
+  const arcMin=parseFloat(gv('d1-readstd'))||16;
+  const LF=gvf('d1-lf');
+  const AR=gvf('d1-aspect');
+  const resV=(gv('d1-res')||'1920,1080').split(',');
+  const resH=parseInt(resV[0]),resVpx=parseInt(resV[1]);
+  const discasK=parseInt(gv('d1-discas-k'))||7;
+
+  document.getElementById('d1-dist-val').textContent=D.toFixed(1)+' m';
+  document.getElementById('d1-lf-val').textContent=LF;
+  document.getElementById('d1-selected-k').textContent=discasK;
+
+  const arcRad=arcMin*(Math.PI/(180*60));
+  const charH_m=D*Math.tan(arcRad);
+  const charH_mm=charH_m*1000;
+  const screenH=charH_m*LF;
+  const screenW=screenH*AR;
+  const diagM=Math.sqrt(screenH**2+screenW**2);
+  const diagIn=diagM*39.3701;
+
+  const d={6:D/6,7:D/7,8:D/8,9:D/9,10:D/10};
+  const chosen=findStandardScreen(diagIn);
+
+  // Metrics
+  document.getElementById('d1-m-charH').textContent=charH_mm.toFixed(1);
+  document.getElementById('d1-m-screenH').textContent=screenH.toFixed(2);
+  document.getElementById('d1-m-diag').textContent=diagIn.toFixed(0);
+
+  // Preview — show calculated size
+  updatePreview('d1-preview','d1-diag-label','d1-dim-h','d1-dim-w',screenH,screenW,diagIn);
+  updateChosen('d1-chosen-size','d1-chosen-dims','d1-roundup-note',diagIn,chosen);
+
+  // Combos if exceeds max
+  if(!chosen){
+    renderCombos('d1-combo-wrap','d1-combo-options',screenH,screenW,AR);
+  } else {
+    const cw=document.getElementById('d1-combo-wrap');
+    if(cw)cw.style.display='none';
+  }
+
+  // DISCAS boxes
+  [6,7,8,9,10].forEach(k=>{
+    const el=document.getElementById('d1-d'+k);
+    if(!el)return;
+    el.textContent=(d[k]*100).toFixed(0)+' cm';
+    const box=el.parentElement;
+    if(k===discasK){box.style.borderColor='var(--accent)';box.style.background='rgba(124,58,237,0.08)';el.style.color='var(--accent)';}
+    else{box.style.borderColor='var(--border2)';box.style.background='var(--bg2)';el.style.color='var(--text)';}
+  });
+
+  // Pixel analysis on CHOSEN standard screen (or estimated if exceeds)
+  let pa=null;
+  const analysisScreen=chosen||SCREEN_TABLE[SCREEN_TABLE.length-1];
+  pa=pixelAnalysis(analysisScreen,resH,resVpx,D);
+
+  // Detailed results
+  setText('d1-r-rad',arcRad.toFixed(6)+' rad');
+  setText('d1-r-char',charH_mm.toFixed(2)+' mm');
+  setText('d1-r-sh',(screenH*100).toFixed(1)+' cm / '+screenH.toFixed(3)+' m');
+  setText('d1-r-width',(screenW*100).toFixed(1)+' cm / '+screenW.toFixed(3)+' m');
+  setText('d1-r-diag',diagIn.toFixed(1)+'" ('+diagM.toFixed(2)+' m)');
+  setText('d1-r-chosen',chosen?chosen.size+'" ('+chosen.wCm+' × '+chosen.hCm+' cm)':'Exceeds 85" — see combinations');
+  [6,7,8,9,10].forEach(k=>{
+    const dh=d[k],dw=dh*AR,dd=Math.sqrt(dh**2+dw**2)*39.37;
+    setText('d1-rr-d'+k,(dh*100).toFixed(0)+'cm / ~'+dd.toFixed(0)+'"');
+  });
+  const inRange=screenH>=d[10]&&screenH<=d[6];
+  const ire=document.getElementById('d1-r-inrange');
+  if(ire)ire.innerHTML=inRange
+    ?'<span class="badge badge-ok"><i class="fa fa-check"></i> Yes — within D/6→D/10</span>'
+    :'<span class="badge badge-warn"><i class="fa fa-triangle-exclamation"></i> Outside D/6→D/10 range</span>';
+
+  // Pixel on chosen screen
+  setText('d1-r-csh',analysisScreen.hCm+' cm ('+analysisScreen.size+'")');
+  setText('d1-r-pph',pa.pph.toFixed(3)+' mm');
+  setText('d1-r-pixel',pa.ppv.toFixed(3)+' mm');
+  setText('d1-r-angle',pa.angle.toFixed(3)+' arc-min');
+  setText('d1-r-vad',pa.VAD.toFixed(3)+' m');
+  const ve=document.getElementById('d1-r-vis');
+  if(ve)ve.innerHTML=pixelBadge(pa.pixOk,pa.angle);
+
+  // Equation trace
+  setText('d1-eq-box',
+    '1. θ = '+arcMin+' arc-min × π/(180×60) = '+arcRad.toFixed(6)+' rad\n'+
+    '2. H_char = D × tan(θ) = '+D+' × '+Math.tan(arcRad).toFixed(6)+' = '+charH_mm.toFixed(3)+' mm\n'+
+    '3. H_screen = H_char × LF = '+charH_mm.toFixed(2)+' × '+LF+' = '+(screenH*1000).toFixed(0)+' mm = '+screenH.toFixed(3)+' m\n'+
+    '4. W_screen = H × AR = '+screenH.toFixed(3)+' × '+AR.toFixed(3)+' = '+screenW.toFixed(3)+' m\n'+
+    '5. Diagonal = √(H²+W²) = '+diagIn.toFixed(1)+'"\n'+
+    '6. DISCAS D/'+discasK+' = '+D+'/'+discasK+' = '+(d[discasK]*100).toFixed(0)+' cm  [D/6→D/10: '+(d[6]*100).toFixed(0)+'→'+(d[10]*100).toFixed(0)+' cm]\n'+
+    '7. Standard screen: '+(chosen?chosen.size+'": '+chosen.wCm+'×'+chosen.hCm+' cm':'> 85" — combinations required')+'\n'+
+    '8. Pixel pitch on '+analysisScreen.size+'":\n'+
+    '   PPh = '+analysisScreen.wCm*10+'/'+resH+' = '+pa.pph.toFixed(3)+' mm\n'+
+    '   PPv = '+analysisScreen.hCm*10+'/'+resVpx+' = '+pa.ppv.toFixed(3)+' mm\n'+
+    '   Angle = '+pa.angle.toFixed(3)+' arc-min  '+(pa.pixOk?'< 1 ✓ invisible':'> 1 ✗ visible')+'\n'+
+    '   VAD = 3.438 × '+pa.ppv.toFixed(3)+' = '+pa.VAD.toFixed(3)+' m'
+  );
+
+  // Chart
+  const xs=[];for(let x=1;x<=30;x+=0.5)xs.push(x);
+  const rdLine=xs.map(x=>+(x*Math.tan(arcRad)*LF).toFixed(3));
+  const d6l=xs.map(x=>+(x/6).toFixed(3));
+  const d10l=xs.map(x=>+(x/10).toFixed(3));
+  const dKl=xs.map(x=>+(x/discasK).toFixed(3));
+  if(charts.d1)charts.d1.destroy();
+  charts.d1=new Chart(document.getElementById('d1-chart').getContext('2d'),{
+    type:'line',
+    data:{labels:xs,datasets:[
+      {label:'Readability',data:rdLine,borderColor:'#6d28d9',borderWidth:2.5,pointRadius:0,fill:false,tension:.3},
+      {label:'D/6',data:d6l,borderColor:'#a78bfa',borderWidth:1.5,pointRadius:0,fill:false,borderDash:[6,4],tension:.3},
+      {label:'D/10',data:d10l,borderColor:'#6d28d9',borderWidth:1.5,pointRadius:0,fill:false,borderDash:[4,4],tension:.3},
+      discasK!==6&&discasK!==10?{label:'D/'+discasK,data:dKl,borderColor:'#9333ea',borderWidth:1.5,pointRadius:0,fill:false,borderDash:[2,3],tension:.3}:null,
+      {label:'Current',data:[{x:D,y:screenH}],type:'scatter',pointRadius:9,pointBackgroundColor:'#7c3aed',borderColor:'#fff',borderWidth:2,showLine:false},
+    ].filter(Boolean)},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.dataset.label+': '+(c.parsed.y?.toFixed(2)||'')+'m'}}},
+      scales:{
+        x:{type:'linear',title:{display:true,text:'Viewing distance (m)',color:'#6d5a9e',font:{size:10,family:'DM Mono'}},ticks:{color:'#6d5a9e',font:{size:10,family:'DM Mono'},maxTicksLimit:8},grid:{color:'rgba(124,58,237,0.07)'},border:{color:'rgba(124,58,237,0.15)'}},
+        y:{title:{display:true,text:'Screen height (m)',color:'#6d5a9e',font:{size:10,family:'DM Mono'}},ticks:{color:'#6d5a9e',font:{size:10,family:'DM Mono'},callback:v=>v.toFixed(1)+'m'},grid:{color:'rgba(124,58,237,0.07)'},border:{color:'rgba(124,58,237,0.15)'}},
+      }
+    }
+  });
+
+  drawSightline('d1-sightline',D,screenH,chosen?chosen.hCm/100:screenH);
+}
+
+/* ══════════════════════════════════════════
+   PAGE 2 — 4-6-8
+══════════════════════════════════════════ */
+function calc468(){
+  const D=gvf('d2-dist');
+  const K=parseInt(gv('d2-k'))||6;
+  const AR=gvf('d2-aspect');
+  const resV=(gv('d2-res')||'1920,1080').split(',');
+  const resH=parseInt(resV[0]),resVpx=parseInt(resV[1]);
+
+  document.getElementById('d2-dist-val').textContent=D.toFixed(1)+' m';
+
+  const sh4=D/4,sw4=sh4*AR,diag4=Math.sqrt(sh4**2+sw4**2)*39.37;
+  const sh6=D/6,sw6=sh6*AR,diag6=Math.sqrt(sh6**2+sw6**2)*39.37;
+  const sh8=D/8,sw8=sh8*AR,diag8=Math.sqrt(sh8**2+sw8**2)*39.37;
+  const shK=K===4?sh4:K===6?sh6:sh8;
+  const swK=shK*AR;
+  const diagK=Math.sqrt(shK**2+swK**2)*39.37;
+  const chosen=findStandardScreen(diagK);
+
+  document.getElementById('d2-m-sh').textContent=shK.toFixed(2);
+  document.getElementById('d2-m-diag').textContent=diagK.toFixed(0);
+  document.getElementById('d2-m-chosen').textContent=chosen?chosen.size+'\"':'>85"';
+
+  updatePreview('d2-preview','d2-diag-label','d2-dim-h','d2-dim-w',shK,swK,diagK);
+  updateChosen('d2-chosen-size','d2-chosen-dims','d2-roundup-note',diagK,chosen);
+
+  if(!chosen){renderCombos('d2-combo-wrap','d2-combo-options',shK,swK,AR);}
+  else{const cw=document.getElementById('d2-combo-wrap');if(cw)cw.style.display='none';}
+
+  [{k:4,sh:sh4,d:diag4},{k:6,sh:sh6,d:diag6},{k:8,sh:sh8,d:diag8}].forEach(bd=>{
+    const el=document.getElementById('d2-k'+bd.k+'-h');
+    const dg=document.getElementById('d2-k'+bd.k+'-diag');
+    const bx=document.getElementById('d2-k'+bd.k+'-box');
+    if(el)el.textContent=(bd.sh*100).toFixed(0)+'cm';
+    if(dg)dg.textContent='~'+bd.d.toFixed(0)+'"';
+    if(bx){
+      if(bd.k===K){bx.style.borderColor='var(--accent)';bx.style.background='rgba(124,58,237,0.08)';if(el)el.style.color='var(--accent2)';}
+      else{bx.style.borderColor='var(--border2)';bx.style.background='var(--bg2)';if(el)el.style.color='var(--text)';}
+    }
+  });
+
+  // Pixel analysis on chosen
+  const analysisScreen=chosen||SCREEN_TABLE[SCREEN_TABLE.length-1];
+  const pa=pixelAnalysis(analysisScreen,resH,resVpx,D);
+
+  setText('d2-r-formula','H = '+D+' / '+K+' = '+shK.toFixed(3)+' m');
+  setText('d2-r-sh',(shK*100).toFixed(1)+' cm / '+shK.toFixed(3)+' m');
+  setText('d2-r-w',(swK*100).toFixed(1)+' cm / '+swK.toFixed(3)+' m');
+  setText('d2-r-diag',diagK.toFixed(1)+'" ('+Math.sqrt(shK**2+swK**2).toFixed(2)+' m)');
+  setText('d2-r-chosen',chosen?chosen.size+'" ('+chosen.wCm+' × '+chosen.hCm+' cm)':'> 85" — combinations');
+  setText('d2-rr-k4',(sh4*100).toFixed(0)+' cm / ~'+diag4.toFixed(0)+'"');
+  setText('d2-rr-k6',(sh6*100).toFixed(0)+' cm / ~'+diag6.toFixed(0)+'"');
+  setText('d2-rr-k8',(sh8*100).toFixed(0)+' cm / ~'+diag8.toFixed(0)+'"');
+  setText('d2-r-csh',analysisScreen.hCm+' cm ('+analysisScreen.size+'")');
+  setText('d2-r-pph',pa.pph.toFixed(3)+' mm');
+  setText('d2-r-ppv',pa.ppv.toFixed(3)+' mm');
+  setText('d2-r-angle',pa.angle.toFixed(3)+' arc-min');
+  setText('d2-r-vad',pa.VAD.toFixed(3)+' m');
+  const ve=document.getElementById('d2-r-vis');
+  if(ve)ve.innerHTML=pixelBadge(pa.pixOk,pa.angle);
+
+  setText('d2-eq-box',
+    '4-6-8 Rule: H = D ÷ K\nK='+K+', D='+D+'m\nH = '+shK.toFixed(3)+' m, W = '+swK.toFixed(3)+' m\nDiag = '+diagK.toFixed(1)+'"\nStandard: '+(chosen?chosen.size+'" ('+chosen.wCm+'×'+chosen.hCm+' cm)':'> 85" — combinations')+'\n\n'+
+    'K=4: '+(sh4*100).toFixed(0)+' cm / ~'+diag4.toFixed(0)+'"\nK=6: '+(sh6*100).toFixed(0)+' cm / ~'+diag6.toFixed(0)+'"\nK=8: '+(sh8*100).toFixed(0)+' cm / ~'+diag8.toFixed(0)+'"\n\n'+
+    'Pixel pitch on '+analysisScreen.size+'":\n  PPh='+pa.pph.toFixed(3)+'mm, PPv='+pa.ppv.toFixed(3)+'mm\n  Angle='+pa.angle.toFixed(3)+' arc-min '+(pa.pixOk?'✓ invisible':'✗ visible')+'\n  VAD='+pa.VAD.toFixed(3)+'m'
+  );
+
+  const xs=[];for(let x=1;x<=30;x+=0.5)xs.push(x);
+  const l4=xs.map(x=>+(x/4).toFixed(3));
+  const l6=xs.map(x=>+(x/6).toFixed(3));
+  const l8=xs.map(x=>+(x/8).toFixed(3));
+  const cY=K===4?sh4:K===6?sh6:sh8;
+  if(charts.d2)charts.d2.destroy();
+  charts.d2=new Chart(document.getElementById('d2-chart').getContext('2d'),{
+    type:'line',
+    data:{labels:xs,datasets:[
+      {label:'K=4',data:l4,borderColor:'#6d28d9',borderWidth:K===4?2.5:1.5,pointRadius:0,fill:false,tension:.3},
+      {label:'K=6',data:l6,borderColor:'#d97706',borderWidth:K===6?2.5:1.5,pointRadius:0,fill:false,tension:.3},
+      {label:'K=8',data:l8,borderColor:'#a78bfa',borderWidth:K===8?2.5:1.5,pointRadius:0,fill:false,tension:.3},
+      {label:'Current K='+K,data:[{x:D,y:cY}],type:'scatter',pointRadius:9,
+        pointBackgroundColor:K===4?'#8b5cf6':K===6?'#a78bfa':'#c4b5fd',borderColor:'#fff',borderWidth:2,showLine:false},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.dataset.label+': '+(c.parsed.y?.toFixed(2)||'')+'m'}}},
+      scales:{
+        x:{type:'linear',title:{display:true,text:'Viewing distance (m)',color:'#6d5a9e',font:{size:10,family:'DM Mono'}},ticks:{color:'#6d5a9e',font:{size:10,family:'DM Mono'},maxTicksLimit:8},grid:{color:'rgba(124,58,237,0.07)'},border:{color:'rgba(124,58,237,0.15)'}},
+        y:{title:{display:true,text:'Screen height (m)',color:'#6d5a9e',font:{size:10,family:'DM Mono'}},ticks:{color:'#6d5a9e',font:{size:10,family:'DM Mono'},callback:v=>v.toFixed(1)+'m'},grid:{color:'rgba(124,58,237,0.07)'},border:{color:'rgba(124,58,237,0.15)'}},
+      }
+    }
+  });
+}
+
+/* ══════════════════════════════════════════
+   PAGE 3 — VAD / PIXEL PITCH
+══════════════════════════════════════════ */
+/* ══ SUB-TAB SWITCHER ══ */
+function setSubTab(t){
+  document.querySelectorAll('.subtab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.subpage').forEach(p=>p.classList.remove('visible'));
+  document.getElementById('st-'+t).classList.add('active');
+  document.getElementById('subpage-'+t).classList.add('visible');
+  if(t==='ppi') calcP();
+  else calcF();
+}
+
+/* ══ PIXEL / PPI CALCULATOR ══ */
+function calcP(){
+  const distMm = parseFloat(document.getElementById('p-dist')?.value)||2975;
+  const tech    = document.getElementById('p-tech')?.value||'lcd';
+  const diagIn  = parseFloat(document.getElementById('p-diag')?.value)||55;
+  const hPx     = parseInt(document.getElementById('p-hpx')?.value)||1920;
+  const vPx     = parseInt(document.getElementById('p-vpx')?.value)||1080;
+  const pitchIn = parseFloat(document.getElementById('p-pitch')?.value)||1.27;
+
+  // Show/hide LED pitch field and LED section
+  const isLED = tech==='led';
+  const lpf=document.getElementById('led-pitch-field');
+  const ls=document.getElementById('led-section');
+  if(lpf) lpf.style.display=isLED?'block':'none';
+  if(ls)  ls.style.display=isLED?'block':'none';
+
+  // PPI calculation
+  const ppi = Math.sqrt(hPx**2+vPx**2)/diagIn;
+
+  // Pixel pitch from PPI (mm)
+  const ppMm = 25.4/ppi;
+
+  // Min PPI required at viewer distance (1 arc min = 0.000291 rad → min PPI = 1/(dist_in×0.000291))
+  const distIn = distMm/25.4;
+  const minPPI = 1/(distIn*0.000291);
+
+  // VAD from pixel pitch
+  const VAD_m = ppMm*3438/1000;
+
+  // Verdict
+  const pass = ppi>=minPPI;
+
+  // Update metrics
+  setText('p-ppi', ppi.toFixed(0));
+  setText('p-minppi', minPPI.toFixed(0));
+  setText('p-pp', ppMm.toFixed(3));
+  setText('p-verdict', pass?'PASS':'FAIL');
+  setText('p-badge-txt', ppi.toFixed(0)+' ≥ '+minPPI.toFixed(0)+' PPI '+(pass?'✓':'✗'));
+
+  // Colour verdict card
+  const vc=document.getElementById('p-verdict-card');
+  if(vc){
+    vc.style.borderColor=pass?'rgba(124,58,237,0.4)':'rgba(220,38,38,0.35)';
+    vc.style.background=pass?'rgba(124,58,237,0.06)':'rgba(220,38,38,0.05)';
+  }
+  const vv=document.getElementById('p-verdict');
+  if(vv) vv.style.color=pass?'#7c3aed':'#dc2626';
+
+  // Reference table status icons
+  const refPPIs=[{id:'ppi-s1',rid:'ppi-r1',minP:57,dist:1524},{id:'ppi-s2',rid:'ppi-r2',minP:28,dist:3048},{id:'ppi-s3',rid:'ppi-r3',minP:19,dist:4572},{id:'ppi-s4',rid:'ppi-r4',minP:14,dist:6096}];
+  refPPIs.forEach(r=>{
+    const el=document.getElementById(r.id);
+    const row=document.getElementById(r.rid);
+    if(el){
+      const ok=ppi>=r.minP;
+      el.innerHTML=ok?'<span style="color:#a78bfa;font-size:14px;">✓</span>':'<span style="color:#f87171;font-size:14px;">✗</span>';
+    }
+    // Highlight if this row is closest to viewer distance
+    if(row){
+      const isActive=Math.abs(r.dist-distMm)<700;
+      row.style.background=isActive?'rgba(124,58,237,0.08)':'';
+      row.style.fontWeight=isActive?'bold':'';
+    }
+  });
+
+  // LED reference table status
+  if(isLED){
+    const ledRefs=[
+      {id:'led-s1',minD:34400,optD:57200},
+      {id:'led-s2',minD:17200,optD:28700},
+      {id:'led-s3',minD:8600, optD:14300},
+      {id:'led-s4',minD:5100, optD:8600},
+      {id:'led-s5',minD:3100, optD:5100},
+      {id:'led-s6',minD:2100, optD:3400},
+    ];
+    ledRefs.forEach(r=>{
+      const el=document.getElementById(r.id);
+      if(!el)return;
+      if(distMm>=r.optD) el.innerHTML='<span style="color:#a78bfa;">✓ Optimal</span>';
+      else if(distMm>=r.minD) el.innerHTML='<span style="color:#f59e0b;">~ Marginal</span>';
+      else el.innerHTML='<span style="color:#f87171;">✗ Too close</span>';
+    });
+    // Compute from entered pitch
+    const minDistM=(pitchIn*3438/1000);
+    const optDistM=minDistM*1.667;
+    setText('p-formula-line',
+      '√('+hPx+'²+'+vPx+'²)/'+diagIn+'" = '+ppi.toFixed(1)+' PPI  |  Min PPI@'+distMm+'mm = '+minPPI.toFixed(1)+
+      '\nPitch='+ppMm.toFixed(3)+'mm  |  VAD='+VAD_m.toFixed(1)+'m  |  LED min dist='+minDistM.toFixed(1)+'m  opt='+optDistM.toFixed(1)+'m'
+    );
+  } else {
+    setText('p-formula-line',
+      '√('+hPx+'²+'+vPx+'²)/'+diagIn+'" = '+ppi.toFixed(1)+' PPI  |  Min PPI@'+distMm+'mm = '+minPPI.toFixed(1)+'\n'+
+      'Pitch='+ppMm.toFixed(3)+'mm  |  VAD='+VAD_m.toFixed(1)+'m  |  Verdict: '+(pass?'PASS ✓':'FAIL ✗')
+    );
+  }
+}
+
+/* ══ FONT LEGIBILITY CALCULATOR ══ */
+function arcMinVerdict(arcMin){
+  if(arcMin>=20) return {label:'Excellent',color:'#a78bfa'};
+  if(arcMin>=15) return {label:'Good',color:'#818cf8'};
+  if(arcMin>=10) return {label:'Acceptable',color:'#f59e0b'};
+  return {label:'Too Small',color:'#f87171'};
+}
+
+function calcF(){
+  const th   = parseFloat(document.getElementById('fn-th')?.value)||25;    // mm
+  const near = parseFloat(document.getElementById('fn-near')?.value)||2975; // mm
+  const far  = parseFloat(document.getElementById('fn-far')?.value)||5892;  // mm
+  const ppi  = parseFloat(document.getElementById('fn-ppi')?.value)||42;
+  const arr  = parseInt(document.getElementById('fn-arr')?.value)||1;
+
+  // Arc minutes: 60 × arctan(text_height_mm / distance_mm) (in degrees→arcmin)
+  const arcNear = 60*(Math.atan(th/near)*(180/Math.PI));
+  const arcFar  = 60*(Math.atan(th/far)*(180/Math.PI));
+
+  // Recommended text height: 25mm per 4500mm viewing distance (rule of thumb)
+  const recTh = 25*(far/4500);
+
+  // Pixel height: text_mm × PPI / 25.4
+  const pxH = th*ppi/25.4;
+
+  // Point size approx: px / 1.333
+  const pt = pxH/1.333;
+
+  // Array scaling
+  const scaleFactor = arr>1 ? arr+'× ('+arr+'-screen array)' : '1× (single screen)';
+
+  // Verdicts
+  const vNear = arcMinVerdict(arcNear);
+  const vFar  = arcMinVerdict(arcFar);
+
+  // Progress bars — scale to 30 arc-min max
+  const barNear=document.getElementById('arc-near');
+  const barFar=document.getElementById('arc-far');
+  if(barNear){ barNear.style.width=Math.min(100,arcNear/30*100)+'%'; barNear.style.background=vNear.color; }
+  if(barFar) { barFar.style.width=Math.min(100,arcFar/30*100)+'%';  barFar.style.background=vFar.color; }
+
+  setText('arc-near-v', arcNear.toFixed(1));
+  setText('arc-far-v',  arcFar.toFixed(1));
+
+  // Badges under bars
+  const nb=document.getElementById('fn-nbadge');
+  const fb=document.getElementById('fn-fbadge');
+  if(nb) nb.innerHTML=`<span class="badge" style="background:${vNear.color}22;color:${vNear.color};border:1px solid ${vNear.color}44;">${vNear.label}</span>`;
+  if(fb) fb.innerHTML=`<span class="badge" style="background:${vFar.color}22;color:${vFar.color};border:1px solid ${vFar.color}44;">${vFar.label}</span>`;
+
+  // Recommended font spec table
+  setText('fn-recth', recTh.toFixed(0)+' mm');
+  setText('fn-px',    pxH.toFixed(0)+' px');
+  setText('fn-pt',    pt.toFixed(0)+' pt');
+  setText('fn-arr-s', scaleFactor);
+
+  // Metric cards
+  setText('fn-m1', arcNear.toFixed(1));
+  setText('fn-m2', arcFar.toFixed(1));
+  setText('fn-m3', vNear.label);
+  setText('fn-m4', vFar.label);
+
+  const m3=document.getElementById('fn-m3');
+  const m4=document.getElementById('fn-m4');
+  if(m3){ m3.style.color=vNear.color; }
+  if(m4){ m4.style.color=vFar.color; }
+
+  // Detailed results
+  setText('fn-r-near', arcNear.toFixed(2)+' arc-min');
+  setText('fn-r-far',  arcFar.toFixed(2)+' arc-min');
+  const fnrn=document.getElementById('fn-r-nv');
+  const fnrf=document.getElementById('fn-r-fv');
+  if(fnrn) fnrn.innerHTML=`<span class="badge" style="background:${vNear.color}22;color:${vNear.color};border:1px solid ${vNear.color}44;">${vNear.label}</span>`;
+  if(fnrf) fnrf.innerHTML=`<span class="badge" style="background:${vFar.color}22;color:${vFar.color};border:1px solid ${vFar.color}44;">${vFar.label}</span>`;
+  setText('fn-r-recth', recTh.toFixed(1)+' mm');
+  setText('fn-r-px',   pxH.toFixed(1)+' px');
+  setText('fn-r-pt',   pt.toFixed(1)+' pt');
+  setText('fn-r-arr',  scaleFactor);
+
+  // Formula line
+  setText('fn-formula-line',
+    'Near: 60×atan('+th+'/'+near+')='+arcNear.toFixed(1)+' arcmin  |  Far: 60×atan('+th+'/'+far+')='+arcFar.toFixed(1)+' arcmin'
+  );
+
+  // Equation trace
+  setText('fn-eq-box',
+    'Arc min = 60 × arctan(text_height_mm / dist_mm)\n\n'+
+    'Nearest:  60 × arctan('+th+' / '+near+') = '+arcNear.toFixed(2)+' arc-min  → '+vNear.label+'\n'+
+    'Furthest: 60 × arctan('+th+' / '+far+') = '+arcFar.toFixed(2)+' arc-min  → '+vFar.label+'\n\n'+
+    'Rec. text height = 25 × (far / 4500) = 25 × ('+far+' / 4500) = '+recTh.toFixed(1)+' mm\n'+
+    'Pixel height = th × PPI / 25.4 = '+th+' × '+ppi+' / 25.4 = '+pxH.toFixed(1)+' px\n'+
+    'Approx. point size = px / 1.333 = '+pxH.toFixed(1)+' / 1.333 = '+pt.toFixed(1)+' pt\n'+
+    'Array scaling: '+scaleFactor
+  );
+}
+
+/* ══════════════════════════════════════════
+   SIGHTLINE DIAGRAM — improved, larger, annotated
+══════════════════════════════════════════ */
+function drawSightline(canvasId,D,screenH,screenHStd){
+  const cv=document.getElementById(canvasId);
+  if(!cv)return;
+  const dpr=window.devicePixelRatio||1;
+  const W=cv.parentElement.offsetWidth||700;
+  const H=320;
+  cv.width=W*dpr; cv.height=H*dpr;
+  cv.style.width=W+'px'; cv.style.height=H+'px';
+  const ctx=cv.getContext('2d');
+  ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,W,H);
+
+  const padL=70,padR=80,padT=28,padB=36;
+  const roomW=W-padL-padR, roomH=H-padT-padB;
+  const ceilH=3.5; // room ceiling in metres (representative)
+  const floorY=padT+roomH, ceilY=padT;
+  const AFF=1.2;
+
+  function yOf(h){return floorY-(h/ceilH)*roomH;}
+
+  // Room box
+  ctx.strokeStyle='rgba(124,58,237,0.2)'; ctx.lineWidth=1; ctx.setLineDash([]);
+  ctx.strokeRect(padL,ceilY,roomW,roomH);
+  ctx.fillStyle='rgba(124,58,237,0.04)';
+  ctx.fillRect(padL,ceilY,roomW,roomH);
+
+  // Grid lines (every 0.5 m)
+  ctx.strokeStyle='rgba(124,58,237,0.1)'; ctx.lineWidth=1; ctx.setLineDash([2,4]);
+  for(let h=0.5;h<ceilH;h+=0.5){
+    const y=yOf(h);
+    ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(padL+roomW,y); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+
+  // Floor & ceiling labels
+  ctx.fillStyle='#4b4570'; ctx.font='bold 10px DM Mono';
+  ctx.fillText('FLOOR',padL-4,floorY-3);
+  ctx.fillText('CEILING',padL-4,ceilY+12);
+
+  // Y-axis scale
+  ctx.textAlign='right'; ctx.font='9px DM Mono'; ctx.fillStyle='#6d5a9e';
+  for(let h=0;h<=3;h+=0.5){
+    const y=yOf(h);
+    ctx.fillText(h.toFixed(1)+'m',padL-6,y+3);
+    ctx.strokeStyle='rgba(124,58,237,0.15)'; ctx.lineWidth=1; ctx.setLineDash([2,3]);
+    ctx.beginPath(); ctx.moveTo(padL-3,y); ctx.lineTo(padL,y); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  ctx.textAlign='left';
+
+  // Screen position
+  const screenX=padL+roomW-30;
+  const screenBotY=yOf(AFF);
+  const screenTopY=yOf(AFF+screenH);
+  const screenTopStdY=yOf(AFF+screenHStd);
+
+  // Screen fill (standard size ghost if different)
+  if(Math.abs(screenH-screenHStd)>0.05){
+    ctx.fillStyle='rgba(124,58,237,0.08)'; ctx.strokeStyle='rgba(124,58,237,0.35)'; ctx.lineWidth=1.5; ctx.setLineDash([4,3]);
+    ctx.fillRect(screenX-10,screenTopStdY,20,screenBotY-screenTopStdY);
+    ctx.strokeRect(screenX-10,screenTopStdY,20,screenBotY-screenTopStdY);
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(91,33,182,0.75)'; ctx.font='9px DM Mono';
+    ctx.fillText('Std: '+screenHStd.toFixed(2)+'m',screenX+14,(screenTopStdY+screenBotY)/2);
+  }
+
+  // Screen (calculated)
+  ctx.fillStyle='rgba(124,58,237,0.15)'; ctx.strokeStyle='#7c3aed'; ctx.lineWidth=3; ctx.setLineDash([]);
+  ctx.fillRect(screenX-10,screenTopY,20,screenBotY-screenTopY);
+  ctx.strokeRect(screenX-10,screenTopY,20,screenBotY-screenTopY);
+  ctx.fillStyle='rgba(91,33,182,0.85)'; ctx.font='bold 10px DM Mono'; ctx.textAlign='center';
+  ctx.fillText('SCREEN',screenX,screenTopY-8);
+  ctx.textAlign='left';
+
+  // Height annotation (right side)
+  ctx.strokeStyle='rgba(124,58,237,0.45)'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(screenX+14,screenTopY); ctx.lineTo(screenX+40,screenTopY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(screenX+14,screenBotY); ctx.lineTo(screenX+40,screenBotY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(screenX+38,screenTopY); ctx.lineTo(screenX+38,screenBotY); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='#5b21b6'; ctx.font='bold 9px DM Mono'; ctx.textAlign='left';
+  ctx.fillText((screenH*100).toFixed(0)+'cm',(screenX+42),(screenTopY+screenBotY)/2+3);
+  ctx.textAlign='left';
+
+  // AFF line
+  ctx.strokeStyle='rgba(180,83,9,0.7)'; ctx.lineWidth=1.5; ctx.setLineDash([6,4]);
+  ctx.beginPath(); ctx.moveTo(padL+20,screenBotY); ctx.lineTo(screenX-12,screenBotY); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='#b45309'; ctx.font='bold 9px DM Mono';
+  ctx.fillText('≥ 1200 mm AFF',padL+24,screenBotY-5);
+
+  // Viewer position
+  const viewX=padL+50;
+  const earH=1.2; // seated
+  const earY=yOf(earH);
+  // sightlines
+  ctx.strokeStyle='rgba(109,40,217,0.55)'; ctx.lineWidth=1.5; ctx.setLineDash([6,4]);
+  ctx.beginPath(); ctx.moveTo(viewX,earY); ctx.lineTo(screenX-10,screenTopY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(viewX,earY); ctx.lineTo(screenX-10,screenBotY); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Viewer circle + label
+  ctx.fillStyle='#7c3aed'; ctx.beginPath(); ctx.arc(viewX,earY,7,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.fillStyle='#1a1230'; ctx.font='bold 10px DM Mono'; ctx.textAlign='center';
+  ctx.fillText('VIEWER',viewX,earY-14);
+  ctx.font='9px DM Mono'; ctx.fillStyle='#6d5a9e';
+  ctx.fillText('1.2m ear ht',viewX,earY+20);
+  ctx.textAlign='left';
+
+  // Viewing distance arrow
+  const arrY=floorY+16;
+  ctx.strokeStyle='rgba(124,58,237,0.35)'; ctx.lineWidth=1.5; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(viewX,arrY-4); ctx.lineTo(screenX,arrY-4); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='rgba(91,33,182,0.7)'; ctx.font='bold 10px DM Mono'; ctx.textAlign='center';
+  ctx.fillText('D = '+D.toFixed(1)+' m',((viewX+screenX)/2),arrY+8);
+  ctx.textAlign='left';
+
+  // Viewing angle annotation
+  const ang1=Math.atan2(earY-screenTopY,screenX-viewX)*(180/Math.PI);
+  const ang2=Math.atan2(earY-screenBotY,screenX-viewX)*(180/Math.PI);
+  const viewAngle=Math.abs(ang1-ang2);
+  ctx.fillStyle='#5b21b6'; ctx.font='9px DM Mono';
+  ctx.fillText('∠ '+(viewAngle).toFixed(1)+'°',viewX+12,earY-30);
+
+  // Legend title
+  ctx.fillStyle='#8878b0'; ctx.font='9px DM Mono';
+  ctx.fillText('SIGHTLINE — ELEVATION VIEW',padL,ceilY-8);
+}
+
+/* ── HELPERS ── */
+function setText(id,t){const el=document.getElementById(id);if(el)el.textContent=t;}
+
+/* ══════════════════════════════════════════════════════
+   ROOM DESIGN — NEW (from Room-Design-Calculator.html)
+══════════════════════════════════════════════════════ */
+const RD_TYPES={
+  huddle:       {label:'Huddle Space',         w:2.5,  d:3.0,  h:2.6,  seats:4,   layout:'single',    scr:32,  mpp:1.6, mount:'wall',    rack:'none'},
+  meeting:      {label:'Small Meeting Room',   w:3.5,  d:4.0,  h:2.7,  seats:6,   layout:'boardroom', scr:42,  mpp:1.8, mount:'wall',    rack:'credenza'},
+  conference:   {label:'Conference Room',      w:5.5,  d:6.5,  h:2.8,  seats:10,  layout:'boardroom', scr:65,  mpp:2.0, mount:'wall',    rack:'credenza'},
+  boardroom:    {label:'Board Room',           w:7.0,  d:9.0,  h:3.0,  seats:16,  layout:'boardroom', scr:85,  mpp:2.5, mount:'wall',    rack:'rack'},
+  training:     {label:'Training Room',        w:8.0,  d:10.0, h:3.0,  seats:24,  layout:'classroom', scr:98,  mpp:2.2, mount:'ceiling', rack:'rackwall'},
+  multipurpose: {label:'Multipurpose Hall',    w:14.0, d:18.0, h:4.5,  seats:120, layout:'rounds',    scr:150, mpp:2.1, mount:'ceiling', rack:'rackwall'},
+  auditorium:   {label:'Auditorium',           w:18.0, d:24.0, h:6.0,  seats:200, layout:'theater',   scr:220, mpp:1.4, mount:'ceiling', rack:'rackwall'},
+};
+let rdCurrentType='meeting';
+
+function rdSetType(t){
+  rdCurrentType=t;
+  document.querySelectorAll('.rd-typebtn').forEach(b=>b.classList.toggle('active',b.dataset.type===t));
+  const p=RD_TYPES[t];
+  setV('rd-w',p.w); setV('rd-d',p.d); setV('rd-h',p.h);
+  setV('rd-seats',p.seats); setV('rd-layout',p.layout); setV('rd-scr',p.scr);
+  setV('rd-mount',p.mount); setV('rd-rack',p.rack); setV('rd-rotation','0');
+  rdCalc();
+}
+
+function rdCalc(){
+  const W=parseFloat(document.getElementById('rd-w').value)||5.5;
+  const D=parseFloat(document.getElementById('rd-d').value)||6.5;
+  const H=parseFloat(document.getElementById('rd-h').value)||2.8;
+  const seats=parseInt(document.getElementById('rd-seats').value)||10;
+  const layout=document.getElementById('rd-layout').value;
+  const scrIn=parseFloat(document.getElementById('rd-scr').value)||65;
+  const scrType=document.getElementById('rd-scrtype').value;
+  const mount=document.getElementById('rd-mount').value;
+  const rack=document.getElementById('rd-rack').value;
+  const rotation=parseInt(document.getElementById('rd-rotation')?.value)||0;
+
+  setText('rd-w-val',W.toFixed(1)+' m');
+  setText('rd-d-val',D.toFixed(1)+' m');
+  setText('rd-h-val',H.toFixed(1)+' m');
+  setText('rd-scr-val',scrIn+'"');
+
+  const area=W*D;
+  const isTheater=(layout==='theater');
+  const mpp=+(area/seats).toFixed(2);
+
+  let category='Huddle Space';
+  if(isTheater&&(area>=250||seats>=150)) category='Auditorium';
+  else if(area>=120||seats>=60) category='Multipurpose Hall';
+  else if(area>=70||seats>20) category='Training / Large Conference Room';
+  else if(area>=45||seats>=14) category='Board Room';
+  else if(area>=20||seats>=8) category='Conference Room';
+  else if(area>=8) category='Small Meeting Room';
+  setText('rd-category',category);
+
+  const tableArea=isTheater?0:+(area*0.32).toFixed(1);
+  const circArea=+(area*(isTheater?0.22:0.30)).toFixed(1);
+  const seatDensity=isTheater?1.1:1.8;
+  const maxSeats=Math.max(2,Math.floor(area/seatDensity));
+
+  setText('rd-area',area.toFixed(1)+' m²');
+  setText('rd-mpp',mpp+' m²/seat');
+  setText('rd-tblarea',isTheater?'— (fixed rows)':tableArea+' m²');
+  setText('rd-circ',circArea+' m²');
+  setText('rd-maxseats',maxSeats+' seats');
+
+  const vNear=isTheater?Math.min(3.0,D*0.12+1.2):1.2;
+  const vFar=Math.max(vNear+0.5,D-(isTheater?1.2:0.8));
+  setText('rd-vnear',vNear.toFixed(1)+' m');
+  setText('rd-vfar',vFar.toFixed(1)+' m');
+
+  const screenK=isTheater?4:6;
+  const recDiagIn=(vFar*1000/screenK)/25.4;
+  setText('rd-recscr',Math.ceil(recDiagIn)+'"');
+
+  const diagM=scrIn*0.0254;
+  const scrH=diagM/Math.sqrt(1+1.778*1.778);
+  const scrW=scrH*1.778;
+  setText('rd-scrw',(scrW*1000).toFixed(0)+' mm');
+  setText('rd-scrh',(scrH*1000).toFixed(0)+' mm');
+
+  const vAngle=Math.atan((W/2)/vFar)*(180/Math.PI)*2;
+  setText('rd-vangle',vAngle.toFixed(1)+'°');
+
+  setText('rd-m-area',area.toFixed(1));
+  setText('rd-m-seats',seats.toString());
+  setText('rd-m-scr',scrIn.toString());
+
+  const screenOk=scrIn>=recDiagIn*0.85;
+  const seatsOk=seats<=maxSeats;
+  const ceilOk=H>=2.4;
+  const compPass=screenOk&&seatsOk&&ceilOk;
+  const compCard=document.getElementById('rd-m-comp-card');
+  const compEl=document.getElementById('rd-m-comp');
+  const compSub=document.getElementById('rd-m-comp-sub');
+  if(compEl){compEl.textContent=compPass?'PASS':'CHECK';compEl.style.color=compPass?'#5b21b6':'#dc2626';}
+  if(compCard)compCard.style.borderColor=compPass?'rgba(91,33,182,0.35)':'rgba(220,38,38,0.35)';
+  if(compSub)compSub.textContent=compPass?'All checks passed':'Review flagged items';
+
+  const typeLabels={lcd:'LCD Flat Panel',proj:'Projection Screen',led:'Direct-view LED',dual:'Dual Screens'};
+  setText('rd-spec-scr',scrIn+'" diagonal ('+(scrW*1000).toFixed(0)+'×'+(scrH*1000).toFixed(0)+'mm)');
+  setText('rd-spec-type',typeLabels[scrType]||scrType);
+  const mountLabels={wall:'Wall-mounted',ceiling:'Ceiling / Dropped',floor:'Floor / Credenza',cart:'Mobile cart'};
+  setText('rd-spec-mount',mountLabels[mount]||mount);
+  const rackLabels={none:'No rack',credenza:'Credenza (under screen)',rack:'19" Equipment rack',rackwall:'Rack in AV room'};
+  setText('rd-spec-rack',rackLabels[rack]||rack);
+
+  const conns=[];
+  if(document.getElementById('rd-hdmi')?.checked)conns.push('HDMI');
+  if(document.getElementById('rd-vga')?.checked)conns.push('VGA');
+  if(document.getElementById('rd-usb')?.checked)conns.push('USB-C');
+  if(document.getElementById('rd-lan')?.checked)conns.push('2×LAN');
+  if(document.getElementById('rd-avfloor')?.checked)conns.push('Floor box');
+  if(document.getElementById('rd-wireless')?.checked)conns.push('Wireless');
+  setText('rd-spec-conn',conns.length?conns.join(', '):'None selected');
+
+  // Compliance check
+  rdSetCompRow('rdcc-area','rdcc-area-v',area.toFixed(1)+' m²',area>=8);
+  rdSetCompRow('rdcc-w','rdcc-w-v',W.toFixed(1)+' m',W>=3);
+  rdSetCompRow('rdcc-d','rdcc-d-v',D.toFixed(1)+' m',D>=4);
+  rdSetCompRow('rdcc-mpp','rdcc-mpp-v',mpp+' m²',mpp>=(isTheater?0.9:1.5));
+  rdSetCompRow('rdcc-scr','rdcc-scr-v',scrIn+'" / rec.'+Math.ceil(recDiagIn)+'"',screenOk);
+  rdSetCompRow('rdcc-ceil','rdcc-ceil-v',H.toFixed(1)+' m',ceilOk);
+  rdSetCompRow('rdcc-seats','rdcc-seats-v',seats+' / max '+maxSeats,seatsOk);
+
+  const seatPct=Math.min(100,Math.round((seats*(isTheater?0.65:1.2)/area)*100));
+  const circPct=Math.round((circArea/area)*100);
+  const avPct=isTheater?Math.round((W*2*0.15/area)*100):Math.round((tableArea*0.15/area)*100);
+  const otherPct=Math.max(0,100-seatPct-circPct-avPct);
+  setText('rd-util-seats',seatPct+'%');
+  setText('rd-util-circ',circPct+'%');
+  setText('rd-util-av',avPct+'%');
+  setText('rd-util-other',otherPct+'%');
+
+  // Equipment Schedule (from old tool, now below AV Spec)
+  const nSpkEst=Math.max(2,Math.ceil(area/(Math.PI*(H*Math.tan(55*Math.PI/180))**2))*2);
+  const micType=seats<=8?'Ceiling beamforming mic':seats<=20?'2× Table array mics':'Wireless mic set';
+  const camType=seats<=10?'Compact PTZ / huddle bar':'PTZ camera ≥ 80° H-FOV';
+  const contEl=document.getElementById('rd-contents-list');
+  if(contEl){
+    const items=[
+      {ic:'fa-tv',       lb:scrIn+'" '+typeLabels[scrType]+' ('+( scrW*1000).toFixed(0)+'×'+(scrH*1000).toFixed(0)+' mm)'},
+      {ic:'fa-volume-high', lb:nSpkEst+'× Ceiling Speaker'},
+      {ic:'fa-microphone',lb:micType},
+      {ic:'fa-video',    lb:camType},
+      {ic:'fa-plug',     lb:conns.length?conns.join(' · '):'No connections selected'},
+      {ic:'fa-server',   lb:rackLabels[rack]},
+      {ic:'fa-bolt',     lb:'UPS ≥ 30 min autonomy recommended'},
+      {ic:'fa-snowflake',lb:'HVAC: 8–10 ACH, 20–24°C'},
+    ];
+    contEl.innerHTML=items.map(it=>`
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(124,58,237,0.04);border:1px solid rgba(124,58,237,0.1);border-radius:8px;">
+        <div style="width:26px;height:26px;background:rgba(124,58,237,0.1);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="fa ${it.ic}" style="font-size:11px;color:var(--accent);"></i>
+        </div>
+        <span style="font-family:var(--mono);font-size:11px;color:var(--text);">${it.lb}</span>
+      </div>`).join('');
+  }
+  setText('rd-eq-box-contents',
+    'Room: '+W.toFixed(1)+'×'+D.toFixed(1)+'m | Area: '+area.toFixed(1)+' m² | '+seats+' seats | '+mpp+' m²/seat\n'+
+    'Screen: '+scrIn+'" ('+typeLabels[scrType]+') | Rec: '+Math.ceil(recDiagIn)+'" | Near: '+vNear.toFixed(1)+'m | Far: '+vFar.toFixed(1)+'m\n'+
+    'Ceiling spk est: '+nSpkEst+' | Mic: '+micType+'\n'+
+    'Compliance: '+(compPass?'PASS ✓':'CHECK ✗')+' | '+conns.join('·')
+  );
+
+  // Equation trace
+  setText('rd-eq-box',
+    'Room area = W × D = '+W.toFixed(1)+' × '+D.toFixed(1)+' = '+area.toFixed(1)+' m²  |  m²/seat = '+area.toFixed(1)+'/'+seats+' = '+mpp+'\n'+
+    'Recommended screen (4-6-8, k='+screenK+') = (Vfar_mm / k) / 25.4 = ('+(vFar*1000).toFixed(0)+'/'+screenK+')/25.4 = '+Math.ceil(recDiagIn)+'"\n'+
+    'Max seats = floor(area / '+seatDensity+') = floor('+area.toFixed(1)+'/'+seatDensity+') = '+maxSeats+'\n'+
+    'Viewing angle = 2×atan((W/2)/Vfar) = 2×atan('+(W/2).toFixed(1)+'/'+vFar.toFixed(1)+') = '+vAngle.toFixed(1)+'°'
+  );
+
+  drawRoomPlan(W,D,seats,layout,scrIn,scrW,scrH,mount,rack,rotation);
+  drawRoomElevation(W,H,scrW,scrH,mount);
+}
+
+function rdSetCompRow(valId,vId,text,pass){
+  setText(valId,text);
+  const v=document.getElementById(vId);
+  if(v)v.innerHTML=pass?'<span style="color:#5b21b6;font-weight:600;">✓</span>':'<span style="color:#dc2626;font-weight:600;">✗</span>';
+}
+
+/* ── PLAN VIEW ── */
+function drawRoomPlan(W,D,seats,layout,scrIn,scrW,scrH,mount,rack,rotation){
+  const canvas=document.getElementById('rd-canvas');
+  if(!canvas)return;
+  const dpr=window.devicePixelRatio||1;
+  const cw=canvas.clientWidth||600;
+  const ch=Math.min(900,Math.max(320,cw*(D/W)*0.55+80));
+  canvas.width=cw*dpr; canvas.height=ch*dpr;
+  canvas.style.height=ch+'px';
+  const ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,cw,ch);
+
+  const padding=50;
+  const availW=cw-padding*2, availH=ch-padding*2;
+  const scale=Math.min(availW/W, availH/D);
+  const roomW=W*scale, roomH=D*scale;
+  const ox=(cw-roomW)/2, oy=padding;
+  function X(xm){return ox+xm*scale;}
+  function Y(ym){return oy+ym*scale;}
+
+  // Background
+  ctx.fillStyle='#f5f4f8'; ctx.fillRect(0,0,cw,ch);
+
+  // Room fill
+  ctx.fillStyle='#fff';
+  ctx.fillRect(ox,oy,roomW,roomH);
+
+  // Room outline
+  ctx.strokeStyle='rgba(91,33,182,0.55)'; ctx.lineWidth=2;
+  ctx.strokeRect(ox,oy,roomW,roomH);
+
+  // Top wall hatch (screen wall)
+  ctx.strokeStyle='rgba(124,58,237,0.18)'; ctx.lineWidth=0.7;
+  for(let i=0;i<roomW;i+=7){ctx.beginPath();ctx.moveTo(ox+i,oy);ctx.lineTo(ox+i+5,oy+9);ctx.stroke();}
+
+  // Door
+  const doorW=0.9*scale;
+  ctx.strokeStyle='rgba(91,33,182,0.35)'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(X(W)-doorW-4,Y(D)); ctx.lineTo(X(W)-4,Y(D)); ctx.stroke();
+  ctx.beginPath(); ctx.arc(X(W)-doorW-4,Y(D),doorW,Math.PI*1.5,Math.PI*2);
+  ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]);
+
+  // Screen
+  const scrXc=W/2;
+  const screenThick=0.08;
+  ctx.fillStyle='rgba(124,58,237,0.45)'; ctx.strokeStyle='rgba(91,33,182,0.85)'; ctx.lineWidth=1.5;
+  ctx.fillRect(X(scrXc-scrW/2),Y(0),scrW*scale,screenThick*scale);
+  ctx.strokeRect(X(scrXc-scrW/2),Y(0),scrW*scale,screenThick*scale);
+
+  // Rack/credenza
+  if(rack==='credenza'){
+    const rackW=Math.min(W*0.6,scrW+0.4),rackD=0.5;
+    ctx.fillStyle='rgba(180,120,20,0.25)'; ctx.strokeStyle='rgba(180,120,20,0.55)';
+    ctx.fillRect(X(scrXc-rackW/2),Y(screenThick+0.05),rackW*scale,rackD*scale);
+    ctx.strokeRect(X(scrXc-rackW/2),Y(screenThick+0.05),rackW*scale,rackD*scale);
+  } else if(rack==='rack'||rack==='rackwall'){
+    const rackW=Math.min(0.8,W*0.25),rackD=Math.min(0.7,D*0.18);
+    const rackX=0.3,rackY=Math.max(0.9,D-rackD-0.3);
+    ctx.fillStyle='rgba(180,120,20,0.25)'; ctx.strokeStyle='rgba(180,120,20,0.55)';
+    ctx.fillRect(X(rackX),Y(rackY),rackW*scale,rackD*scale);
+    ctx.strokeRect(X(rackX),Y(rackY),rackW*scale,rackD*scale);
+    ctx.fillStyle='rgba(100,60,10,0.7)'; ctx.font='8px DM Mono'; ctx.textAlign='center';
+    ctx.fillText('RACK',X(rackX)+rackW*scale/2,Y(rackY)+rackD*scale/2+3);
+    ctx.textAlign='left';
+  }
+
+  // Circulation zone
+  const circInset=0.5;
+  ctx.strokeStyle='rgba(16,160,90,0.35)'; ctx.setLineDash([5,4]); ctx.lineWidth=1;
+  ctx.strokeRect(X(circInset),Y(0.9),roomW-circInset*2*scale,roomH-1.5*scale);
+  ctx.setLineDash([]);
+
+  // Table + seats
+  const seatR=0.18*scale;
+  function drawChair(cx,cy){
+    ctx.fillStyle='rgba(200,60,60,0.3)'; ctx.strokeStyle='rgba(200,60,60,0.6)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.arc(cx,cy,seatR,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  }
+  const cx0=ox+roomW/2, cy0=oy+roomH/2;
+
+  ctx.fillStyle='rgba(80,120,200,0.35)'; ctx.strokeStyle='rgba(80,120,200,0.75)'; ctx.lineWidth=1.5;
+
+  if(layout==='boardroom'){
+    const rotated=(rotation===90||rotation===-90);
+    if(!rotated){
+      const tw=Math.min(W-1.4,3.6),td=Math.min(D-2.2,tw*0.4+0.8);
+      const tX=X(scrXc-tw/2),tY=Y(D/2-td/2);
+      rdRoundRect(ctx,tX,tY,tw*scale,td*scale,8); ctx.fill(); ctx.stroke();
+      const perSide=Math.max(1,Math.floor((seats-2)/2));
+      const headSeats=seats-perSide*2;
+      for(let i=0;i<perSide;i++){
+        drawChair(tX+((i+0.5)/perSide)*tw*scale,tY-seatR-6);
+        drawChair(tX+((i+0.5)/perSide)*tw*scale,tY+td*scale+seatR+6);
+      }
+      if(headSeats>=1)drawChair(tX-seatR-6,tY+td*scale/2);
+      if(headSeats>=2)drawChair(tX+tw*scale+seatR+6,tY+td*scale/2);
+    } else {
+      const td=Math.min(D-2.2,3.6),tw=Math.min(W-1.4,td*0.4+0.8);
+      const tX=X(scrXc-tw/2),tY=Y(D/2-td/2);
+      rdRoundRect(ctx,tX,tY,tw*scale,td*scale,8); ctx.fill(); ctx.stroke();
+      const perSide=Math.max(1,Math.floor((seats-2)/2));
+      const headSeats=seats-perSide*2;
+      for(let i=0;i<perSide;i++){
+        const fy=tY+((i+0.5)/perSide)*td*scale;
+        drawChair(tX-seatR-6,fy);
+        drawChair(tX+tw*scale+seatR+6,fy);
+      }
+      if(rotation===90){if(headSeats>=1)drawChair(tX+tw*scale/2,tY-seatR-6);if(headSeats>=2)drawChair(tX+tw*scale/2,tY+td*scale+seatR+6);}
+      else{if(headSeats>=1)drawChair(tX+tw*scale/2,tY+td*scale+seatR+6);if(headSeats>=2)drawChair(tX+tw*scale/2,tY-seatR-6);}
+    }
+  } else if(layout==='ushaped'){
+    const tw=Math.min(W-1.4,4.2),td=Math.min(D-2.5,3.2);
+    const legW=0.7*scale;
+    const tX=X(scrXc-tw/2),tY=Y(D/2-td/2+0.3);
+    ctx.fillRect(tX,tY,tw*scale,0.6*scale); ctx.strokeRect(tX,tY,tw*scale,0.6*scale);
+    ctx.fillRect(tX,tY,legW,td*scale); ctx.strokeRect(tX,tY,legW,td*scale);
+    ctx.fillRect(tX+tw*scale-legW,tY,legW,td*scale); ctx.strokeRect(tX+tw*scale-legW,tY,legW,td*scale);
+    const perLeg=Math.max(1,Math.floor(seats/2));
+    for(let i=0;i<perLeg;i++){
+      const fy=tY+0.7*scale+((i+0.5)/perLeg)*(td*scale-0.7*scale);
+      drawChair(tX+legW+seatR+6,fy); drawChair(tX+tw*scale-legW-seatR-6,fy);
+    }
+  } else if(layout==='classroom'){
+    const rows=Math.ceil(seats/4),perRow=Math.ceil(seats/rows);
+    const rowGap=Math.min(0.9,(D-2.0)/rows);
+    const tw=Math.min(W-1.2,perRow*0.8);
+    let placed=0;
+    for(let r=0;r<rows;r++){
+      const ty=Y(1.4+r*rowGap),tx=X(scrXc-tw/2);
+      ctx.fillRect(tx,ty,tw*scale,0.35*scale); ctx.strokeRect(tx,ty,tw*scale,0.35*scale);
+      for(let c=0;c<perRow&&placed<seats;c++,placed++) drawChair(tx+((c+0.5)/perRow)*tw*scale,ty+0.35*scale+seatR+4);
+    }
+  } else if(layout==='rounds'){
+    const numTables=Math.max(1,Math.ceil(seats/6)),perTable=Math.ceil(seats/numTables);
+    const cols=Math.ceil(Math.sqrt(numTables)),rows2=Math.ceil(numTables/cols);
+    const cellW=(W-1.0)/cols,cellD=(D-1.6)/rows2;
+    let placed=0;
+    for(let t=0;t<numTables;t++){
+      const col=t%cols,row=Math.floor(t/cols);
+      const ccx=X(0.5+cellW*(col+0.5)),ccy=Y(1.2+cellD*(row+0.5));
+      const r=Math.min(cellW,cellD)*scale*0.32;
+      ctx.beginPath(); ctx.arc(ccx,ccy,r,0,Math.PI*2); ctx.fill(); ctx.stroke();
+      const seatsHere=Math.min(perTable,seats-placed);
+      for(let i=0;i<seatsHere;i++){
+        const ang=(i/seatsHere)*Math.PI*2-Math.PI/2;
+        drawChair(ccx+Math.cos(ang)*(r+seatR+6),ccy+Math.sin(ang)*(r+seatR+6));
+      }
+      placed+=seatsHere;
+    }
+  } else if(layout==='theater'){
+    const usableW=W-1.6,usableD=D-2.4,rowDepth=0.85;
+    const rows=Math.max(1,Math.min(40,Math.floor(usableD/rowDepth)));
+    const perRowTarget=Math.ceil(seats/rows),seatW=0.55;
+    const maxPerRow=Math.max(1,Math.floor(usableW/seatW));
+    const perRow=Math.min(perRowTarget,maxPerRow);
+    const actualRows=Math.min(rows,Math.ceil(seats/perRow));
+    const wideRoom=perRow>=14;
+    let placed=0;
+    for(let r=0;r<actualRows&&placed<seats;r++){
+      const ty=Y(1.6+r*rowDepth);
+      const seatsThisRow=Math.min(perRow,seats-placed);
+      const rowSpanM=seatsThisRow*seatW+(wideRoom?seatW:0);
+      const rowSpan=Math.min(usableW,rowSpanM)*scale;
+      const rowX=X(scrXc)-rowSpan/2;
+      ctx.fillStyle='rgba(80,120,200,0.2)'; ctx.strokeStyle='rgba(80,120,200,0.5)'; ctx.lineWidth=1;
+      ctx.fillRect(rowX,ty,rowSpan,0.5*scale); ctx.strokeRect(rowX,ty,rowSpan,0.5*scale);
+      if(seatsThisRow<=60){
+        let drawnX=rowX; const mid=wideRoom?Math.floor(seatsThisRow/2):-1;
+        for(let c=0;c<seatsThisRow;c++){
+          const segW=seatW*scale;
+          if(c===mid)drawnX+=segW*0.4;
+          drawChair(drawnX+segW/2,ty+0.25*scale); drawnX+=segW;
+        }
+      }
+      placed+=seatsThisRow;
+    }
+    ctx.strokeStyle='rgba(124,58,237,0.2)'; ctx.setLineDash([4,3]); ctx.lineWidth=1;
+    ctx.strokeRect(X(0.4),Y(0.25),(W-0.8)*scale,1.0*scale);
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(91,33,182,0.55)'; ctx.font='9px DM Mono'; ctx.textAlign='center';
+    ctx.fillText('STAGE / SCREEN ZONE',X(scrXc),Y(0.9));
+    ctx.textAlign='left';
+  } else {
+    const r=Math.min(W-1.2,D-2.0)*scale*0.35;
+    ctx.beginPath(); ctx.ellipse(cx0,cy0,r*1.15,r*0.85,0,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    for(let i=0;i<seats;i++){
+      const ang=(i/seats)*Math.PI*2-Math.PI/2;
+      drawChair(cx0+Math.cos(ang)*(r*1.15+seatR+8),cy0+Math.sin(ang)*(r*0.85+seatR+8));
+    }
+  }
+
+  // AV/T point
+  ctx.fillStyle='rgba(90,80,150,0.35)'; ctx.strokeStyle='rgba(120,100,180,0.65)'; ctx.lineWidth=1;
+  const avX=X(scrXc)-14,avY=Y(D/2)-8;
+  ctx.fillRect(avX,avY,28,16); ctx.strokeRect(avX,avY,28,16);
+  ctx.fillStyle='rgba(60,40,120,0.8)'; ctx.font='8px DM Mono'; ctx.textAlign='center';
+  ctx.fillText('AV/T',avX+14,avY+11); ctx.textAlign='left';
+
+  // Dimension lines
+  ctx.strokeStyle='rgba(16,120,70,0.6)'; ctx.fillStyle='rgba(16,100,60,0.85)'; ctx.font='10px DM Mono'; ctx.lineWidth=1;
+  rdDrawDim(ctx,ox,oy+roomH+22,ox+roomW,oy+roomH+22,(W*1000).toFixed(0)+' mm');
+  rdDrawDimV(ctx,ox+roomW+22,oy,ox+roomW+22,oy+roomH,(D*1000).toFixed(0)+' mm');
+
+  ctx.fillStyle='rgba(30,20,80,0.75)'; ctx.font='11px DM Mono'; ctx.textAlign='left';
+  ctx.fillText('PLAN VIEW — TOP',ox,oy-14);
+  ctx.font='9px DM Mono'; ctx.fillStyle='rgba(80,70,120,0.6)';
+  ctx.fillText(W.toFixed(1)+' × '+D.toFixed(1)+' m  |  '+seats+' seats',ox,oy+roomH+40);
+  setText('rd-drawing-label',W.toFixed(1)+'×'+D.toFixed(1)+'m · '+(RD_TYPES[rdCurrentType]?.label||'Custom'));
+}
+
+function rdRoundRect(ctx,x,y,w,h,r){
+  ctx.beginPath(); ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+}
+function rdDrawDim(ctx,x1,y,x2,y2,label){
+  ctx.beginPath(); ctx.moveTo(x1,y); ctx.lineTo(x2,y); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x1,y-4); ctx.lineTo(x1,y+4); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x2,y-4); ctx.lineTo(x2,y+4); ctx.stroke();
+  ctx.textAlign='center'; ctx.fillText(label,(x1+x2)/2,y+14); ctx.textAlign='left';
+}
+function rdDrawDimV(ctx,x,y1,x2,y2,label){
+  ctx.beginPath(); ctx.moveTo(x,y1); ctx.lineTo(x,y2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x-4,y1); ctx.lineTo(x+4,y1); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x-4,y2); ctx.lineTo(x+4,y2); ctx.stroke();
+  ctx.save(); ctx.translate(x+14,(y1+y2)/2); ctx.rotate(Math.PI/2);
+  ctx.textAlign='center'; ctx.fillText(label,0,0); ctx.restore();
+}
+
+/* ── ELEVATION VIEW ── */
+function drawRoomElevation(W,H,scrW,scrH,mount){
+  const canvas=document.getElementById('rd-elev-canvas');
+  if(!canvas)return;
+  const dpr=window.devicePixelRatio||1;
+  const cw=canvas.clientWidth||600;
+  const ch=260;
+  canvas.width=cw*dpr; canvas.height=ch*dpr;
+  canvas.style.height=ch+'px';
+  const ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,cw,ch);
+
+  const padding=60;
+  const availW=cw-padding*2, availH=ch-padding*2-20;
+  const scale=Math.min(availW/W, availH/H);
+  const wallW=W*scale, wallH=H*scale;
+  const ox=(cw-wallW)/2, oy=ch-40-wallH;
+  function X(xm){return ox+xm*scale;}
+  function Y(ym){return oy+wallH-ym*scale;}
+
+  // Background
+  ctx.fillStyle='#f5f4f8'; ctx.fillRect(0,0,cw,ch);
+  ctx.fillStyle='#fff'; ctx.fillRect(ox,oy,wallW,wallH);
+
+  // Floor line
+  ctx.strokeStyle='rgba(91,33,182,0.35)'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(ox-20,oy+wallH); ctx.lineTo(ox+wallW+20,oy+wallH); ctx.stroke();
+  ctx.strokeStyle='rgba(124,58,237,0.15)'; ctx.lineWidth=0.8;
+  for(let hx=ox-20;hx<ox+wallW+20;hx+=10){ctx.beginPath();ctx.moveTo(hx,oy+wallH);ctx.lineTo(hx+6,oy+wallH+8);ctx.stroke();}
+
+  // Wall outline
+  ctx.strokeStyle='rgba(91,33,182,0.45)'; ctx.lineWidth=2;
+  ctx.strokeRect(ox,oy,wallW,wallH);
+
+  // FFL label
+  ctx.fillStyle='rgba(80,70,120,0.7)'; ctx.font='9px DM Mono'; ctx.textAlign='left';
+  ctx.fillText('F.F.L. ±0.000',ox-10,oy+wallH+18);
+
+  // Screen
+  const scrBottomM=mount==='floor'?0.6:1.1;
+  const scrTopM=scrBottomM+scrH;
+  const scrXc=W/2;
+  ctx.fillStyle='rgba(124,58,237,0.4)'; ctx.strokeStyle='rgba(91,33,182,0.85)'; ctx.lineWidth=1.5;
+  ctx.fillRect(X(scrXc-scrW/2),Y(scrTopM),scrW*scale,(scrTopM-scrBottomM)*scale);
+  ctx.strokeRect(X(scrXc-scrW/2),Y(scrTopM),scrW*scale,(scrTopM-scrBottomM)*scale);
+
+  // Eye level line
+  const eyeM=1.2;
+  ctx.strokeStyle='rgba(180,100,10,0.5)'; ctx.setLineDash([4,3]); ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(ox-10,Y(eyeM)); ctx.lineTo(ox+wallW+10,Y(eyeM)); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='rgba(150,80,10,0.8)'; ctx.font='9px DM Mono'; ctx.textAlign='left';
+  ctx.fillText('1200mm eye level',ox+wallW+14,Y(eyeM)+3);
+
+  // Sightlines
+  const viewerX=W*0.75;
+  ctx.strokeStyle='rgba(91,33,182,0.4)'; ctx.lineWidth=1.5; ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(X(viewerX),Y(eyeM)); ctx.lineTo(X(scrXc-scrW/2),Y(scrTopM)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(X(viewerX),Y(eyeM)); ctx.lineTo(X(scrXc+scrW/2),Y(scrBottomM)); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='rgba(91,33,182,0.65)'; ctx.beginPath(); ctx.arc(X(viewerX),Y(eyeM),5,0,Math.PI*2); ctx.fill();
+
+  // Dims
+  ctx.strokeStyle='rgba(16,120,70,0.6)'; ctx.fillStyle='rgba(16,100,60,0.85)'; ctx.font='9px DM Mono';
+  rdDrawDimV(ctx,X(scrXc-scrW/2)-16,Y(0),X(scrXc-scrW/2)-16,Y(scrBottomM),(scrBottomM*1000).toFixed(0)+'mm');
+  rdDrawDimV(ctx,ox+wallW+16,oy,ox+wallW+16,oy+wallH,(H*1000).toFixed(0)+'mm');
+
+  ctx.fillStyle='rgba(30,20,80,0.75)'; ctx.font='11px DM Mono'; ctx.textAlign='left';
+  ctx.fillText('ELEVATION — FRONT WALL',ox,oy-12);
+}
+
+window.addEventListener('resize',()=>{
+  if(currentMethod==='discas') calcDiscas();
+  else if(currentMethod==='468') calc468();
+  else if(currentMethod==='room') rdCalc();
+  else calcP();
+});
+
+calcDiscas();
+</script>
+</body>
+</html>

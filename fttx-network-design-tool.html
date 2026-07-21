@@ -1,0 +1,1946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FTTx Network Design Tool</title>
+</head>
+<body>
+<div id="cc-root"></div>
+<style>
+  :root{
+    --bg: #f3f4f7;
+    --panel: #ffffff;
+    --panel-2: #f6f7f9;
+    --edge: #e1e3e9;
+    --edge-soft: #ebedf1;
+    --text: #171a21;
+    --muted: #6b7280;
+    --muted-2: #9aa0ab;
+    --accent: #b5790a;
+    --accent-soft: rgba(181,121,10,0.10);
+    --du: #c53030;
+    --etisalat: #2166c9;
+    --ok: #17915a;
+    --warn: #b5790a;
+    --bad: #d1373d;
+    --brand: #2f8fe0;
+    --brand-soft: rgba(47,143,224,0.10);
+    --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  #cc-root{
+    min-height: 100%;
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 34px, rgba(20,25,35,0.025) 34px, rgba(20,25,35,0.025) 35px),
+      repeating-linear-gradient(90deg, transparent, transparent 34px, rgba(20,25,35,0.02) 34px, rgba(20,25,35,0.02) 35px),
+      radial-gradient(circle at 10% -10%, rgba(47,143,224,0.06) 0%, transparent 40%),
+      radial-gradient(circle at 100% 110%, rgba(181,121,10,0.05) 0%, transparent 40%),
+      var(--bg);
+    font-family: var(--sans);
+    color: var(--text);
+    padding: 28px 18px 60px;
+    box-sizing: border-box;
+  }
+  #cc-root *{ box-sizing: border-box; }
+
+  .wrap{ max-width: 880px; margin: 0 auto; }
+
+  .masthead{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap: 16px;
+    padding-bottom: 20px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid var(--edge);
+    flex-wrap: wrap;
+  }
+  .masthead .title-block .eyebrow{
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .masthead h1{
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .masthead .sub{
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 4px;
+    max-width: 480px;
+  }
+  .masthead .ref{
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--muted-2);
+    text-align: right;
+    line-height: 1.6;
+  }
+
+  /* ---- Breadcrumb / page header / back pill (matches ICT Tools reference layout) ---- */
+  .crumb{
+    display:flex;
+    align-items:center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    color: var(--muted-2);
+    text-transform: uppercase;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+  }
+  .crumb .sep{ color: var(--edge); font-size: 12px; }
+  .crumb .crumb-active{ color: var(--text); font-weight: 600; }
+
+  .page-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+  }
+  .page-head-left{
+    display:flex;
+    align-items:center;
+    gap: 18px;
+  }
+  .page-icon-badge{
+    width: 56px; height: 56px;
+    flex-shrink: 0;
+    border-radius: 16px;
+    background: linear-gradient(160deg, var(--brand-soft), rgba(47,143,224,0.03));
+    border: 1px solid rgba(47,143,224,0.25);
+    display:flex; align-items:center; justify-content:center;
+    color: var(--brand);
+  }
+  .page-icon-badge svg{ width: 26px; height: 26px; }
+  .page-head h1{
+    margin: 0 0 4px;
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+  .page-sub{
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  /* Decorative only — mirrors the parent MEP Platform's "back" chip so the mock matches that
+     level of the app, but has no click behaviour here: navigating between MEP Platform / ICT
+     Design Tools / this page happens one level up, not inside this tool. */
+  .back-chip{
+    display:inline-flex;
+    align-items:center;
+    gap: 8px;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    background: var(--panel-2);
+    border: 1px solid var(--edge);
+    border-radius: 999px;
+    padding: 9px 16px;
+    cursor: default;
+    user-select: none;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .back-chip .back-arrow{ font-size: 14px; }
+
+  .page-hr{
+    height: 1px;
+    background: linear-gradient(90deg, var(--edge), transparent 85%);
+    margin: 22px 0 28px;
+  }
+
+  .tool-tabs{
+    display:flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .tool-tab{
+    display:inline-flex;
+    align-items:center;
+    gap: 8px;
+    background: var(--panel-2);
+    border: 1px solid var(--edge);
+    border-radius: 999px;
+    padding: 11px 20px;
+    cursor: pointer;
+    font-family: var(--sans);
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--muted);
+    transition: background .12s ease, border-color .12s ease, color .12s ease;
+    white-space: nowrap;
+  }
+  .tool-tab:hover{ border-color: rgba(47,143,224,0.4); color: var(--text); }
+  .tool-tab.active{
+    background: var(--brand);
+    border-color: var(--brand);
+    color: #ffffff;
+    box-shadow: 0 4px 12px -4px rgba(47,143,224,0.5);
+  }
+  .tool-tab-icon{
+    width: 17px; height: 17px;
+    color: var(--brand);
+    flex-shrink: 0;
+    display:flex;
+  }
+  .tool-tab-icon svg{ width: 100%; height: 100%; }
+  .tool-tab.active .tool-tab-icon{ color: #ffffff; }
+
+  .tool-detail{ margin-top: 24px; }
+
+
+  .panel{
+    background: linear-gradient(180deg, var(--panel) 0%, #fbfbfc 100%);
+    border: 1px solid var(--edge);
+    border-radius: 16px;
+    padding: 26px;
+  }
+  .panel-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    margin-bottom: 22px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .panel-head h2{
+    margin:0 0 6px;
+    font-size: 17px;
+    font-weight: 600;
+  }
+  .panel-head p{
+    margin:0;
+    color: var(--muted);
+    font-size: 12.5px;
+    max-width: 520px;
+    line-height: 1.5;
+  }
+  .formula-chip{
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid rgba(232,176,75,0.25);
+    padding: 6px 10px;
+    border-radius: 8px;
+    white-space: nowrap;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  @media (max-width: 620px){ .grid{ grid-template-columns: 1fr; } }
+
+  .field{ margin-bottom: 16px; }
+  .field label{
+    display:block;
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-bottom: 7px;
+    letter-spacing: 0.01em;
+  }
+  .field label .unit{ color: var(--muted-2); }
+  .field input[type=number], .field select{
+    width: 100%;
+    background: var(--panel-2);
+    border: 1px solid var(--edge);
+    border-radius: 10px;
+    padding: 11px 12px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    outline: none;
+    transition: border-color .12s ease;
+  }
+  .field input[type=number]:focus, .field select:focus{ border-color: var(--accent); }
+  .field .hint{ font-size: 10.5px; color: var(--muted-2); margin-top: 5px; }
+
+  .seg{
+    display:flex;
+    background: var(--panel-2);
+    border: 1px solid var(--edge);
+    border-radius: 10px;
+    padding: 3px;
+    gap: 2px;
+  }
+  .seg button{
+    flex:1;
+    background: none;
+    border: none;
+    padding: 9px 6px;
+    border-radius: 7px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 11.5px;
+    cursor: pointer;
+  }
+  .seg button.active{ background: var(--edge); color: var(--text); }
+
+  .divider{ height:1px; background: var(--edge); margin: 22px 0; }
+
+  .results{
+    display:grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 6px;
+  }
+  .result-card{
+    background: var(--panel-2);
+    border: 1px solid var(--edge);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .result-card .label{
+    font-size: 10.5px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .result-card .value{
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.1;
+  }
+  .result-card .value .sub-unit{
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 500;
+    margin-left: 4px;
+  }
+  .result-card.du .value{ color: var(--du); }
+  .result-card.etisalat .value{ color: var(--etisalat); }
+  .result-card.accent .value{ color: var(--accent); }
+  .result-card .footnote{ font-size: 10.5px; color: var(--muted-2); margin-top: 6px; }
+
+  .status-banner{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 12.5px;
+    margin-top: 16px;
+    border: 1px solid transparent;
+  }
+  .status-banner.ok{ background: rgba(75,201,142,0.1); border-color: rgba(75,201,142,0.3); color: var(--ok); }
+  .status-banner.warn{ background: rgba(232,176,75,0.1); border-color: rgba(232,176,75,0.3); color: var(--warn); }
+  .status-banner.bad{ background: rgba(229,85,90,0.1); border-color: rgba(229,85,90,0.3); color: var(--bad); }
+  .status-banner .dot{ width:7px; height:7px; border-radius:50%; background: currentColor; flex-shrink:0; }
+
+  table.spec-table{
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 18px;
+    font-size: 12.5px;
+  }
+  table.spec-table th{
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--edge);
+    text-transform: uppercase;
+  }
+  table.spec-table td{
+    padding: 10px 10px;
+    border-bottom: 1px solid var(--edge-soft);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  table.spec-table tr:last-child td{ border-bottom: none; }
+  table.spec-table tr.highlight td{ background: var(--accent-soft); }
+  table.spec-table td.dim{ color: var(--muted); }
+
+  .bar-track{
+    height: 8px;
+    background: var(--panel-2);
+    border: 1px solid var(--edge);
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: 10px;
+  }
+  .bar-fill{
+    height: 100%;
+    border-radius: 5px;
+    transition: width .25s ease;
+  }
+
+  .note-block{
+    margin-top: 18px;
+    padding: 14px 16px;
+    background: var(--panel-2);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .note-block b{ color: var(--text); }
+
+  /* ---- Riser schematic ---- */
+  :root{ --retail: #7c5cd6; --spine: #c7cbd3; }
+  .riser-toolbar{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 8px;
+  }
+  @media (max-width: 620px){ .riser-toolbar{ grid-template-columns: 1fr 1fr; } }
+
+  .legend-row{
+    display:flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin: 4px 0 20px;
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+  .legend-row .item{ display:flex; align-items:center; gap:6px; }
+  .legend-row .swatch{ width:10px; height:10px; border-radius:3px; flex-shrink:0; }
+
+  .riser-wrap{
+    background: var(--panel-2);
+    border: 1px solid var(--edge);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .riser-cap{
+    padding: 14px 20px;
+    background: #fafafb;
+    display:flex;
+    align-items:center;
+    gap: 12px;
+  }
+  .riser-cap.top{ border-bottom: 1px dashed var(--edge); }
+  .riser-cap.bottom{ border-top: 1px dashed var(--edge); flex-wrap: wrap; }
+  .cap-node{
+    font-family: var(--mono);
+    font-size: 11.5px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--edge);
+    background: var(--panel);
+    color: var(--muted);
+  }
+  .cap-node.mtr{ color: var(--accent); border-color: rgba(232,176,75,0.35); background: var(--accent-soft); font-weight:600; }
+  .cap-node.pop-du{ color: var(--du); border-color: rgba(207,63,63,0.35); }
+  .cap-node.pop-etisalat{ color: var(--etisalat); border-color: rgba(47,125,224,0.35); }
+  .pop-line{ font-family: var(--mono); font-size: 9.5px; color: var(--muted-2); }
+  .pop-line.main{ color: var(--muted); }
+
+  .riser-scroll{
+    max-height: 480px;
+    overflow-y: auto;
+    padding: 4px 20px;
+    position: relative;
+  }
+  .riser-scroll::-webkit-scrollbar{ width: 8px; }
+  .riser-scroll::-webkit-scrollbar-thumb{ background: var(--edge); border-radius: 4px; }
+
+  .riser-floor{
+    position: relative;
+    display:flex;
+    align-items:center;
+    gap: 14px;
+    padding: 11px 0 11px 22px;
+    border-bottom: 1px dashed var(--edge-soft);
+  }
+  .riser-floor::before{
+    content:'';
+    position:absolute;
+    left: 0; top:0; bottom:0;
+    width:2px;
+    background: var(--spine);
+  }
+  .riser-floor:first-child::before{ top: 50%; }
+  .riser-floor:last-child::before{ bottom: 50%; }
+  .floor-dot{
+    position:absolute;
+    left: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    border: 2px solid #fafafb;
+    z-index: 2;
+  }
+  .floor-dot.residential{ background: #4bc98e; }
+  .floor-dot.business{ background: var(--accent); }
+  .floor-dot.retail{ background: var(--retail); }
+
+  .floor-badge{
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+    width: 34px;
+    flex-shrink: 0;
+  }
+  .floor-node{
+    flex: 1;
+    min-width: 0;
+  }
+  .floor-node .node-title{
+    display:flex;
+    align-items:center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text);
+    flex-wrap: wrap;
+  }
+  .splice-badge{
+    font-size: 9px;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid rgba(232,176,75,0.3);
+    padding: 2px 6px;
+    border-radius: 5px;
+    white-space: nowrap;
+  }
+  .floor-node .node-meta{
+    font-size: 10.5px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+  .cabinet-chips{
+    display:flex;
+    gap: 3px;
+    flex-shrink: 0;
+    max-width: 130px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .cabinet-chip{
+    width: 7px; height: 7px;
+    border-radius: 2px;
+    background: var(--edge);
+  }
+  .cabinet-chip.filled{ background: var(--fn, var(--muted)); }
+  .cabinet-count{
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--muted-2);
+    flex-shrink: 0;
+    width: 30px;
+    text-align: right;
+  }
+
+  .riser-summary{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 18px;
+  }
+  @media (max-width: 700px){ .riser-summary{ grid-template-columns: 1fr 1fr; } }
+
+  /* ---- Blueprint riser v2 ---- */
+  .bp-height-panel{
+    background: linear-gradient(180deg, rgba(232,176,75,0.08), rgba(232,176,75,0.02));
+    border: 1px solid rgba(232,176,75,0.3);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+  }
+  .bp-height-row{
+    display:flex;
+    align-items:flex-end;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .bp-mini-field.lg input{ width: 110px; font-size: 15px; padding: 8px 10px; font-weight: 700; }
+  .bp-mini-field.lg label{ color: var(--accent); font-size: 11px; }
+  .bp-height-hint{ font-size: 10px; color: var(--muted-2); margin-top: 4px; font-family: var(--mono); }
+  .bp-height-total{
+    display:flex;
+    flex-direction: column;
+    align-items:center;
+    margin-left: auto;
+    padding: 4px 16px;
+    border-left: 1px solid rgba(232,176,75,0.25);
+  }
+  .bp-height-total .n{ font-family: var(--mono); font-size: 22px; font-weight: 700; color: var(--accent); line-height:1; }
+  .bp-height-total .lbl{ font-family: var(--mono); font-size: 9px; color: var(--muted); letter-spacing:0.05em; margin-top:3px; }
+
+  .bp-toolstrip{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .bp-seg-group{ display:flex; gap: 8px; align-items:center; flex-wrap: wrap; }
+  .bp-mini-field{ display:flex; flex-direction:column; gap:4px; }
+  .bp-mini-field label{ font-size: 10px; color: var(--muted); font-family: var(--mono); }
+  .bp-mini-field input{
+    width: 64px;
+    background: var(--panel-2);
+    border: 1px solid var(--edge);
+    border-radius: 7px;
+    padding: 6px 8px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+
+  .table-editor{
+    background: var(--panel-2);
+    border: 1px solid var(--edge);
+    border-radius: 12px;
+    max-height: 260px;
+    overflow-y: auto;
+    margin-bottom: 18px;
+  }
+  .table-editor table{ width: 100%; border-collapse: collapse; }
+  .table-editor thead th{
+    position: sticky; top:0;
+    background: #eef0f4;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    text-transform: uppercase;
+    padding: 8px 10px;
+    text-align: center;
+    border-bottom: 1px solid var(--edge);
+    z-index: 2;
+  }
+  .table-editor thead th:first-child{ text-align: left; }
+  .table-editor td{
+    padding: 5px 8px;
+    border-bottom: 1px solid var(--edge-soft);
+    text-align: center;
+  }
+  .table-editor td:first-child{
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--text);
+    font-weight: 600;
+    padding-left: 12px;
+  }
+  .table-editor tr.tot td{ font-weight:700; color: var(--accent); border-top: 1px solid var(--edge); background: rgba(232,176,75,0.04); }
+  .table-editor tr.grp-mark td:first-child{ color: var(--retail); }
+  .cell-input{
+    width: 46px;
+    background: #f6f7f9;
+    border: 1px solid var(--edge);
+    border-radius: 6px;
+    padding: 4px 2px;
+    text-align:center;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 11.5px;
+  }
+  .cell-input:focus{ border-color: var(--accent); outline:none; }
+  .cell-input.zero{ color: var(--muted-2); }
+  .table-editor td.a-col .cell-input:not(.zero){ color: var(--du); }
+  .table-editor td.b-col .cell-input:not(.zero){ color: var(--etisalat); }
+
+  .bp-panel{
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(20,25,35,0.025) 27px, rgba(20,25,35,0.025) 28px),
+      linear-gradient(180deg, #fbfbfc 0%, #f3f4f7 100%);
+    border: 1px solid var(--edge);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .bp-band{
+    padding: 12px 20px;
+    background: #eef0f4;
+    display:flex;
+    align-items:center;
+    justify-content: center;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+  .bp-band.top{ border-bottom: 1px solid var(--edge); }
+  .bp-band .arrow{ color: var(--accent); }
+
+  .bp-body{
+    max-height: 560px;
+    overflow-y: auto;
+    padding: 6px 0;
+  }
+  .bp-body::-webkit-scrollbar{ width: 8px; }
+  .bp-body::-webkit-scrollbar-thumb{ background: var(--edge); border-radius: 4px; }
+
+  .bp-row{
+    display:grid;
+    grid-template-columns: 46px 1fr 1fr;
+    align-items: stretch;
+    min-height: 46px;
+    border-bottom: 1px dashed rgba(20,25,35,0.08);
+  }
+  .bp-row.is-basement{ opacity: 0.55; }
+  .bp-level-tag{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text);
+    border-right: 1px solid var(--edge);
+    position: relative;
+  }
+  .bp-level-tag .arrow-ico{ position:absolute; bottom:2px; font-size: 8px; color: var(--muted-2); }
+
+  .bp-side{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    padding: 8px 14px;
+    position: relative;
+  }
+  .bp-side.side-a{ justify-content:flex-end; border-right: 1px solid rgba(20,25,35,0.08); }
+  .bp-side.side-b{ justify-content:flex-start; }
+  .bp-side.empty{ opacity: 0.25; }
+
+  .bp-cab-row{
+    display:flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: inherit;
+  }
+  .bp-cabinet-mini{
+    display:flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--edge);
+    background: var(--panel-2);
+    min-width: 88px;
+  }
+  .bp-cabinet-mini.a{ border-color: rgba(207,63,63,0.35); }
+  .bp-cabinet-mini.b{ border-color: rgba(47,125,224,0.35); }
+  .bp-cabinet-mini .cm-head{ font-family: var(--mono); font-size: 9.5px; font-weight:700; letter-spacing:0.02em; }
+  .bp-cabinet-mini.a .cm-head{ color: var(--du); }
+  .bp-cabinet-mini.b .cm-head{ color: var(--etisalat); }
+  .bp-cabinet-mini .cm-line{ font-family: var(--mono); font-size: 8.5px; color: var(--fn-text, var(--text)); }
+  .bp-cabinet-mini .cm-line.dim{ color: var(--muted-2); font-size: 8px; }
+
+  .bp-odf-row{
+    display:grid;
+    grid-template-columns: 46px 1fr 1fr;
+    align-items: stretch;
+    background: rgba(232,176,75,0.05);
+    border-bottom: 1px dashed rgba(20,25,35,0.08);
+    border-top: 1px dashed rgba(232,176,75,0.25);
+    border-bottom: 1px dashed rgba(232,176,75,0.25);
+  }
+  .bp-odf-slot{
+    display:flex;
+    align-items:center;
+    padding: 8px 14px;
+  }
+  .bp-odf-slot.side-a{ justify-content: flex-end; border-right: 1px solid rgba(20,25,35,0.08); }
+  .bp-odf-slot.side-b{ justify-content: flex-start; }
+  .bp-odf-slot.empty{ opacity: 0.15; }
+  .odf-node{
+    padding: 7px 12px;
+    border-radius: 8px;
+    background: var(--accent-soft);
+    border: 1px solid rgba(232,176,75,0.45);
+    max-width: 260px;
+  }
+  .odf-node-title{ font-family: var(--mono); font-size: 10.5px; font-weight: 700; color: var(--accent); }
+  .odf-node-sub{ font-family: var(--mono); font-size: 9px; color: var(--text); margin-top: 2px; }
+  .odf-node-sub.dim{ color: var(--muted-2); }
+
+  .bp-odf-badge{
+    font-family: var(--mono);
+    font-size: 8.5px;
+    letter-spacing: 0.02em;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid rgba(232,176,75,0.3);
+    padding: 2px 6px;
+    border-radius: 5px;
+    white-space: nowrap;
+  }
+
+  .bp-trunk-label{
+    font-family: var(--mono);
+    font-size: 8.5px;
+    color: var(--muted-2);
+    text-align: center;
+    padding: 1px 0 3px;
+    letter-spacing: 0.03em;
+  }
+
+  .footer-credit{
+    text-align:center;
+    margin-top: 26px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--muted-2);
+    letter-spacing: 0.04em;
+  }
+
+  @media print{
+    @page{ size: A3 landscape; margin: 10mm; }
+    html, body{ background: #ffffff !important; }
+    #cc-root{
+      --bg:#ffffff; --panel:#ffffff; --panel-2:#f4f5f7; --edge:#ccced4; --edge-soft:#e4e6ea;
+      --text:#14161c; --muted:#565c68; --muted-2:#8a8f99;
+      background: #ffffff !important;
+      padding: 6mm !important;
+    }
+    .no-print{ display: none !important; }
+    .panel{ border: 1px solid #ccc !important; box-shadow: none !important; background: #fff !important; }
+    .bp-panel{ background: #fff !important; border: 1px solid #ccc !important; }
+    .bp-band{ background: #f0f0f2 !important; }
+    .bp-body{ max-height: none !important; overflow: visible !important; }
+    .bp-row, .bp-odf-row{ break-inside: avoid; }
+    .legend-row{ margin-bottom: 10px; }
+    .riser-summary{ break-inside: avoid; }
+    .note-block{ break-inside: avoid; }
+  }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<script type="text/babel">
+const { useState, useMemo } = React;
+
+function round(n, d = 0) {
+  const f = Math.pow(10, d);
+  return Math.round(n * f) / f;
+}
+
+// ---------- TAB 1: GPON Splitter Calculator (Equation F.1 & F.2) ----------
+function SplitterCalc() {
+  const [units, setUnits] = useState(150);
+  const [bizTenants, setBizTenants] = useState(20);
+  const [buildingType, setBuildingType] = useState('mixed');
+
+  // Equation F.1: splitters per SP = units / 30 (downlink ports of 2x32), round up
+  const perSpResidential = units > 0 ? Math.ceil(units / 30) : 0;
+  // Equation F.2: business splitters per SP = (business tenants * 1.1) / 8, round up
+  const perSpBusiness = bizTenants > 0 ? Math.ceil((bizTenants * 1.1) / 8) : 0;
+
+  const spareResidentialPorts = perSpResidential > 0 ? perSpResidential * 32 - units : 0;
+  const spareBusinessPorts = perSpBusiness > 0 ? perSpBusiness * 8 - Math.ceil(bizTenants * 1.1) : 0;
+
+  const showResidential = buildingType === 'residential' || buildingType === 'mixed';
+  const showBusiness = buildingType === 'business' || buildingType === 'mixed';
+
+  const effResidential = showResidential ? perSpResidential : 0;
+  const effBusiness = showBusiness ? perSpBusiness : 0;
+  const combinedPerSp = effResidential + effBusiness;
+
+  return (
+    <div className="panel">
+      <div className="panel-head">
+        <div>
+          <h2>GPON splitter requirement</h2>
+          <p>Number of (2×32) residential and (2×8) business GPON splitters required per service provider, per building — per Equation F.1 and F.2. Supports mixed-use buildings that carry both residential units and business tenants.</p>
+        </div>
+        <div className="formula-chip">Eq. F.1 / F.2</div>
+      </div>
+
+      <div className="seg" style={{ marginBottom: 20 }}>
+        <button className={buildingType === 'residential' ? 'active' : ''} onClick={() => setBuildingType('residential')}>Residential only</button>
+        <button className={buildingType === 'business' ? 'active' : ''} onClick={() => setBuildingType('business')}>Business only</button>
+        <button className={buildingType === 'mixed' ? 'active' : ''} onClick={() => setBuildingType('mixed')}>Mixed use</button>
+      </div>
+
+      <div className="grid">
+        {showResidential && (
+          <div className="field">
+            <label>Number of residential units in building</label>
+            <input type="number" min="0" value={units} onChange={e => setUnits(Math.max(0, +e.target.value || 0))} />
+            <div className="hint">Table-driven: downlink ports of a (2 in × 32 out) splitter = 30 usable + 2 spare</div>
+          </div>
+        )}
+        {showBusiness && (
+          <div className="field">
+            <label>Number of business tenants</label>
+            <input type="number" min="0" value={bizTenants} onChange={e => setBizTenants(Math.max(0, +e.target.value || 0))} />
+            <div className="hint">Business splitters use (2 in × 8 out), with a 1.1× uplift factor per Eq. F.2</div>
+          </div>
+        )}
+      </div>
+
+      <div className="divider"></div>
+
+      <div className="results">
+        <div className="result-card accent">
+          <div className="label">Total splitters required, per SP</div>
+          <div className="value">{combinedPerSp}<span className="sub-unit">splitters</span></div>
+          <div className="footnote">
+            {buildingType === 'mixed'
+              ? `= ${effResidential} residential (2×32) + ${effBusiness} business (2×8)`
+              : showResidential
+                ? `= ⌈${units} ÷ 30⌉  ·  (2×32 GPON splitter)`
+                : `= ⌈(${bizTenants} × 1.1) ÷ 8⌉  ·  (2×8 GPON splitter)`}
+          </div>
+        </div>
+        <div className="result-card">
+          <div className="label">Total for two SPs (du + Etisalat)</div>
+          <div className="value">{combinedPerSp * 2}<span className="sub-unit">splitters</span></div>
+          <div className="footnote">Two downlink ports reserved as spare for operational maintenance per SP</div>
+        </div>
+        <div className="result-card du">
+          <div className="label">du allocation</div>
+          <div className="value">{combinedPerSp}<span className="sub-unit">splitters</span></div>
+          {buildingType === 'mixed' && <div className="footnote">{effResidential} residential + {effBusiness} business</div>}
+        </div>
+        <div className="result-card etisalat">
+          <div className="label">Etisalat allocation</div>
+          <div className="value">{combinedPerSp}<span className="sub-unit">splitters</span></div>
+          {buildingType === 'mixed' && <div className="footnote">{effResidential} residential + {effBusiness} business</div>}
+        </div>
+      </div>
+
+      {showResidential && (
+        <div className="status-banner ok">
+          <div className="dot"></div>
+          Residential: spare downlink capacity of {spareResidentialPorts} port(s) across {perSpResidential} splitter(s).
+        </div>
+      )}
+      {showBusiness && (
+        <div className="status-banner ok">
+          <div className="dot"></div>
+          Business: spare downlink capacity of {spareBusinessPorts} port(s) across {perSpBusiness} splitter(s).
+        </div>
+      )}
+
+      <div className="note-block">
+        <b>Manual reference (§5.9):</b> 30 is the downlink port count of a (2 in × 32 out) splitter, with two ports reserved as
+        spare for operational maintenance. Business splitters are (2 in × 8 out); required count = (business tenants × 1.1) ÷ 8, rounded up.
+        In a mixed-use building, residential and business splitter counts are calculated separately with their respective
+        equations and provisioned side-by-side in the MTR — they are not combined into a single splitter pool.
+      </div>
+    </div>
+  );
+}
+
+// ---------- TAB 2: Fibre core provision (Table G.11) ----------
+function FibreCoreCalc() {
+  const [tenants, setTenants] = useState(180);
+
+  const totalCores = Math.ceil(tenants * 4 * 1.25); // 4-core per tenant (2 SPs), +25% spare
+
+  let rackType, rackSize, patchPanels;
+  if (tenants <= 150) {
+    rackType = 'Free standing rack';
+    rackSize = '42U · 800 mm × 800 mm (W × D)';
+    patchPanels = Math.ceil(totalCores / 24) + ' × 24-port patch panel(s)';
+  } else if (tenants <= 300) {
+    rackType = 'Floor-mounted ODF';
+    rackSize = '47U · 900 mm × 450 mm (W × D)';
+    patchPanels = Math.ceil(totalCores / 144) + ' × 144-port patch panel(s)';
+  } else {
+    rackType = 'Floor-mounted ODF';
+    rackSize = '47U · 900 mm × 450 mm (W × D)';
+    patchPanels = Math.ceil(totalCores / 144) + ' × 144-port patch panel(s)';
+  }
+
+  const bandRows = [
+    { range: '0 – 150', cores: '(Total × 4-core) + 25%', panel: 'Total ÷ 24 = No. 24-port patch panels', rack: 'Free standing rack · 42U 800×800mm' },
+    { range: '151 – 300', cores: '(Total × 4-core) + 25%', panel: 'Total ÷ 144 = No. 144-port patch panels', rack: 'Floor-mounted ODF · 47U 900×450mm' },
+    { range: '301 – 600', cores: '(Total × 4-core) + 25%', panel: 'Total ÷ 144 = No. 144-port patch panels', rack: 'Floor-mounted ODF · 47U 900×450mm' },
+  ];
+  const activeBand = tenants <= 150 ? 0 : (tenants <= 300 ? 1 : 2);
+
+  const miniODFCount = Math.ceil(estimateFloors(tenants) / 3);
+
+  function estimateFloors(t) {
+    // rough placeholder note only — real floor count is a separate input in practice
+    return Math.max(1, Math.ceil(t / 20));
+  }
+
+  return (
+    <div className="panel">
+      <div className="panel-head">
+        <div>
+          <h2>Fibre core provision (MTR → FTR)</h2>
+          <p>Multicore fibre core count and rack/ODF sizing relative to tenant numbers — per Table G.11, two-SP design.</p>
+        </div>
+        <div className="formula-chip">Table G.11</div>
+      </div>
+
+      <div className="grid">
+        <div className="field">
+          <label>Number of tenants per building</label>
+          <input type="number" min="1" value={tenants} onChange={e => setTenants(Math.max(1, +e.target.value || 0))} />
+          <div className="hint">Two core fibre each for two SPs, per tenant</div>
+        </div>
+      </div>
+
+      <div className="divider"></div>
+
+      <div className="results">
+        <div className="result-card accent">
+          <div className="label">Total fibre cores required</div>
+          <div className="value">{totalCores}<span className="sub-unit">cores</span></div>
+          <div className="footnote">= (tenants × 4-core) + 25% spare, rounded up</div>
+        </div>
+        <div className="result-card">
+          <div className="label">Rack / ODF type</div>
+          <div className="value" style={{ fontSize: 15, lineHeight: 1.4 }}>{rackType}</div>
+          <div className="footnote">{rackSize}</div>
+        </div>
+        <div className="result-card">
+          <div className="label">MTR optical patch panels</div>
+          <div className="value" style={{ fontSize: 17 }}>{patchPanels}</div>
+          <div className="footnote">Simplex SC/APC ports</div>
+        </div>
+        <div className="result-card">
+          <div className="label">Per-SP core share</div>
+          <div className="value">{Math.ceil(totalCores / 2)}<span className="sub-unit">cores</span></div>
+          <div className="footnote">Split evenly between du and Etisalat</div>
+        </div>
+      </div>
+
+      <table className="spec-table">
+        <thead>
+          <tr><th>Tenants / building</th><th>Fibre cores</th><th>Patch panels</th><th>Rack / ODF size</th></tr>
+        </thead>
+        <tbody>
+          {bandRows.map((r, i) => (
+            <tr key={i} className={i === activeBand ? 'highlight' : ''}>
+              <td>{r.range}</td>
+              <td className="dim">{r.cores}</td>
+              <td className="dim">{r.panel}</td>
+              <td className="dim">{r.rack}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <div className="note-block">
+        <b>Manual reference (§5.10, Table G.11):</b> Mini ODF locations in a high-rise building start from the first floor
+        and each mini ODF covers a maximum of three floors. Multicore fibres are directly spliced to 4-core fibre cables
+        using the mini ODF cabinet inside each FTR.
+      </div>
+    </div>
+  );
+}
+
+// ---------- TAB 3: Consolidation cabinet selector (Table G.6) ----------
+function CabinetCalc() {
+  const [copperPorts, setCopperPorts] = useState(8);
+
+  const isSmall = copperPorts <= 8;
+
+  return (
+    <div className="panel">
+      <div className="panel-head">
+        <div>
+          <h2>Consolidation cabinet sizing</h2>
+          <p>Minimum cabinet dimensions and patch panel size for apartment / office / retail units — per Table G.6.</p>
+        </div>
+        <div className="formula-chip">Table G.6</div>
+      </div>
+
+      <div className="grid">
+        <div className="field">
+          <label>Loaded copper ports required <span className="unit">(per tenant)</span></label>
+          <input type="number" min="1" max="48" value={copperPorts} onChange={e => setCopperPorts(Math.max(1, +e.target.value || 0))} />
+          <div className="hint">Threshold: up to 8 ports vs. 8–24 ports per tenant</div>
+        </div>
+      </div>
+
+      <div className="divider"></div>
+
+      <div className="results">
+        <div className="result-card accent">
+          <div className="label">Minimum internal dimension</div>
+          <div className="value" style={{ fontSize: 20 }}>{isSmall ? '450 × 150' : '600 × 300'}<span className="sub-unit">mm</span></div>
+          <div className="footnote">12U in both cases (h × w × d)</div>
+        </div>
+        <div className="result-card">
+          <div className="label">Copper patch panel</div>
+          <div className="value">{isSmall ? '24-port' : '24-port'}<span className="sub-unit">450/600mm</span></div>
+          <div className="footnote">{isSmall ? '24-port 450 mm copper patch panel' : '24-port 600 mm copper patch panel'}</div>
+        </div>
+        <div className="result-card">
+          <div className="label">Mounting height</div>
+          <div className="value" style={{ fontSize: 20 }}>600–1200<span className="sub-unit">mm above FFL</span></div>
+        </div>
+        <div className="result-card">
+          <div className="label">Front clearance required</div>
+          <div className="value">1<span className="sub-unit">m free space</span></div>
+        </div>
+      </div>
+
+      <table className="spec-table">
+        <thead>
+          <tr><th>Aspect</th><th>Up to 8 loaded ports</th><th>8 – 24 loaded ports</th></tr>
+        </thead>
+        <tbody>
+          <tr className={isSmall ? 'highlight' : ''}>
+            <td>Internal dimension</td><td className="dim">12U, 450 × 150 mm</td><td className={!isSmall ? '' : 'dim'}>12U, 600 × 300 mm (or 150 mm)</td>
+          </tr>
+          <tr>
+            <td>Twisted pair copper</td><td className="dim">≤ 24 cables per tenant</td><td className="dim">&gt; 24 cables per tenant</td>
+          </tr>
+          <tr>
+            <td>Fibre termination</td><td className="dim" colSpan="2">4-port box, 2× SC/APC + 2× LC/APC, for 4-core SM drop cable</td>
+          </tr>
+          <tr>
+            <td>Power</td><td className="dim" colSpan="2">13 A dual socket, dedicated circuit breaker, not looped with general power</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div className="note-block">
+        <b>Manual reference (§5.5, Table G.6):</b> Each cabinet shall be capable of accommodating two telecom operators'
+        ONTs at the same time. Cable entries must accommodate incoming fibre optic and copper cables with horizontal
+        cable management for copper patch cables.
+      </div>
+    </div>
+  );
+}
+
+// ---------- TAB 4: Copper permanent-link length checker ----------
+function CopperLengthCalc() {
+  const [distance, setDistance] = useState(45);
+  const [category, setCategory] = useState('6');
+  const [ambientTemp, setAmbientTemp] = useState(30);
+
+  const LIMIT = 90;
+  const withinLimit = distance <= LIMIT;
+  const utilisation = Math.min(100, round((distance / LIMIT) * 100, 1));
+
+  let deratingNote = 'No de-rating required — within standard ambient range.';
+  let derated = distance;
+  if (ambientTemp > 40) {
+    const factor = 1 + (ambientTemp - 40) * 0.006; // illustrative de-rating slope
+    derated = round(distance * factor, 1);
+    deratingNote = `Elevated ambient temperature — apply cable de-rating per manufacturer specification (~${round((factor - 1) * 100, 1)}% derating applied here for illustration).`;
+  }
+
+  const maxThroughput = category === '6' ? '1 Gbps' : '10 Gbps';
+
+  let barColor = 'var(--ok)';
+  if (utilisation > 100) barColor = 'var(--bad)';
+  else if (utilisation > 85) barColor = 'var(--warn)';
+
+  return (
+    <div className="panel">
+      <div className="panel-head">
+        <div>
+          <h2>Copper permanent link checker</h2>
+          <p>Validates consolidation-cabinet-to-TO cable run against the 90 m permanent link limit — per §5.10.</p>
+        </div>
+        <div className="formula-chip">§5.10 (h)</div>
+      </div>
+
+      <div className="grid">
+        <div className="field">
+          <label>Cable run length <span className="unit">(m)</span></label>
+          <input type="number" min="0" value={distance} onChange={e => setDistance(Math.max(0, +e.target.value || 0))} />
+          <div className="hint">Consolidation cabinet to TO, permanent link</div>
+        </div>
+        <div className="field">
+          <label>Cabling category</label>
+          <div className="seg">
+            <button className={category === '6' ? 'active' : ''} onClick={() => setCategory('6')}>Category 6</button>
+            <button className={category === '6A' ? 'active' : ''} onClick={() => setCategory('6A')}>Category 6A</button>
+          </div>
+        </div>
+        <div className="field">
+          <label>Ambient temperature <span className="unit">(°C)</span></label>
+          <input type="number" value={ambientTemp} onChange={e => setAmbientTemp(+e.target.value || 0)} />
+          <div className="hint">Used to flag when manufacturer de-rating applies</div>
+        </div>
+      </div>
+
+      <div className="divider"></div>
+
+      <div className="results">
+        <div className={`result-card ${withinLimit ? 'accent' : ''}`}>
+          <div className="label">Limit utilisation</div>
+          <div className="value">{utilisation}<span className="sub-unit">%</span></div>
+          <div className="bar-track"><div className="bar-fill" style={{ width: Math.min(100, utilisation) + '%', background: barColor }}></div></div>
+        </div>
+        <div className="result-card">
+          <div className="label">Max channel throughput</div>
+          <div className="value" style={{ fontSize: 22 }}>{maxThroughput}</div>
+          <div className="footnote">End-to-end error-free channel performance</div>
+        </div>
+      </div>
+
+      <div className={`status-banner ${withinLimit ? 'ok' : 'bad'}`}>
+        <div className="dot"></div>
+        {withinLimit
+          ? `Within the 90 m permanent link limit (${distance} m used, ${round(LIMIT - distance, 1)} m headroom).`
+          : `Exceeds the 90 m permanent link limit by ${round(distance - LIMIT, 1)} m — reposition the consolidation cabinet or split the run.`}
+      </div>
+
+      {ambientTemp > 40 && (
+        <div className="status-banner warn">
+          <div className="dot"></div>
+          {deratingNote}
+        </div>
+      )}
+
+      <div className="note-block">
+        <b>Manual reference (§5.10):</b> The permanent link cable length from consolidation cabinet to TO shall not exceed
+        90 m. Cable lengths shall be de-rated where required due to local temperature conditions and cable specifications
+        to enable end-to-end error-free channel performance up to 1 Gbps for category 6 and 10 Gbps for category 6A.
+      </div>
+    </div>
+  );
+}
+
+// ---------- TAB 5: Microduct sizing (Table G.10) ----------
+function MicroductCalc() {
+  const [buildingType, setBuildingType] = useState('multi-tenant');
+  const [routeType, setRouteType] = useState('mtrFtr');
+
+  const rows = {
+    mtrFtr: { label: 'MTR to each FTR', multi: 'One-way 12/8 mm microduct per required multicore cable + 30% spare empty microduct tubes', warehouse: 'Not applicable' },
+    mtrMsr: { label: 'MTR to each MSR', multi: 'One-way 12/8 mm microduct per required multicore cable + 30% spare empty microduct tubes', warehouse: 'Not applicable' },
+    mtrRtmr: { label: 'MTR to RTMR', multi: 'One-way 12/8 mm microduct per required multicore cable + 30% spare empty microduct tubes', warehouse: 'Not applicable' },
+    ftrCab: { label: 'FTR ODF to consolidation cabinet', multi: 'Two-way 8/5 mm microduct (one tube for drop cable, one tube spare)', warehouse: 'Two-way 8/5 mm microduct (one tube for drop cable, one tube spare)' },
+  };
+
+  const active = rows[routeType];
+  const applicable = buildingType === 'multi-tenant' ? active.multi : active.warehouse;
+  const isNA = applicable === 'Not applicable';
+
+  return (
+    <div className="panel">
+      <div className="panel-head">
+        <div>
+          <h2>Microduct route lookup</h2>
+          <p>Horizontal microduct specification by route and building type — per Table G.10. Applies only when consolidation
+          cabinet locations are permanent and cable density is low.</p>
+        </div>
+        <div className="formula-chip">Table G.10</div>
+      </div>
+
+      <div className="grid">
+        <div className="field">
+          <label>Building type</label>
+          <div className="seg">
+            <button className={buildingType === 'multi-tenant' ? 'active' : ''} onClick={() => setBuildingType('multi-tenant')}>Multi-tenant</button>
+            <button className={buildingType === 'warehouse' ? 'active' : ''} onClick={() => setBuildingType('warehouse')}>Warehouse</button>
+          </div>
+        </div>
+        <div className="field">
+          <label>Route</label>
+          <select value={routeType} onChange={e => setRouteType(e.target.value)}>
+            <option value="mtrFtr">MTR to each FTR</option>
+            <option value="mtrMsr">MTR to each MSR</option>
+            <option value="mtrRtmr">MTR to RTMR</option>
+            <option value="ftrCab">FTR ODF to consolidation cabinet</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="divider"></div>
+
+      <div className={`status-banner ${isNA ? 'warn' : 'ok'}`}>
+        <div className="dot"></div>
+        {isNA ? 'Not applicable for this building type — use conventional cable tray/duct pathway instead.' : applicable}
+      </div>
+
+      <table className="spec-table">
+        <thead>
+          <tr><th>Route</th><th>Multi-tenant building</th><th>Warehouse</th></tr>
+        </thead>
+        <tbody>
+          {Object.entries(rows).map(([key, r]) => (
+            <tr key={key} className={key === routeType ? 'highlight' : ''}>
+              <td>{r.label}</td>
+              <td className="dim">{r.multi}</td>
+              <td className="dim">{r.warehouse}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <div className="note-block">
+        <b>Manual reference (§5.8):</b> Horizontal microduct shall only be used when consolidation cabinet locations are
+        permanent, cable density is low, and flexibility to modify routing is not required.
+      </div>
+    </div>
+  );
+}
+
+// ---------- TAB 6: FTTx Riser Schematic — blueprint view, driven by Plot 07 drawings 800006–800009 ----------
+const TRUNK_SIZES = [12, 24, 48, 96, 144, 288];
+function nextTrunkSize(n) {
+  for (const t of TRUNK_SIZES) if (n <= t) return t;
+  return Math.ceil(n / 144) * 144;
+}
+
+// Level order top-of-list = roof, bottom-of-list = lowest basement (matches drawing reading order).
+// ONU counts below are transcribed from the small "PLOT 07 / BUILDING A / BUILDING B" tables printed
+// on sheets 800006–800009. A few upper floors (penthouse boxes) render as extra apartment glyphs on
+// the sheets without a corresponding table row, so the printed sheet totals (A=28, B=46) run a little
+// ahead of what's transcribable row-by-row — every cell below is editable so you can true it up against
+// the PDF directly, and the Total row always recomputes live from whatever is in the table.
+//
+// Levels are generated dynamically from a "top level" number so the whole diagram redraws to match
+// any building height (e.g. entering 11 redraws exactly L01–L11 + GR + basements; entering 30 redraws
+// exactly L01–L30). buildLevels(29, 2, true) reproduces the exact 32-row Plot 07 reference layout.
+function buildLevels(topLevel, basementCount, includeRoof) {
+  const top = Math.max(1, Math.min(200, topLevel || 1));
+  const basements = Math.max(0, Math.min(10, basementCount || 0));
+  const pad = Math.max(2, String(top).length);
+  const list = [];
+  if (includeRoof) list.push({ id: 'RF', label: 'RF', group: 'roof' });
+  for (let i = top; i >= 1; i--) {
+    const label = 'L' + String(i).padStart(pad, '0');
+    list.push({ id: label, label, group: 'level' });
+  }
+  list.push({ id: 'GR', label: 'GR', group: 'ground' });
+  for (let b = 1; b <= basements; b++) {
+    const label = 'B' + String(b).padStart(2, '0');
+    list.push({ id: label, label, group: 'basement' });
+  }
+  return list;
+}
+
+const PLOT07_DEFAULT_COUNTS = {
+  RF: { a: 0, b: 0 }, L29: { a: 0, b: 0 }, L28: { a: 0, b: 0 }, L27: { a: 0, b: 1 },
+  L26: { a: 0, b: 0 }, L25: { a: 0, b: 0 }, L24: { a: 0, b: 0 }, L23: { a: 0, b: 0 },
+  L22: { a: 0, b: 2 }, L21: { a: 0, b: 2 }, L20: { a: 0, b: 2 }, L19: { a: 1, b: 2 },
+  L18: { a: 0, b: 2 }, L17: { a: 0, b: 2 }, L16: { a: 0, b: 2 }, L15: { a: 0, b: 2 },
+  L14: { a: 1, b: 2 }, L13: { a: 1, b: 2 }, L12: { a: 2, b: 2 }, L11: { a: 1, b: 0 },
+  L10: { a: 1, b: 0 }, L09: { a: 3, b: 0 }, L08: { a: 3, b: 0 }, L07: { a: 3, b: 3 },
+  L06: { a: 3, b: 3 }, L05: { a: 3, b: 3 }, L04: { a: 2, b: 4 }, L03: { a: 2, b: 4 },
+  L02: { a: 0, b: 1 }, L01: { a: 0, b: 2 }, GR: { a: 0, b: 0 },
+  B01: { a: 0, b: 0 }, B02: { a: 0, b: 0 },
+};
+
+function RiserDiagram() {
+  const [counts, setCounts] = useState(PLOT07_DEFAULT_COUNTS);
+  const [topLevel, setTopLevel] = useState(29);
+  const [basementCount, setBasementCount] = useState(2);
+  const [includeRoof, setIncludeRoof] = useState(true);
+  const [buildingView, setBuildingView] = useState('both'); // 'A' | 'B' | 'both'
+  const [sparePercent, setSparePercent] = useState(20);
+  const [odfMode, setOdfMode] = useState('capacity'); // 'capacity' | 'interval'
+  const [odfCapacity, setOdfCapacity] = useState(6); // tenants per mini ODF branch, capacity mode
+  const [odfInterval, setOdfInterval] = useState(3); // levels per splice, interval mode
+  const [plotCode, setPlotCode] = useState('07');
+  const [splitterEtisalat, setSplitterEtisalat] = useState(6);
+  const [splitterDu, setSplitterDu] = useState(6);
+
+  // The full level list is regenerated any time topLevel / basementCount / includeRoof change —
+  // this is what makes "building is 11 floors" instantly redraw to exactly L01–L11 (+ GR + basements),
+  // and "30 floors" redraw to exactly L01–L30, with everything below (table, diagram, totals, exports)
+  // following automatically.
+  const levels = useMemo(() => buildLevels(topLevel, basementCount, includeRoof), [topLevel, basementCount, includeRoof]);
+
+  const setCell = (levelId, side, raw) => {
+    const val = raw === '' ? 0 : Math.max(0, parseInt(raw, 10) || 0);
+    setCounts(prev => ({ ...prev, [levelId]: { ...prev[levelId], [side]: val } }));
+  };
+
+  const resetToPlot07 = () => {
+    setTopLevel(29);
+    setBasementCount(2);
+    setIncludeRoof(true);
+    setCounts(PLOT07_DEFAULT_COUNTS);
+  };
+  const clearAll = () => {
+    const empty = {};
+    levels.forEach(l => { empty[l.id] = { a: 0, b: 0 }; });
+    setCounts(empty);
+  };
+
+  const exportPDF = () => {
+    const prevTitle = document.title;
+    document.title = `FTTx-Riser-Plot${plotCode}`;
+    window.print();
+    setTimeout(() => { document.title = prevTitle; }, 500);
+  };
+
+  const downloadTextFile = (filename, text, mime) => {
+    const blob = new Blob([text], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  // Builds a minimal, valid DXF (R12-style ENTITIES-only) capturing the riser as real vector
+  // geometry: a spine, one row per level, a box + label per consolidation cabinet, a marker +
+  // label per mini ODF distribution node, and trunk-size text per segment. Opens directly in
+  // AutoCAD / DraftSight / LibreCAD; use "Save As" there to convert to native .dwg — a true binary
+  // .dwg writer needs Autodesk's proprietary ODA SDK, which isn't available to generate client-side.
+  const exportDXF = () => {
+    const rowH = 12;
+    const bottomUp = [...levels].filter(l => l.group !== 'basement').reverse(); // GR..top
+    const yOf = {};
+    bottomUp.forEach((l, i) => { yOf[l.id] = i * rowH; });
+    let minY = 0, maxY = (bottomUp.length - 1) * rowH;
+    levels.filter(l => l.group === 'basement').forEach((l, i) => {
+      yOf[l.id] = -(i + 1) * rowH;
+      minY = Math.min(minY, yOf[l.id]);
+    });
+
+    const lines = [];
+    const push = (...codes) => { codes.forEach(c => lines.push(String(c))); };
+    const dxfLine = (x1, y1, x2, y2, layer) => push(0, 'LINE', 8, layer || '0', 10, x1.toFixed(2), 20, y1.toFixed(2), 30, 0, 11, x2.toFixed(2), 21, y2.toFixed(2), 31, 0);
+    const dxfText = (x, y, h, str, layer) => push(0, 'TEXT', 8, layer || '0', 10, x.toFixed(2), 20, y.toFixed(2), 30, 0, 40, h, 1, String(str).replace(/[\n\r]/g, ' '));
+    const dxfCircle = (x, y, r, layer) => push(0, 'CIRCLE', 8, layer || '0', 10, x.toFixed(2), 20, y.toFixed(2), 30, 0, 40, r);
+    const dxfRect = (x, y, w, h, layer) => {
+      dxfLine(x, y, x + w, y, layer); dxfLine(x + w, y, x + w, y + h, layer);
+      dxfLine(x + w, y + h, x, y + h, layer); dxfLine(x, y + h, x, y, layer);
+    };
+
+    push(0, 'SECTION', 2, 'ENTITIES');
+
+    // spine
+    dxfLine(0, minY, 0, maxY, 'SPINE');
+    dxfText(-4, maxY + 6, 3, 'TO ABOVE LEVELS', 'NOTES');
+    dxfText(-4, minY - 8, 3, 'FROM MTR', 'NOTES');
+
+    levels.forEach(l => {
+      const y = yOf[l.id];
+      dxfLine(-4, y, 4, y, 'SPINE');
+      dxfText(-14, y - 1.2, 2.5, l.label, 'LEVELS');
+
+      const aN = counts[l.id]?.a || 0;
+      const bN = counts[l.id]?.b || 0;
+      for (let i = 0; i < aN; i++) {
+        const bx = -30 - i * 26 - 20, by = y - 4;
+        dxfRect(bx, by, 20, 8, 'CAB_A');
+        dxfText(bx + 1.5, by + 3, 1.8, `A-APT.${String(i + 1).padStart(2, '0')} ONU`, 'CAB_A');
+      }
+      for (let i = 0; i < bN; i++) {
+        const bx = 30 + i * 26, by = y - 4;
+        dxfRect(bx, by, 20, 8, 'CAB_B');
+        dxfText(bx + 1.5, by + 3, 1.8, `B-APT.${String(i + 1).padStart(2, '0')} ONU`, 'CAB_B');
+      }
+
+      const aClose = buildA.closingAt[l.id];
+      const bClose = buildB.closingAt[l.id];
+      if (aClose) {
+        dxfCircle(-18, y, 2, 'ODF_A');
+        dxfText(-18, y + 4, 2, `ODF-P${plotCode}.A-${l.label} (${aClose.tenants} units)`, 'ODF_A');
+      }
+      if (bClose) {
+        dxfCircle(18, y, 2, 'ODF_B');
+        dxfText(12, y + 4, 2, `ODF-P${plotCode}.B-${l.label} (${bClose.tenants} units)`, 'ODF_B');
+      }
+
+      if (l.group !== 'roof') {
+        const aTrunk = buildA.trunkAt[l.id];
+        const bTrunk = buildB.trunkAt[l.id];
+        dxfText(-3, y + rowH / 2 - 1, 1.6, `A:${aTrunk}c B:${bTrunk}c`, 'TRUNK');
+      }
+    });
+
+    dxfText(-30, maxY + 14, 4, `FTTX RISER — PLOT ${plotCode} — Building A:${totals.a} B:${totals.b} units`, 'NOTES');
+
+    push(0, 'ENDSEC', 0, 'EOF');
+    downloadTextFile(`FTTx-Riser-Plot${plotCode}.dxf`, lines.join('\n'), 'application/dxf');
+  };
+
+  const totals = useMemo(() => {
+    let a = 0, b = 0;
+    levels.forEach(l => { a += (counts[l.id]?.a || 0); b += (counts[l.id]?.b || 0); });
+    return { a, b };
+  }, [counts, levels]);
+
+  // Bottom-to-top pass (GR/L01 upward) to auto-place mini ODF splice points and compute
+  // the trunk core size feeding each level and everything above it, per building. Also tracks
+  // which contiguous block of levels each mini ODF distributes to (its "branch"), so the
+  // diagram can show the ODF as a distribution node feeding a specific group of consolidation
+  // cabinets, not just a badge.
+  const computeBuilding = (side) => {
+    const bottomUp = [...levels].filter(l => l.group !== 'basement').reverse(); // GR..RF
+    let acc = 0;
+    let cumulative = 0;
+    let branchIdx = 0;
+    let branchLevels = [];
+    const odfAt = {};
+    const trunkAt = {};
+    const branchOf = {};
+    const branches = {}; // branchIdx -> { tenants, levels: [ids top..bottom of branch], odfLevel }
+    bottomUp.forEach((l) => {
+      const n = counts[l.id]?.[side] || 0;
+      cumulative += n;
+      acc += n;
+      if (n > 0) branchLevels.push(l.id);
+      branchOf[l.id] = branchIdx;
+      let isSplice = false;
+      if (odfMode === 'capacity') {
+        if (acc >= odfCapacity && n > 0) isSplice = true;
+      } else {
+        const levelNum = l.group === 'level' ? parseInt(l.label.replace('L', ''), 10) : 0;
+        if (l.group === 'ground' && n > 0) isSplice = true;
+        else if (l.group === 'level' && n > 0 && (levelNum - 1) % Math.max(1, odfInterval) === 0) isSplice = true;
+      }
+      odfAt[l.id] = isSplice;
+      if (isSplice) {
+        branches[branchIdx] = { tenants: acc, levels: [...branchLevels], odfLevel: l.id };
+        acc = 0;
+        branchLevels = [];
+        branchIdx += 1;
+      }
+      const rawCores = cumulative * 4 * (1 + sparePercent / 100);
+      trunkAt[l.id] = nextTrunkSize(Math.ceil(rawCores));
+    });
+    // any leftover partial branch (didn't reach capacity) still belongs to the running branchIdx
+    if (branchLevels.length > 0) {
+      branches[branchIdx] = { tenants: acc, levels: [...branchLevels], odfLevel: null };
+    }
+    const closingAt = {};
+    Object.values(branches).forEach(b => { if (b.odfLevel) closingAt[b.odfLevel] = b; });
+    return { odfAt, trunkAt, branchOf, branches, closingAt, totalCores: nextTrunkSize(Math.ceil(cumulative * 4 * (1 + sparePercent / 100))) };
+  };
+
+  const buildA = useMemo(() => computeBuilding('a'), [counts, odfMode, odfCapacity, odfInterval, sparePercent]);
+  const buildB = useMemo(() => computeBuilding('b'), [counts, odfMode, odfCapacity, odfInterval, sparePercent]);
+
+  const showA = buildingView === 'A' || buildingView === 'both';
+  const showB = buildingView === 'B' || buildingView === 'both';
+
+  const formulaEtisalat = totals.a + totals.b > 0 ? Math.ceil(((totals.a + totals.b) * 1.1) / 32) : 0;
+
+  return (
+    <div className="panel">
+      <div className="panel-head">
+        <div>
+          <h2>FTTx riser schematic — blueprint view</h2>
+          <p>Live-editable version of Plot 07's riser sheets (22251-SSH-07Z-XXX-DWG-IT-800006 to -800009): the level table
+          on the left is the actual source of truth, and the schematic below recomputes trunk sizes and mini ODF
+          placement the moment you change a cell.</p>
+        </div>
+        <div className="formula-chip">Ref. 800006–800009</div>
+      </div>
+
+      <div className="bp-height-panel no-print">
+        <div className="bp-height-row">
+          <div className="bp-mini-field lg">
+            <label>Building height — top level number</label>
+            <input type="number" min="1" max="200" value={topLevel} onChange={e => setTopLevel(Math.max(1, Math.min(200, +e.target.value || 1)))} />
+            <div className="bp-height-hint">Diagram redraws to exactly L01–L{String(topLevel).padStart(2, '0')}</div>
+          </div>
+          <div className="bp-mini-field">
+            <label>Basement levels</label>
+            <input type="number" min="0" max="10" value={basementCount} onChange={e => setBasementCount(Math.max(0, Math.min(10, +e.target.value || 0)))} />
+          </div>
+          <div className="bp-mini-field">
+            <label>Roof level</label>
+            <div className="seg">
+              <button className={includeRoof ? 'active' : ''} onClick={() => setIncludeRoof(true)}>Include</button>
+              <button className={!includeRoof ? 'active' : ''} onClick={() => setIncludeRoof(false)}>Omit</button>
+            </div>
+          </div>
+          <div className="bp-height-total">
+            <span className="n">{levels.length}</span>
+            <span className="lbl">total rows</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="bp-toolstrip no-print">
+        <div className="bp-seg-group">
+          <div className="seg">
+            <button className={buildingView === 'both' ? 'active' : ''} onClick={() => setBuildingView('both')}>Both buildings</button>
+            <button className={buildingView === 'A' ? 'active' : ''} onClick={() => setBuildingView('A')}>Building A</button>
+            <button className={buildingView === 'B' ? 'active' : ''} onClick={() => setBuildingView('B')}>Building B</button>
+          </div>
+          <div className="seg">
+            <button className={odfMode === 'capacity' ? 'active' : ''} onClick={() => setOdfMode('capacity')}>Mini ODF: by capacity</button>
+            <button className={odfMode === 'interval' ? 'active' : ''} onClick={() => setOdfMode('interval')}>Mini ODF: by interval</button>
+          </div>
+        </div>
+        <div className="bp-seg-group">
+          {odfMode === 'capacity' ? (
+            <div className="bp-mini-field">
+              <label>tenants / ODF</label>
+              <input type="number" min="1" max="20" value={odfCapacity} onChange={e => setOdfCapacity(Math.max(1, +e.target.value || 1))} />
+            </div>
+          ) : (
+            <div className="bp-mini-field">
+              <label>levels / ODF</label>
+              <input type="number" min="1" max="10" value={odfInterval} onChange={e => setOdfInterval(Math.max(1, +e.target.value || 1))} />
+            </div>
+          )}
+          <div className="bp-mini-field">
+            <label>spare %</label>
+            <input type="number" min="0" max="100" value={sparePercent} onChange={e => setSparePercent(Math.max(0, +e.target.value || 0))} />
+          </div>
+          <div className="bp-mini-field">
+            <label>plot</label>
+            <input type="text" value={plotCode} onChange={e => setPlotCode(e.target.value)} />
+          </div>
+          <div className="bp-mini-field">
+            <label>du splitters</label>
+            <input type="number" min="0" value={splitterDu} onChange={e => setSplitterDu(Math.max(0, +e.target.value || 0))} />
+          </div>
+          <div className="bp-mini-field">
+            <label>Etisalat splitters</label>
+            <input type="number" min="0" value={splitterEtisalat} onChange={e => setSplitterEtisalat(Math.max(0, +e.target.value || 0))} />
+          </div>
+        </div>
+      </div>
+
+      <div className="table-editor no-print">
+        <table>
+          <thead>
+            <tr>
+              <th>Level</th>
+              <th style={{ color: 'var(--du)' }}>Building A — ONU</th>
+              <th style={{ color: 'var(--etisalat)' }}>Building B — ONU</th>
+            </tr>
+          </thead>
+          <tbody>
+            {levels.map(l => (
+              <tr key={l.id} className={l.group === 'ground' ? 'grp-mark' : ''}>
+                <td>{l.label}{l.group === 'ground' && ' (retail)'}{l.group === 'basement' && ' (infra)'}</td>
+                <td className="a-col">
+                  <input
+                    className={`cell-input ${(counts[l.id]?.a || 0) === 0 ? 'zero' : ''}`}
+                    type="number" min="0"
+                    value={counts[l.id]?.a === 0 ? '' : counts[l.id]?.a}
+                    placeholder="-"
+                    onChange={e => setCell(l.id, 'a', e.target.value)}
+                  />
+                </td>
+                <td className="b-col">
+                  <input
+                    className={`cell-input ${(counts[l.id]?.b || 0) === 0 ? 'zero' : ''}`}
+                    type="number" min="0"
+                    value={counts[l.id]?.b === 0 ? '' : counts[l.id]?.b}
+                    placeholder="-"
+                    onChange={e => setCell(l.id, 'b', e.target.value)}
+                  />
+                </td>
+              </tr>
+            ))}
+            <tr className="tot">
+              <td>Total</td>
+              <td>{totals.a}</td>
+              <td>{totals.b}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="bp-seg-group no-print" style={{ marginBottom: 16 }}>
+        <button className="key" onClick={resetToPlot07} style={{ padding: '8px 12px', fontSize: 11, borderRadius: 8, background: 'var(--panel-2)', border: '1px solid var(--edge)', color: 'var(--text)', fontFamily: 'var(--mono)', cursor: 'pointer' }}>↺ Reload Plot 07 data</button>
+        <button onClick={clearAll} style={{ padding: '8px 12px', fontSize: 11, borderRadius: 8, background: 'var(--panel-2)', border: '1px solid var(--edge)', color: 'var(--text)', fontFamily: 'var(--mono)', cursor: 'pointer' }}>Clear table</button>
+        <span style={{ width: 1, alignSelf: 'stretch', background: 'var(--edge)', margin: '0 2px' }}></span>
+        <button onClick={exportPDF} style={{ padding: '8px 12px', fontSize: 11, borderRadius: 8, background: 'var(--accent-soft)', border: '1px solid rgba(232,176,75,0.4)', color: 'var(--accent)', fontFamily: 'var(--mono)', cursor: 'pointer', fontWeight: 700 }}>⭳ Export PDF</button>
+        <button onClick={exportDXF} style={{ padding: '8px 12px', fontSize: 11, borderRadius: 8, background: 'var(--accent-soft)', border: '1px solid rgba(232,176,75,0.4)', color: 'var(--accent)', fontFamily: 'var(--mono)', cursor: 'pointer', fontWeight: 700 }}>⭳ Export DXF (CAD)</button>
+      </div>
+
+      <div className="legend-row">
+        <div className="item"><span className="swatch" style={{ background: 'var(--du)' }}></span>Building A — consolidation (ONU) cabinet, one per apartment</div>
+        <div className="item"><span className="swatch" style={{ background: 'var(--etisalat)' }}></span>Building B — consolidation (ONU) cabinet, one per apartment</div>
+        <div className="item"><span className="swatch" style={{ background: 'var(--accent)' }}></span>Mini ODF — distribution node feeding the cabinets below it</div>
+        <div className="item"><span className="swatch" style={{ background: 'var(--muted-2)' }}></span>Basement / no load</div>
+      </div>
+
+      <div className="bp-panel">
+        <div className="bp-band top"><span className="arrow">▲</span> TO ABOVE LEVELS</div>
+        <div className="bp-body">
+          {levels.map(l => {
+            const aN = counts[l.id]?.a || 0;
+            const bN = counts[l.id]?.b || 0;
+            const aTrunk = buildA.trunkAt[l.id];
+            const bTrunk = buildB.trunkAt[l.id];
+            const aClose = buildA.closingAt[l.id];
+            const bClose = buildB.closingAt[l.id];
+            const levelLabelOf = (id) => (levels.find(x => x.id === id) || {}).label || id;
+            return (
+              <React.Fragment key={l.id}>
+                <div className={`bp-row ${l.group === 'basement' ? 'is-basement' : ''}`}>
+                  <div className="bp-level-tag">{l.label}<span className="arrow-ico">▼</span></div>
+
+                  <div className={`bp-side side-a ${(!showA || aN === 0) ? 'empty' : ''}`}>
+                    {showA && aN > 0 && (
+                      <div className="bp-cab-row">
+                        {Array.from({ length: aN }).map((_, i) => (
+                          <div className="bp-cabinet-mini a" key={i}>
+                            <div className="cm-head">APT.{String(i + 1).padStart(2, '0')}</div>
+                            <div className="cm-line">ONU CABINET</div>
+                            <div className="cm-line dim">F.O. TERM. BOX + ONU</div>
+                            <div className="cm-line dim">12P CAT6A</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className={`bp-side side-b ${(!showB || bN === 0) ? 'empty' : ''}`}>
+                    {showB && bN > 0 && (
+                      <div className="bp-cab-row">
+                        {Array.from({ length: bN }).map((_, i) => (
+                          <div className="bp-cabinet-mini b" key={i}>
+                            <div className="cm-head">APT.{String(i + 1).padStart(2, '0')}</div>
+                            <div className="cm-line">ONU CABINET</div>
+                            <div className="cm-line dim">F.O. TERM. BOX + ONU</div>
+                            <div className="cm-line dim">12P CAT6A</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {(aClose || bClose) && (
+                  <div className="bp-odf-row">
+                    <div className="bp-level-tag" style={{ borderRight: '1px solid transparent' }}></div>
+                    <div className={`bp-odf-slot side-a ${aClose ? '' : 'empty'}`}>
+                      {aClose && (
+                        <div className="odf-node a">
+                          <div className="odf-node-title">⛁ MINI ODF · ODF-P{plotCode}.A-{l.label}</div>
+                          <div className="odf-node-sub">distributes 4-core SM drops → {aClose.tenants} unit(s)</div>
+                          <div className="odf-node-sub dim">{aClose.levels.map(levelLabelOf).reverse().join(', ')}</div>
+                        </div>
+                      )}
+                    </div>
+                    <div className={`bp-odf-slot side-b ${bClose ? '' : 'empty'}`}>
+                      {bClose && (
+                        <div className="odf-node b">
+                          <div className="odf-node-title">⛁ MINI ODF · ODF-P{plotCode}.B-{l.label}</div>
+                          <div className="odf-node-sub">distributes 4-core SM drops → {bClose.tenants} unit(s)</div>
+                          <div className="odf-node-sub dim">{bClose.levels.map(levelLabelOf).reverse().join(', ')}</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {(showA || showB) && (aN > 0 || bN > 0 || l.group !== 'basement') && l.group !== 'roof' && (
+                  <div className="bp-trunk-label">
+                    {showA && <span style={{ color: 'var(--du)' }}>{buildA.totalCores > 0 ? `A trunk: ${aTrunk} cores` : ''}</span>}
+                    {showA && showB && '   ·   '}
+                    {showB && <span style={{ color: 'var(--etisalat)' }}>{buildB.totalCores > 0 ? `B trunk: ${bTrunk} cores` : ''}</span>}
+                  </div>
+                )}
+              </React.Fragment>
+            );
+          })}
+        </div>
+        <div className="bp-band bottom" style={{ flexDirection: 'column', gap: 6, padding: '16px 20px' }}>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <span className="arrow">▼</span> FROM MTR
+            <span className="cap-node mtr" style={{ fontFamily: 'var(--mono)', fontSize: 11, padding: '6px 10px', border: '1px solid rgba(232,176,75,0.35)', borderRadius: 8, background: 'var(--accent-soft)', color: 'var(--accent)' }}>MAIN TELECOM ROOM</span>
+            <span className="cap-node pop-du" style={{ fontFamily: 'var(--mono)', fontSize: 11, padding: '6px 10px', border: '1px solid rgba(207,63,63,0.35)', borderRadius: 8, color: 'var(--du)' }}>{splitterDu}× 2:32 LC/APC du</span>
+            <span className="cap-node pop-etisalat" style={{ fontFamily: 'var(--mono)', fontSize: 11, padding: '6px 10px', border: '1px solid rgba(47,125,224,0.35)', borderRadius: 8, color: 'var(--etisalat)' }}>{splitterEtisalat}× 2:32 SC/APC Etisalat</span>
+          </div>
+          <div style={{ display: 'flex', gap: 10, fontSize: 10, color: 'var(--muted-2)', fontFamily: 'var(--mono)' }}>
+            <span>CROSS CONNECT CABINET · 12U 600×600×150</span>
+            <span>·</span>
+            <span>GSM ROOM · 1×12-core OS2 (du) + 1×12-core OS2 (Etisalat)</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="riser-summary">
+        <div className="result-card du">
+          <div className="label">Building A total</div>
+          <div className="value" style={{ fontSize: 24 }}>{totals.a}<span className="sub-unit">ONUs</span></div>
+          <div className="footnote">Trunk at MTR: {buildA.totalCores} cores SM</div>
+        </div>
+        <div className="result-card etisalat">
+          <div className="label">Building B total</div>
+          <div className="value" style={{ fontSize: 24 }}>{totals.b}<span className="sub-unit">ONUs</span></div>
+          <div className="footnote">Trunk at MTR: {buildB.totalCores} cores SM</div>
+        </div>
+        <div className="result-card accent">
+          <div className="label">Combined ONU cabinets</div>
+          <div className="value" style={{ fontSize: 24 }}>{totals.a + totals.b}</div>
+          <div className="footnote">Sheet-printed totals: A=28 · B=46 (verify vs. table above)</div>
+        </div>
+        <div className="result-card">
+          <div className="label">Etisalat splitters, Eq. F.1 check</div>
+          <div className="value" style={{ fontSize: 24 }}>{formulaEtisalat}</div>
+          <div className="footnote">vs. {splitterEtisalat} manual, per drawing notes</div>
+        </div>
+      </div>
+
+      <div className="note-block">
+        <b>Drawing reference (22251-SSH-07Z-XXX-DWG-IT-800006 to -800009, Plot 07):</b> table values are transcribed
+        from the "PLOT 07 / BUILDING A / BUILDING B" block on each sheet — edit any cell to correct against the source
+        PDF, the diagram and totals recompute instantly. Each apartment renders as its own consolidation (ONU) cabinet
+        card — fiber termination box + ONU + 12-port CAT6A patch panel, one per unit, matching the "APARTMENT ONU
+        CABINET" boxes on the sheets — rather than a single aggregated count. Every mini ODF now appears as its own
+        highlighted distribution node, shown right where its branch closes, listing exactly which cabinets/levels it
+        feeds — matching how the sheets draw a MINI ODF box with dashed 4-core drops fanning out to each tenant.
+        "By capacity" placement mirrors the sheets' actual behaviour (a splice point once a branch accumulates roughly
+        {odfCapacity} tenants, i.e. ~{odfCapacity * 4} cores before spare) rather than a fixed floor interval. ODFs are
+        named ODF-P{plotCode}.{'{building}'}-{'{level}'} and sit in the IDF room on their level, per the "LOCATED @ IDF
+        ROOM" notes. Splitter counts default to 6/6 (Parts 2–4 notes); Part 1's note prints 8 for du — adjust the fields
+        above if you're matching that sheet instead.
+      </div>
+    </div>
+  );
+}
+
+const ICON_BADGE = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="9" y="2.5" width="6" height="4.5" rx="1"/>
+    <rect x="2" y="12.5" width="6" height="4.5" rx="1"/>
+    <rect x="16" y="12.5" width="6" height="4.5" rx="1"/>
+    <path d="M12 7v4M12 11H5v1.5M12 11h7v1.5"/>
+  </svg>
+);
+
+const TOOLS = [
+  {
+    id: 'splitter', title: 'GPON Splitter Calculator', tag: 'Eq. F.1 / F.2',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="9" y="2.5" width="6" height="4.5" rx="1"/>
+        <rect x="2" y="12.5" width="6" height="4.5" rx="1"/>
+        <rect x="16" y="12.5" width="6" height="4.5" rx="1"/>
+        <path d="M12 7v4M12 11H5v1.5M12 11h7v1.5"/>
+      </svg>
+    ),
+  },
+  {
+    id: 'cores', title: 'Fibre Core Provisioning', tag: 'Table G.11',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M2.5 6c3 0 3 3 6 3s3-3 6-3 3 3 6 3"/>
+        <path d="M2.5 12c3 0 3 3 6 3s3-3 6-3 3 3 6 3"/>
+        <path d="M2.5 18c3 0 3 3 6 3s3-3 6-3 3 3 6 3"/>
+      </svg>
+    ),
+  },
+  {
+    id: 'cabinet', title: 'Consolidation Cabinet Sizing', tag: 'Table G.6',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="4" y="4" width="16" height="6.5" rx="1.5"/>
+        <rect x="4" y="13.5" width="16" height="6.5" rx="1.5"/>
+        <circle cx="8" cy="7.25" r="0.7" fill="currentColor" stroke="none"/>
+        <circle cx="8" cy="16.75" r="0.7" fill="currentColor" stroke="none"/>
+      </svg>
+    ),
+  },
+  {
+    id: 'copper', title: 'Copper Link Length Checker', tag: '§5.10 (h)',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="10" width="20" height="4" rx="1"/>
+        <path d="M6 10v2.2M10 10v2.2M14 10v2.2M18 10v2.2"/>
+      </svg>
+    ),
+  },
+  {
+    id: 'microduct', title: 'Microduct Route Lookup', tag: 'Table G.10',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="6" cy="6" r="2.3"/>
+        <circle cx="18" cy="18" r="2.3"/>
+        <path d="M8 7.3c4 1 6 5 8 9" strokeDasharray="2.2 2.6"/>
+      </svg>
+    ),
+  },
+  {
+    id: 'riser', title: 'FTTx Riser Diagram', tag: 'Ref. 800006–800009',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="4.5" y="2.5" width="15" height="19" rx="1"/>
+        <path d="M4.5 8h15M4.5 13h15M4.5 18h15"/>
+        <path d="M12 2.5v19" strokeDasharray="1.6 2.2"/>
+      </svg>
+    ),
+  },
+];
+
+function App() {
+  const [activeToolId, setActiveToolId] = useState(TOOLS[0].id);
+
+  return (
+    <div className="wrap">
+      <div className="crumb no-print">
+        <span>MEP PLATFORM</span><span className="sep">›</span>
+        <span>ICT DESIGN TOOLS</span><span className="sep">›</span>
+        <span className="crumb-active">FTTx NETWORK DESIGN TOOL</span>
+      </div>
+
+      <div className="page-head no-print">
+        <div className="page-head-left">
+          <div className="page-icon-badge">{ICON_BADGE}</div>
+          <div>
+            <h1>FTTx NETWORK DESIGN TOOL</h1>
+            <div className="page-sub">{TOOLS.length} TOOLS AVAILABLE</div>
+          </div>
+        </div>
+        <div className="back-chip" aria-hidden="true">
+          <span className="back-arrow">←</span> ICT Design Tools
+        </div>
+      </div>
+
+      <div className="page-hr no-print"></div>
+
+      <div className="tool-tabs">
+        {TOOLS.map(t => (
+          <button
+            className={`tool-tab ${activeToolId === t.id ? 'active' : ''}`}
+            key={t.id}
+            onClick={() => setActiveToolId(t.id)}
+          >
+            <span className="tool-tab-icon">{t.icon}</span>
+            {t.title}
+          </button>
+        ))}
+      </div>
+
+      <div className="tool-detail">
+        {activeToolId === 'splitter' && <SplitterCalc />}
+        {activeToolId === 'cores' && <FibreCoreCalc />}
+        {activeToolId === 'cabinet' && <CabinetCalc />}
+        {activeToolId === 'copper' && <CopperLengthCalc />}
+        {activeToolId === 'microduct' && <MicroductCalc />}
+        {activeToolId === 'riser' && <RiserDiagram />}
+      </div>
+
+      <div className="footer-credit no-print">Formulas per Section 4 &amp; 5 of the manual · figures are planning estimates, not a substitute for licensed SP design review</div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('cc-root')).render(<App />);
+</script>
+
+</body>
+</html>
