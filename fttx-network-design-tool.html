@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FTTx Network Design Tool</title>
+<title>FTTX Network Design Tool</title>
 </head>
 <body>
 <div id="cc-root"></div>
@@ -1301,23 +1301,20 @@ function MicroductCalc() {
   );
 }
 
-// ---------- TAB 6: FTTx Riser Schematic — blueprint view, driven by Plot 07 drawings 800006–800009 ----------
+// ---------- TAB 6: FTTX Riser Schematic — blueprint view ----------
 const TRUNK_SIZES = [12, 24, 48, 96, 144, 288];
 function nextTrunkSize(n) {
   for (const t of TRUNK_SIZES) if (n <= t) return t;
   return Math.ceil(n / 144) * 144;
 }
 
-// Level order top-of-list = roof, bottom-of-list = lowest basement (matches drawing reading order).
-// ONU counts below are transcribed from the small "PLOT 07 / BUILDING A / BUILDING B" tables printed
-// on sheets 800006–800009. A few upper floors (penthouse boxes) render as extra apartment glyphs on
-// the sheets without a corresponding table row, so the printed sheet totals (A=28, B=46) run a little
-// ahead of what's transcribable row-by-row — every cell below is editable so you can true it up against
-// the PDF directly, and the Total row always recomputes live from whatever is in the table.
+// Level order top-of-list = roof, bottom-of-list = lowest basement. Default counts below are an
+// example reference layout — every cell is editable, and the Total row always recomputes live from
+// whatever is currently in the table.
 //
 // Levels are generated dynamically from a "top level" number so the whole diagram redraws to match
 // any building height (e.g. entering 11 redraws exactly L01–L11 + GR + basements; entering 30 redraws
-// exactly L01–L30). buildLevels(29, 2, true) reproduces the exact 32-row Plot 07 reference layout.
+// exactly L01–L30). buildLevels(29, 2, true) reproduces the default 32-row example layout.
 function buildLevels(topLevel, basementCount, includeRoof) {
   const top = Math.max(1, Math.min(200, topLevel || 1));
   const basements = Math.max(0, Math.min(10, basementCount || 0));
@@ -1336,7 +1333,7 @@ function buildLevels(topLevel, basementCount, includeRoof) {
   return list;
 }
 
-const PLOT07_DEFAULT_COUNTS = {
+const DEFAULT_LEVEL_COUNTS = {
   RF: { a: 0, b: 0 }, L29: { a: 0, b: 0 }, L28: { a: 0, b: 0 }, L27: { a: 0, b: 1 },
   L26: { a: 0, b: 0 }, L25: { a: 0, b: 0 }, L24: { a: 0, b: 0 }, L23: { a: 0, b: 0 },
   L22: { a: 0, b: 2 }, L21: { a: 0, b: 2 }, L20: { a: 0, b: 2 }, L19: { a: 1, b: 2 },
@@ -1349,7 +1346,7 @@ const PLOT07_DEFAULT_COUNTS = {
 };
 
 function RiserDiagram() {
-  const [counts, setCounts] = useState(PLOT07_DEFAULT_COUNTS);
+  const [counts, setCounts] = useState(DEFAULT_LEVEL_COUNTS);
   const [topLevel, setTopLevel] = useState(29);
   const [basementCount, setBasementCount] = useState(2);
   const [includeRoof, setIncludeRoof] = useState(true);
@@ -1373,11 +1370,11 @@ function RiserDiagram() {
     setCounts(prev => ({ ...prev, [levelId]: { ...prev[levelId], [side]: val } }));
   };
 
-  const resetToPlot07 = () => {
+  const resetToDefaults = () => {
     setTopLevel(29);
     setBasementCount(2);
     setIncludeRoof(true);
-    setCounts(PLOT07_DEFAULT_COUNTS);
+    setCounts(DEFAULT_LEVEL_COUNTS);
   };
   const clearAll = () => {
     const empty = {};
@@ -1387,7 +1384,7 @@ function RiserDiagram() {
 
   const exportPDF = () => {
     const prevTitle = document.title;
-    document.title = `FTTx-Riser-Plot${plotCode}`;
+    document.title = `FTTX-Riser-P${plotCode}`;
     window.print();
     setTimeout(() => { document.title = prevTitle; }, 500);
   };
@@ -1401,13 +1398,17 @@ function RiserDiagram() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
-  // Builds a minimal, valid DXF (R12-style ENTITIES-only) capturing the riser as real vector
-  // geometry: a spine, one row per level, a box + label per consolidation cabinet, a marker +
-  // label per mini ODF distribution node, and trunk-size text per segment. Opens directly in
-  // AutoCAD / DraftSight / LibreCAD; use "Save As" there to convert to native .dwg — a true binary
-  // .dwg writer needs Autodesk's proprietary ODA SDK, which isn't available to generate client-side.
+  // Builds a valid DXF (R12-style ENTITIES-only) capturing the riser as real, tagged vector
+  // geometry — not just a schematic sketch: each consolidation cabinet is drawn as a labeled
+  // multi-line block (fiber termination box / ONU / 12-port CAT6A patch panel, per the
+  // "APARTMENT ONU CABINET" boxes on typical riser sheets), each mini ODF is a labeled box with
+  // dashed 4-core drop wiring fanning out to every cabinet it actually serves, the riser itself
+  // is drawn as a multi-line cable-bundle glyph, and the base includes MTR / Cross Connect
+  // Cabinet / GSM Room blocks. Opens directly in AutoCAD / DraftSight / LibreCAD; use "Save As"
+  // there to convert to native .dwg — a true binary .dwg writer needs Autodesk's proprietary ODA
+  // SDK, which isn't available to generate client-side.
   const exportDXF = () => {
-    const rowH = 12;
+    const rowH = 30;
     const bottomUp = [...levels].filter(l => l.group !== 'basement').reverse(); // GR..top
     const yOf = {};
     bottomUp.forEach((l, i) => { yOf[l.id] = i * rowH; });
@@ -1423,57 +1424,163 @@ function RiserDiagram() {
     const dxfText = (x, y, h, str, layer) => push(0, 'TEXT', 8, layer || '0', 10, x.toFixed(2), 20, y.toFixed(2), 30, 0, 40, h, 1, String(str).replace(/[\n\r]/g, ' '));
     const dxfCircle = (x, y, r, layer) => push(0, 'CIRCLE', 8, layer || '0', 10, x.toFixed(2), 20, y.toFixed(2), 30, 0, 40, r);
     const dxfRect = (x, y, w, h, layer) => {
-      dxfLine(x, y, x + w, y, layer); dxfLine(x + w, y, x + w, y + h, layer);
-      dxfLine(x + w, y + h, x, y + h, layer); dxfLine(x, y + h, x, y, layer);
+      // Plain LINE entities rather than LWPOLYLINE — this file has no HEADER/$ACADVER section,
+      // and several DXF readers refuse newer entity types (LWPOLYLINE is AC1014+) without one.
+      // Four LINEs are valid in every DXF version ever written, so this opens everywhere.
+      dxfLine(x, y, x + w, y, layer);
+      dxfLine(x + w, y, x + w, y + h, layer);
+      dxfLine(x + w, y + h, x, y + h, layer);
+      dxfLine(x, y + h, x, y, layer);
+    };
+    // Manually chopped dashed line — renders correctly in every DXF viewer regardless of
+    // whether it supports named linetypes, since it's just a series of short real segments.
+    const dxfDashed = (x1, y1, x2, y2, layer, dash = 1.4, gap = 1.1) => {
+      const dx = x2 - x1, dy = y2 - y1;
+      const len = Math.hypot(dx, dy);
+      if (len < 0.01) return;
+      const ux = dx / len, uy = dy / len;
+      let d = 0;
+      while (d < len) {
+        const segEnd = Math.min(d + dash, len);
+        dxfLine(x1 + ux * d, y1 + uy * d, x1 + ux * segEnd, y1 + uy * segEnd, layer);
+        d += dash + gap;
+      }
+    };
+
+    const ODF_W = 30, ODF_H = 15, CAB_W = 36, CAB_H = 24, CAB_GAP = 5, ODF_INSET = 8, CAB_INSET = 46;
+
+    // Draws one consolidation (ONU) cabinet as a tagged block, matching the component stack
+    // used on typical riser sheets: fiber termination box + ONU + 12-port CAT6A patch panel.
+    const drawCabinet = (x, yTop, side, label, layer) => {
+      const y = yTop - CAB_H;
+      dxfRect(x, y, CAB_W, CAB_H, layer);
+      dxfLine(x, y + CAB_H - 3.6, x + CAB_W, y + CAB_H - 3.6, layer);
+      let ty = y + CAB_H - 2.8;
+      dxfText(x + 1.2, ty, 2.0, `${side}-${label}  ONU CABINET`, layer); ty -= 3.4;
+      dxfText(x + 1.2, ty, 1.35, 'FIBER TERMINATION BOX', layer); ty -= 2.6;
+      dxfText(x + 1.2, ty, 1.35, '4F LC/SC-APC: 2 ETISALAT + 2 DU', layer); ty -= 2.6;
+      dxfText(x + 1.2, ty, 1.35, 'ONU', layer); ty -= 2.6;
+      dxfText(x + 1.2, ty, 1.35, '12-PORT CAT6A PATCH PANEL', layer); ty -= 2.6;
+      dxfText(x + 1.2, ty, 1.2, '600 x 600 x 150mm', layer + '_DIM');
+      return { cx: x + CAB_W / 2, cy: y + CAB_H / 2 };
+    };
+
+    // Draws a mini ODF distribution node as a tagged box (code, IDF room note, unit count) and
+    // returns its centre point so wiring can fan out from it.
+    const drawODF = (xEdge, y, side, code, tenants, layer) => {
+      const x = side === 'A' ? xEdge - ODF_W : xEdge;
+      const yb = y - ODF_H / 2;
+      dxfRect(x, yb, ODF_W, ODF_H, layer);
+      dxfCircle(side === 'A' ? x + ODF_W - 2.5 : x + 2.5, y, 1.1, layer);
+      let ty = y + ODF_H / 2 - 3.2;
+      dxfText(x + 1.5, ty, 1.7, 'MINI ODF', layer); ty -= 2.8;
+      dxfText(x + 1.5, ty, 1.15, code, layer); ty -= 2.3;
+      dxfText(x + 1.5, ty, 1.1, 'LOCATED @ IDF ROOM', layer); ty -= 2.1;
+      dxfText(x + 1.5, ty, 1.1, `SERVES ${tenants} UNIT(S)`, layer);
+      return { cx: x + ODF_W / 2, cy: y };
     };
 
     push(0, 'SECTION', 2, 'ENTITIES');
 
-    // spine
+    // Riser cable-bundle glyph: several parallel dashed verticals alongside the spine, mimicking
+    // the multi-core cable-duct cross-section drawn on riser sheets, plus the true centre spine.
     dxfLine(0, minY, 0, maxY, 'SPINE');
-    dxfText(-4, maxY + 6, 3, 'TO ABOVE LEVELS', 'NOTES');
-    dxfText(-4, minY - 8, 3, 'FROM MTR', 'NOTES');
+    [-3, -1.8, -0.6, 0.6, 1.8, 3].forEach(off => dxfDashed(off, minY, off, maxY, 'RISER_BUNDLE', 2.2, 1.4));
+    dxfText(-10, maxY + 10, 3.4, 'TO ABOVE LEVELS', 'NOTES');
+    dxfLine(-10, maxY + 7, 6, maxY + 7, 'NOTES');
+    dxfText(-8, minY - 12, 3.4, 'FROM MTR', 'NOTES');
+
+    // Track ODF centre points per side/level so cabinets can wire back to them after both
+    // sides have been laid out (an ODF node may serve cabinets on levels above and below it).
+    const odfPoint = { A: {}, B: {} };
 
     levels.forEach(l => {
       const y = yOf[l.id];
-      dxfLine(-4, y, 4, y, 'SPINE');
-      dxfText(-14, y - 1.2, 2.5, l.label, 'LEVELS');
+      dxfLine(-5, y, 5, y, 'SPINE');
+      dxfText(-16, y - 1.3, 2.6, l.label, 'LEVELS');
 
       const aN = counts[l.id]?.a || 0;
       const bN = counts[l.id]?.b || 0;
-      for (let i = 0; i < aN; i++) {
-        const bx = -30 - i * 26 - 20, by = y - 4;
-        dxfRect(bx, by, 20, 8, 'CAB_A');
-        dxfText(bx + 1.5, by + 3, 1.8, `A-APT.${String(i + 1).padStart(2, '0')} ONU`, 'CAB_A');
-      }
-      for (let i = 0; i < bN; i++) {
-        const bx = 30 + i * 26, by = y - 4;
-        dxfRect(bx, by, 20, 8, 'CAB_B');
-        dxfText(bx + 1.5, by + 3, 1.8, `B-APT.${String(i + 1).padStart(2, '0')} ONU`, 'CAB_B');
-      }
-
       const aClose = buildA.closingAt[l.id];
       const bClose = buildB.closingAt[l.id];
+
+      const aEdge = aClose ? -(ODF_INSET + ODF_W) : -ODF_INSET;
       if (aClose) {
-        dxfCircle(-18, y, 2, 'ODF_A');
-        dxfText(-18, y + 4, 2, `ODF-P${plotCode}.A-${l.label} (${aClose.tenants} units)`, 'ODF_A');
+        const pt = drawODF(-ODF_INSET, y, 'A', `ODF-P${plotCode}.A-${l.label}`, aClose.tenants, 'ODF_A');
+        odfPoint.A[l.id] = pt;
+        dxfLine(pt.cx, y, 0, y, 'ODF_A');
       }
+      for (let i = 0; i < aN; i++) {
+        const bx = aEdge - CAB_INSET - i * (CAB_W + CAB_GAP) - CAB_W;
+        const pt = drawCabinet(bx, y + CAB_H / 2, 'A', `APT.${String(i + 1).padStart(2, '0')}`, 'CAB_A');
+        dxfLine(pt.cx, pt.cy + CAB_H / 2, pt.cx, y, 'WIRING_A');
+        dxfLine(pt.cx, y, aEdge, y, 'WIRING_A');
+      }
+
+      const bEdge = bClose ? (ODF_INSET + ODF_W) : ODF_INSET;
       if (bClose) {
-        dxfCircle(18, y, 2, 'ODF_B');
-        dxfText(12, y + 4, 2, `ODF-P${plotCode}.B-${l.label} (${bClose.tenants} units)`, 'ODF_B');
+        const pt = drawODF(ODF_INSET, y, 'B', `ODF-P${plotCode}.B-${l.label}`, bClose.tenants, 'ODF_B');
+        odfPoint.B[l.id] = pt;
+        dxfLine(0, y, pt.cx, y, 'ODF_B');
+      }
+      for (let i = 0; i < bN; i++) {
+        const bx = bEdge + CAB_INSET + i * (CAB_W + CAB_GAP);
+        const pt = drawCabinet(bx, y + CAB_H / 2, 'B', `APT.${String(i + 1).padStart(2, '0')}`, 'CAB_B');
+        dxfLine(pt.cx, pt.cy + CAB_H / 2, pt.cx, y, 'WIRING_B');
+        dxfLine(bEdge, y, pt.cx, y, 'WIRING_B');
       }
 
       if (l.group !== 'roof') {
         const aTrunk = buildA.trunkAt[l.id];
         const bTrunk = buildB.trunkAt[l.id];
-        dxfText(-3, y + rowH / 2 - 1, 1.6, `A:${aTrunk}c B:${bTrunk}c`, 'TRUNK');
+        dxfText(-4.5, y + rowH / 2 - 1, 1.7, `A: ${aTrunk} CORES SM`, 'TRUNK_A');
+        dxfText(1, y + rowH / 2 - 1, 1.7, `B: ${bTrunk} CORES SM`, 'TRUNK_B');
       }
     });
 
-    dxfText(-30, maxY + 14, 4, `FTTX RISER — PLOT ${plotCode} — Building A:${totals.a} B:${totals.b} units`, 'NOTES');
+    // Dashed 4-core drop wiring: connect every served cabinet back to the ODF that actually
+    // closes its branch (may sit several levels away), so the fan-out is real, not implied.
+    ['a', 'b'].forEach(side => {
+      const build = side === 'a' ? buildA : buildB;
+      const sideKey = side === 'a' ? 'A' : 'B';
+      const layer = `DROP_${sideKey}`;
+      Object.keys(build.branches).forEach(bi => {
+        const br = build.branches[bi];
+        if (!br.odfLevel) return;
+        const odfPt = odfPoint[sideKey][br.odfLevel];
+        if (!odfPt) return;
+        br.levels.forEach(lvId => {
+          if (lvId === br.odfLevel) return; // already directly wired
+          dxfDashed(odfPt.cx, odfPt.cy, odfPt.cx, yOf[lvId], layer, 1.2, 1.0);
+        });
+      });
+    });
+
+    // Base plant: Main Telecom Room with Cross Connect Cabinet and GSM Room alongside it,
+    // matching how riser sheets lay these three out at the foot of the riser.
+    const mtrY = minY - 46;
+    dxfRect(-26, mtrY, 52, 22, 'MTR');
+    dxfText(-23, mtrY + 16, 2.4, 'MAIN TELECOM ROOM', 'MTR');
+    dxfText(-23, mtrY + 11.5, 1.5, `${splitterDu}x 2:32 LC/APC SPLITTERS - DU`, 'MTR');
+    dxfText(-23, mtrY + 8, 1.5, `${splitterEtisalat}x 2:32 SC/APC SPLITTERS - ETISALAT`, 'MTR');
+    dxfText(-23, mtrY + 4.5, 1.3, 'OPTICAL FIBER SPLITTERS - ODF (BY SERVICE PROVIDER)', 'MTR');
+    dxfLine(0, minY, 0, mtrY + 22, 'SPINE');
+
+    dxfRect(36, mtrY + 4, 40, 14, 'GSM');
+    dxfText(39, mtrY + 15, 1.8, 'CROSS CONNECT CABINET', 'GSM');
+    dxfText(39, mtrY + 11.5, 1.3, '600x600x150mm - 12U', 'GSM');
+    dxfText(39, mtrY + 8, 1.3, '1x12 CORE OS2 CABLE - DU', 'GSM');
+    dxfText(39, mtrY + 5.5, 1.3, '1x12 CORE OS2 CABLE - ETISALAT', 'GSM');
+    dxfLine(26, mtrY + 11, 36, mtrY + 11, 'GSM');
+    dxfRect(80, mtrY + 4, 34, 10, 'GSM');
+    dxfText(83, mtrY + 11, 1.6, 'GSM ROOM', 'GSM');
+    dxfLine(76, mtrY + 9, 80, mtrY + 9, 'GSM');
+
+    dxfText(-26, mtrY - 8, 2.2, `FTTX RISER SCHEMATIC  -  BUILDING A: ${totals.a} UNITS  -  BUILDING B: ${totals.b} UNITS`, 'TITLE');
+    dxfText(-26, mtrY - 12, 1.4, 'N.T.S.  -  EXPORTED FROM FTTX NETWORK DESIGN TOOL', 'TITLE');
 
     push(0, 'ENDSEC', 0, 'EOF');
-    downloadTextFile(`FTTx-Riser-Plot${plotCode}.dxf`, lines.join('\n'), 'application/dxf');
+    downloadTextFile(`FTTX-Riser-P${plotCode}.dxf`, lines.join('\n'), 'application/dxf');
   };
 
   const totals = useMemo(() => {
@@ -1540,14 +1647,13 @@ function RiserDiagram() {
 
   return (
     <div className="panel">
-      <div className="panel-head">
+      <div className="panel-head no-print">
         <div>
-          <h2>FTTx riser schematic — blueprint view</h2>
-          <p>Live-editable version of Plot 07's riser sheets (22251-SSH-07Z-XXX-DWG-IT-800006 to -800009): the level table
-          on the left is the actual source of truth, and the schematic below recomputes trunk sizes and mini ODF
-          placement the moment you change a cell.</p>
+          <h2>FTTX riser schematic — blueprint view</h2>
+          <p>Live-editable riser table: the level table on the left is the source of truth, and the schematic below
+          recomputes trunk sizes and mini ODF placement the moment you change a cell.</p>
         </div>
-        <div className="formula-chip">Ref. 800006–800009</div>
+        <div className="formula-chip">Live riser model</div>
       </div>
 
       <div className="bp-height-panel no-print">
@@ -1661,14 +1767,14 @@ function RiserDiagram() {
       </div>
 
       <div className="bp-seg-group no-print" style={{ marginBottom: 16 }}>
-        <button className="key" onClick={resetToPlot07} style={{ padding: '8px 12px', fontSize: 11, borderRadius: 8, background: 'var(--panel-2)', border: '1px solid var(--edge)', color: 'var(--text)', fontFamily: 'var(--mono)', cursor: 'pointer' }}>↺ Reload Plot 07 data</button>
+        <button className="key" onClick={resetToDefaults} style={{ padding: '8px 12px', fontSize: 11, borderRadius: 8, background: 'var(--panel-2)', border: '1px solid var(--edge)', color: 'var(--text)', fontFamily: 'var(--mono)', cursor: 'pointer' }}>↺ Reload example data</button>
         <button onClick={clearAll} style={{ padding: '8px 12px', fontSize: 11, borderRadius: 8, background: 'var(--panel-2)', border: '1px solid var(--edge)', color: 'var(--text)', fontFamily: 'var(--mono)', cursor: 'pointer' }}>Clear table</button>
         <span style={{ width: 1, alignSelf: 'stretch', background: 'var(--edge)', margin: '0 2px' }}></span>
         <button onClick={exportPDF} style={{ padding: '8px 12px', fontSize: 11, borderRadius: 8, background: 'var(--accent-soft)', border: '1px solid rgba(232,176,75,0.4)', color: 'var(--accent)', fontFamily: 'var(--mono)', cursor: 'pointer', fontWeight: 700 }}>⭳ Export PDF</button>
         <button onClick={exportDXF} style={{ padding: '8px 12px', fontSize: 11, borderRadius: 8, background: 'var(--accent-soft)', border: '1px solid rgba(232,176,75,0.4)', color: 'var(--accent)', fontFamily: 'var(--mono)', cursor: 'pointer', fontWeight: 700 }}>⭳ Export DXF (CAD)</button>
       </div>
 
-      <div className="legend-row">
+      <div className="legend-row no-print">
         <div className="item"><span className="swatch" style={{ background: 'var(--du)' }}></span>Building A — consolidation (ONU) cabinet, one per apartment</div>
         <div className="item"><span className="swatch" style={{ background: 'var(--etisalat)' }}></span>Building B — consolidation (ONU) cabinet, one per apartment</div>
         <div className="item"><span className="swatch" style={{ background: 'var(--accent)' }}></span>Mini ODF — distribution node feeding the cabinets below it</div>
@@ -1772,7 +1878,7 @@ function RiserDiagram() {
         </div>
       </div>
 
-      <div className="riser-summary">
+      <div className="riser-summary no-print">
         <div className="result-card du">
           <div className="label">Building A total</div>
           <div className="value" style={{ fontSize: 24 }}>{totals.a}<span className="sub-unit">ONUs</span></div>
@@ -1786,7 +1892,7 @@ function RiserDiagram() {
         <div className="result-card accent">
           <div className="label">Combined ONU cabinets</div>
           <div className="value" style={{ fontSize: 24 }}>{totals.a + totals.b}</div>
-          <div className="footnote">Sheet-printed totals: A=28 · B=46 (verify vs. table above)</div>
+          <div className="footnote">Edit any cell above to update this count</div>
         </div>
         <div className="result-card">
           <div className="label">Etisalat splitters, Eq. F.1 check</div>
@@ -1795,19 +1901,16 @@ function RiserDiagram() {
         </div>
       </div>
 
-      <div className="note-block">
-        <b>Drawing reference (22251-SSH-07Z-XXX-DWG-IT-800006 to -800009, Plot 07):</b> table values are transcribed
-        from the "PLOT 07 / BUILDING A / BUILDING B" block on each sheet — edit any cell to correct against the source
-        PDF, the diagram and totals recompute instantly. Each apartment renders as its own consolidation (ONU) cabinet
-        card — fiber termination box + ONU + 12-port CAT6A patch panel, one per unit, matching the "APARTMENT ONU
-        CABINET" boxes on the sheets — rather than a single aggregated count. Every mini ODF now appears as its own
-        highlighted distribution node, shown right where its branch closes, listing exactly which cabinets/levels it
-        feeds — matching how the sheets draw a MINI ODF box with dashed 4-core drops fanning out to each tenant.
-        "By capacity" placement mirrors the sheets' actual behaviour (a splice point once a branch accumulates roughly
-        {odfCapacity} tenants, i.e. ~{odfCapacity * 4} cores before spare) rather than a fixed floor interval. ODFs are
-        named ODF-P{plotCode}.{'{building}'}-{'{level}'} and sit in the IDF room on their level, per the "LOCATED @ IDF
-        ROOM" notes. Splitter counts default to 6/6 (Parts 2–4 notes); Part 1's note prints 8 for du — adjust the fields
-        above if you're matching that sheet instead.
+      <div className="note-block no-print">
+        <b>How this model works:</b> the level table above is the source of truth — edit any cell and the diagram and
+        totals recompute instantly. Each apartment renders as its own consolidation (ONU) cabinet card — fiber
+        termination box + ONU + 12-port CAT6A patch panel, one per unit — rather than a single aggregated count. Every
+        mini ODF appears as its own highlighted distribution node, shown right where its branch closes, listing exactly
+        which cabinets/levels it feeds, with dashed 4-core drops fanning out to each tenant. "By capacity" placement
+        auto-places a splice point once a branch accumulates roughly {odfCapacity} tenants (i.e. ~{odfCapacity * 4} cores
+        before spare) rather than a fixed floor interval. ODFs are named ODF-P{plotCode}.{'{building}'}-{'{level}'} and
+        sit in the IDF room on their level. Splitter counts and the plot/building code are all adjustable above to match
+        your own drawing set.
       </div>
     </div>
   );
@@ -1875,7 +1978,7 @@ const TOOLS = [
     ),
   },
   {
-    id: 'riser', title: 'FTTx Riser Diagram', tag: 'Ref. 800006–800009',
+    id: 'riser', title: 'FTTX Riser Diagram', tag: 'Live riser model',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <rect x="4.5" y="2.5" width="15" height="19" rx="1"/>
@@ -1894,14 +1997,14 @@ function App() {
       <div className="crumb no-print">
         <span>MEP PLATFORM</span><span className="sep">›</span>
         <span>ICT DESIGN TOOLS</span><span className="sep">›</span>
-        <span className="crumb-active">FTTx NETWORK DESIGN TOOL</span>
+        <span className="crumb-active">FTTX NETWORK DESIGN TOOL</span>
       </div>
 
       <div className="page-head no-print">
         <div className="page-head-left">
           <div className="page-icon-badge">{ICON_BADGE}</div>
           <div>
-            <h1>FTTx NETWORK DESIGN TOOL</h1>
+            <h1>FTTX NETWORK DESIGN TOOL</h1>
             <div className="page-sub">{TOOLS.length} TOOLS AVAILABLE</div>
           </div>
         </div>
