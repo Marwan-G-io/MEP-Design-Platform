@@ -249,20 +249,6 @@ canvas.covmapcanvas{display:block;width:100%}
 /* Dist controls in coverage panel */
 .dist-ctrl-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px}
 
-/* Angle table */
-.ang-tbl{width:100%;border-collapse:collapse;font-size:11px}
-.ang-tbl th{text-align:left;padding:6px 9px;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);background:var(--blue-l);border-bottom:1px solid var(--border)}
-.ang-tbl td{padding:6px 9px;border-bottom:1px solid var(--border2);font-family:var(--mono);font-size:10px;color:var(--ink2)}
-.ang-tbl tr.ar td{background:var(--blue-l);color:var(--blue);font-weight:600}
-.ang-tbl tr:last-child td{border-bottom:none}
-
-/* Tap grid */
-.tap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:7px}
-.tap-c{background:#fff;border:1px solid var(--border);border-radius:6px;padding:9px 10px;text-align:center;transition:border-color .15s}
-.tap-c:hover{border-color:var(--blue)}
-.tap-w{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink)}
-.tap-d{font-family:var(--mono);font-size:11px;color:var(--blue);margin-top:2px}
-
 .app-footer{margin-top:40px;border-top:1px solid var(--border);padding-top:14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
 .ft{font-family:var(--mono);font-size:9px;color:var(--muted)}
 
@@ -457,9 +443,9 @@ canvas.mapcanvas, canvas.covmapcanvas{display:block;position:absolute;top:0;left
     <div class="tc-name">Coverage Radius</div>
     <div class="tc-arrow">→</div>
   </div>
-  <div class="tool-card" onclick="openTab('ref',this)" id="tc-ref">
-    <div class="tc-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
-    <div class="tc-name">Reference Tables</div>
+  <div class="tool-card" onclick="openTab('amp',this)" id="tc-amp">
+    <div class="tc-icon"><svg viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+    <div class="tc-name">Amplifier Sizing</div>
     <div class="tc-arrow">→</div>
   </div>
   <div class="tool-card" onclick="openTab('report',this)" id="tc-report">
@@ -1088,24 +1074,644 @@ canvas.mapcanvas, canvas.covmapcanvas{display:block;position:absolute;top:0;left
     </div>
   </div>
 </div>
-<!-- ═══════════════ TAB 4: REFERENCE ═══════════════ -->
-<div id="tab-ref" class="tp">
-  <div class="g2">
-    <div class="panel"><div class="ph"><div class="pd"></div><span class="pt">Power tap → gain (dB)</span></div><div class="pb"><div class="tap-grid" id="tap-grid"></div></div></div>
-    <div class="panel"><div class="ph"><div class="pd" style="background:var(--green)"></div><span class="pt">Distance → loss (dB)</span></div><div style="overflow-x:auto;padding:14px 16px"><table class="ang-tbl"><thead><tr><th>Distance</th><th>Loss</th><th>Distance</th><th>Loss</th></tr></thead><tbody id="dist-tbody"></tbody></table></div></div>
-  </div>
-  <div class="panel"><div class="ph"><div class="pd" style="background:var(--amber)"></div><span class="pt">SPL targets by application</span></div><div style="overflow-x:auto;padding:14px 16px"><table class="ang-tbl"><thead><tr><th>Application</th><th>Ambient</th><th>Margin</th><th>Target SPL</th><th>Headroom</th><th>Notes</th></tr></thead><tbody>
-    <tr><td>BGM quiet office</td><td>40–50</td><td>+6–8</td><td>46–58 dB</td><td>6 dB</td><td>Unobtrusive</td></tr>
-    <tr><td>Office paging</td><td>50–60</td><td>+15–20</td><td>65–80 dB</td><td>6 dB</td><td>Clear speech</td></tr>
-    <tr><td>Restaurant BGM</td><td>60–70</td><td>+6–10</td><td>66–80 dB</td><td>10 dB</td><td>Above conversation</td></tr>
-    <tr><td>Speech reinforcement</td><td>50–60</td><td>+15–20</td><td>65–80 dB</td><td>10 dB</td><td>Intelligibility critical</td></tr>
-    <tr><td>Foreground music</td><td>65–75</td><td>+20–25</td><td>85–100 dB</td><td>20 dB</td><td>High energy</td></tr>
-    <tr><td>Warehouse paging</td><td>75–90</td><td>+20–25</td><td>95–115 dB</td><td>6 dB</td><td>Industrial</td></tr>
-    <tr><td>Emergency paging</td><td>60–75</td><td>+20–25</td><td>80–100 dB</td><td>6 dB</td><td>Override all</td></tr>
-  </tbody></table></div></div>
+<!-- ═══════════════ TAB: AMPLIFIER SIZING ═══════════════ -->
+<style>
+.amp-scope .wrap{max-width:1180px;margin:0 auto;padding:24px}
+.amp-scope .pbar{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:20px;align-items:center}
+.amp-scope .plbl{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-right:4px}
+.amp-scope .pbtn{font-family:var(--mono);font-size:10px;font-weight:500;padding:7px 13px;border:1px solid var(--border);background:#fff;color:var(--ink2);border-radius:6px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;gap:1px;line-height:1.3}
+.amp-scope .pbtn small{font-size:9px;color:var(--muted);font-weight:400}
+.amp-scope .pbtn:hover{border-color:var(--blue);color:var(--blue)}
+.amp-scope .pbtn.active{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.amp-scope .pbtn.active small{color:var(--bg3)}
+.amp-scope .grid{display:grid;grid-template-columns:1.35fr 1fr;gap:18px;align-items:start}
 
-  <div class="panel"><div class="ph"><div class="pd" style="background:var(--blue)"></div><span class="pt">Dispersion angle → coverage radius</span></div><div style="overflow-x:auto;padding:14px 16px"><table class="ang-tbl"><thead><tr><th>Angle θ</th><th>Half-angle</th><th>tan(θ/2)</th><th>r @ h=1.8m</th><th>r @ h=3.0m</th><th>r @ h=5.0m</th><th>Typical use</th></tr></thead><tbody id="ang-tbody"></tbody></table></div></div>
+@media (max-width:920px){.amp-scope .grid{grid-template-columns:1fr}
+}
+.amp-scope .panel{background:#fff;border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:18px}
+.amp-scope .ph{padding:11px 16px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:8px;background:var(--bg2);flex-wrap:wrap}
+.amp-scope .pd{width:8px;height:8px;border-radius:50%;background:var(--blue);flex-shrink:0}
+.amp-scope .pt{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);flex:1}
+.amp-scope .pb{padding:14px 16px}
+.amp-scope .zt-head, .amp-scope .zt-row{display:grid;grid-template-columns:1.5fr .8fr .6fr .8fr auto;gap:8px;align-items:center;padding:7px 0}
+.amp-scope .zt-head{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2);border-bottom:1px solid var(--border2);padding-bottom:8px;margin-bottom:2px}
+.amp-scope .zt-row{border-bottom:1px solid var(--border2)}
+.amp-scope .zt-row:last-of-type{border-bottom:none}
+.amp-scope .zt-row input, .amp-scope .zt-row select{width:100%;font-family:var(--sans);font-size:12px;padding:7px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg2);color:var(--ink)}
+.amp-scope .zt-row input:focus, .amp-scope .zt-row select:focus{outline:none;border-color:var(--blue)}
+.amp-scope .zt-sub{font-family:var(--mono);font-size:9px;color:var(--muted2);text-align:center}
+.amp-scope .rmv{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:#fff;color:var(--red2);cursor:pointer;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center}
+.amp-scope .rmv:hover{background:var(--red-l);border-color:var(--red2)}
+.amp-scope .addrow{margin-top:10px;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.05em;padding:8px 14px;border:1px dashed var(--border);border-radius:8px;background:var(--bg3);color:var(--blue);cursor:pointer;width:100%;text-align:center}
+.amp-scope .addrow:hover{background:var(--blue-l);border-color:var(--blue)}
+.amp-scope .vline{display:flex;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border2)}
+.amp-scope .vlbtn{flex:1;font-family:var(--mono);font-size:11px;font-weight:700;padding:8px 6px;border:1.5px solid var(--border);border-radius:8px;background:#fff;color:var(--ink2);cursor:pointer;text-align:center}
+.amp-scope .vlbtn small{display:block;font-weight:400;color:var(--muted);font-size:8px;margin-top:2px}
+.amp-scope .vlbtn.active{border-color:var(--blue);background:var(--blue-l);color:var(--blue-d)}
+.amp-scope .vlbtn.active small{color:var(--blue-d)}
+.amp-scope .apptype{display:flex;gap:8px;flex-wrap:wrap;padding:12px 16px}
+.amp-scope .atbtn{flex:1;min-width:110px;font-family:var(--mono);font-size:10px;font-weight:600;padding:10px 8px;border:1.5px solid var(--border);border-radius:8px;background:#fff;color:var(--ink2);cursor:pointer;text-align:center;transition:all .15s}
+.amp-scope .atbtn small{display:block;font-weight:400;color:var(--muted);font-size:9px;margin-top:3px}
+.amp-scope .atbtn:hover{border-color:var(--purple)}
+.amp-scope .atbtn.active{border-color:var(--purple);background:var(--purple-l);color:var(--purple2)}
+.amp-scope .atbtn.active small{color:var(--purple2)}
+.amp-scope .sr{padding:11px 16px;border-bottom:1px solid var(--border2)}
+.amp-scope .sr:last-child{border-bottom:none}
+.amp-scope .sh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+.amp-scope .sl{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.amp-scope .sv{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink)}
+.amp-scope .su{font-family:var(--mono);font-size:9px;color:var(--muted2);margin-left:2px}
+.amp-scope .rh{padding:18px 18px 14px;border-bottom:1px solid var(--border2)}
+.amp-scope .rr{display:flex;align-items:flex-end;gap:8px;margin-bottom:5px}
+.amp-scope .rbig{font-family:var(--mono);font-size:46px;font-weight:700;line-height:1;transition:color .25s;color:var(--blue)}
+.amp-scope .ru{font-family:var(--mono);font-size:13px;color:var(--muted);margin-bottom:6px;font-weight:500}
+.amp-scope .sbadge{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:4px;margin-bottom:10px}
+.amp-scope .hrbar{height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;margin-bottom:4px;position:relative}
+.amp-scope .hrfill{height:100%;border-radius:4px;transition:width .35s,background .2s}
+.amp-scope .hrmark{position:absolute;top:0;bottom:0;width:2px;background:var(--ink)}
+.amp-scope .hrm{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--muted2)}
+.amp-scope .bkd{padding:12px 16px}
+.amp-scope .btit{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2);margin-bottom:7px}
+.amp-scope .brow{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border2);font-size:11px}
+.amp-scope .brow:last-child{border-bottom:none}
+.amp-scope .brow.tot{padding-top:8px;margin-top:2px;border-top:1.5px solid var(--border);border-bottom:none}
+.amp-scope .blbl{color:var(--muted);font-size:11px}
+.amp-scope .bval{font-family:var(--mono);font-size:11px;font-weight:600}
+.amp-scope .bval.res{font-size:13px;color:var(--ink)}
+.amp-scope .ctab{width:100%;border-collapse:collapse;font-size:11px}
+.amp-scope .ctab th{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);text-align:left;padding:6px 8px;border-bottom:1px solid var(--border)}
+.amp-scope .ctab td{padding:7px 8px;border-bottom:1px solid var(--border2)}
+.amp-scope .ctab tr:last-child td{border-bottom:none}
+.amp-scope .tag{font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;display:inline-block}
+.amp-scope .szstrip{display:flex;flex-wrap:wrap;gap:6px;padding:12px 16px}
+.amp-scope .szchip{font-family:var(--mono);font-size:10px;font-weight:600;padding:5px 10px;border-radius:5px;border:1px solid var(--border);color:var(--muted2);background:var(--bg3)}
+.amp-scope .szchip.hit{border-color:var(--green2);color:var(--green);background:var(--green-l)}
+.amp-scope .formulafoot{font-family:var(--mono);font-size:10px;color:var(--muted);padding:14px 16px;line-height:1.8}
+.amp-scope .formulafoot b{color:var(--ink2)}
+
+@media(max-width:600px){.amp-scope .zt-head, .amp-scope .zt-row{grid-template-columns:1.2fr .7fr .5fr .7fr auto;font-size:10px}
+}
+</style>
+<div id="tab-amp" class="tp">
+  <div class="amp-scope">
+<div class="wrap">
+
+  <div class="pbar" id="presetBar">
+    <span class="plbl">Presets</span>
+  </div>
+
+  <div class="grid">
+    <!-- LEFT: inputs -->
+    <div>
+      <div class="panel">
+        <div class="ph"><div class="pd"></div><div class="pt">Speaker / Zone Load</div></div>
+        <div class="pb">
+          <div class="zt-head">
+            <div>Zone name</div><div>Tap (W)</div><div>Qty</div><div>Run dist. (m)</div><div></div>
+          </div>
+          <div id="zoneRows"></div>
+          <button class="addrow" id="addZoneBtn" type="button">+ Add zone</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="ph"><div class="pd" style="background:var(--blue2)"></div><div class="pt">Distribution Line Voltage</div></div>
+        <div class="vline" id="lineVoltRow"></div>
+      </div>
+
+      <div class="panel">
+        <div class="ph"><div class="pd" style="background:var(--purple2)"></div><div class="pt">Application &amp; Headroom Factor</div></div>
+        <div class="apptype" id="appTypeRow"></div>
+        <div class="sr" id="customHrRow" style="display:none">
+          <div class="sh"><span class="sl">Custom headroom factor</span><span class="sv" id="hrCustomVal">1.25<span class="su">×</span></span></div>
+          <input type="range" id="hrCustomSlider" min="1.0" max="2.5" step="0.05" value="1.25">
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="ph"><div class="pd" style="background:var(--amber2)"></div><div class="pt">Cable Sizing — Voltage-Drop Engineering</div></div>
+        <div class="pb" style="padding:0 0 10px">
+          <table class="ctab" id="cableTable"></table>
+        </div>
+        <div style="padding:0 16px 12px;font-family:var(--mono);font-size:9px;color:var(--muted2);line-height:1.6">
+          Line current I = P<sub>zone</sub> / V<sub>line</sub> · Round-trip drop ΔV = I × 2L × (ρ/A), ρ(copper)=0.0175 Ω·mm²/m<br>
+          Smallest standard cable meeting the loss threshold is auto-selected per zone (music ≤5% · paging/speech ≤10%, per IEC/NEC-aligned distributed-audio practice).
+        </div>
+      </div>
+      <div class="panel">
+        <div class="ph"><div class="pd" style="background:var(--cyan,#0e7490)"></div><div class="pt">Electrical &amp; Thermal Coordination</div></div>
+        <div class="sr" style="border-bottom:1px solid var(--border2)">
+          <div class="sh"><span class="sl">Amplifier class</span></div>
+          <div class="vline" id="ampClassRow" style="padding:0"></div>
+        </div>
+        <div class="sr">
+          <div class="sh"><span class="sl">Mains supply</span></div>
+          <div class="vline" id="mainsRow" style="padding:0"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: results -->
+    <div>
+      <div class="panel">
+        <div class="ph"><div class="pd" style="background:var(--green2)"></div><div class="pt">Required Amplifier Power</div></div>
+        <div class="rh">
+          <div class="rr"><div class="rbig" id="ampReq">—</div><div class="ru">W minimum</div></div>
+          <span class="sbadge" id="fitBadge">—</span>
+          <div class="hrbar"><div class="hrfill" id="hrFill" style="width:0%"></div><div class="hrmark" id="hrLoadMark" style="left:0%"></div></div>
+          <div class="hrm"><span>0 W</span><span id="hrScaleMax">— W</span></div>
+        </div>
+        <div class="bkd">
+          <div class="btit">Calculation breakdown</div>
+          <div class="brow"><span class="blbl">Total connected load</span><span class="bval" id="bTotal">0 W</span></div>
+          <div class="brow"><span class="blbl">Headroom factor</span><span class="bval" id="bFactor">1.25×</span></div>
+          <div class="brow tot"><span class="blbl">Required amp power</span><span class="bval res" id="bReq">0 W</span></div>
+          <div class="brow"><span class="blbl">Recommended standard amp</span><span class="bval" id="bStd" style="color:var(--green)">0 W</span></div>
+          <div class="brow"><span class="blbl">Margin above requirement</span><span class="bval" id="bMargin">0 W</span></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="ph"><div class="pd" style="background:var(--blue2)"></div><div class="pt">Standard Amplifier Sizes (W)</div></div>
+        <div class="szstrip" id="szStrip"></div>
+      </div>
+
+      <div class="panel">
+        <div class="ph"><div class="pd" style="background:#0e7490"></div><div class="pt">AC Input, Breaker &amp; Thermal Load</div></div>
+        <div class="bkd">
+          <div class="brow"><span class="blbl">AC input power (η = <span id="effPct">90</span>%)</span><span class="bval" id="bAcPower">0 W</span></div>
+          <div class="brow"><span class="blbl">AC current draw</span><span class="bval" id="bAcCurrent">0.0 A</span></div>
+          <div class="brow tot"><span class="blbl">Recommended branch breaker</span><span class="bval res" id="bBreaker" style="color:#0e7490">0 A</span></div>
+          <div class="brow"><span class="blbl">Heat dissipated</span><span class="bval" id="bHeat">0 W (0 BTU/hr)</span></div>
+        </div>
+        <div style="padding:0 16px 12px;font-family:var(--mono);font-size:9px;color:var(--muted2);line-height:1.6">
+          AC Input = Rated Amp Power / η · Breaker = (AC Input / V<sub>mains</sub>) ÷ 0.8, per NEC 210.19(A)(1) 125% continuous-load rule, rounded to the next standard NEC 240.6(A) breaker size. Heat = AC Input − Rated Amp Power, ×3.412 for BTU/hr.
+        </div>
+      </div>
+
+      <div class="panel" id="batteryPanel" style="display:none">
+        <div class="ph"><div class="pd" style="background:#b45309"></div><div class="pt">Battery Standby Sizing — NFPA 72 §10.6.7.2</div></div>
+        <div class="sr">
+          <div class="sh"><span class="sl">Notification duration required</span></div>
+          <div class="vline" id="notifRow" style="padding:0"></div>
+        </div>
+        <div class="sr">
+          <div class="sh"><span class="sl">DC system voltage</span></div>
+          <div class="vline" id="dcVoltRow" style="padding:0"></div>
+        </div>
+        <div class="sr">
+          <div class="sh"><span class="sl">Standby (quiescent) current draw</span><span class="sv" id="standbyIVal">0.5<span class="su">A</span></span></div>
+          <input type="range" id="standbyISlider" min="0.05" max="5" step="0.05" value="0.5">
+        </div>
+        <div class="bkd">
+          <div class="brow"><span class="blbl">Full-alarm current draw</span><span class="bval" id="bAlarmI">0.0 A</span></div>
+          <div class="brow"><span class="blbl">Standby capacity (24 h)</span><span class="bval" id="bStandbyAh">0.0 Ah</span></div>
+          <div class="brow"><span class="blbl">Alarm capacity (<span id="bAlarmMinLbl">15</span> min)</span><span class="bval" id="bAlarmAh">0.0 Ah</span></div>
+          <div class="brow tot"><span class="blbl">Required battery (+25% safety factor)</span><span class="bval res" id="bReqAh">0.0 Ah</span></div>
+          <div class="brow"><span class="blbl">Recommended battery bank</span><span class="bval" id="bStdAh" style="color:#b45309">0 Ah</span></div>
+        </div>
+        <div style="padding:0 16px 12px;font-family:var(--mono);font-size:9px;color:var(--muted2);line-height:1.6">
+          NFPA 72 §10.6.7.2: secondary power must sustain 24 h standby + 5 min full alarm (general) or 15 min (voice evacuation / mass notification). Ah = [(I<sub>standby</sub>×24) + (I<sub>alarm</sub>×t<sub>alarm</sub>/60)] × 1.25. Verify against panel charger capacity — NFPA 72 also requires full recharge within 48 h.
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="ph"><div class="pd" style="background:var(--red2)"></div><div class="pt">Code &amp; Compliance Notes</div></div>
+        <div class="formulafoot">
+          <div><b>NFPA 72 §18.4</b> — public-mode audible notification must reach avg. ambient +15 dB <i>or</i> max ambient +5 dB (whichever is greater), minimum 75 dBA, and the combined level must not exceed 110 dBA at the minimum hearing distance. Use the "Emergency / Life-Safety" application type as a starting headroom factor, then verify actual target SPL with the SPL Coverage Calculator.</div>
+          <div style="margin-top:6px"><b>NEC Article 725 (Class 1 vs Class 2)</b> — whether a 70V/100V amplifier output may use simplified Class 2 (CL2/CL3) cabling depends on the amplifier's own UL listing and label, not on total wattage alone. Amplifiers over ~100 VA per output can still be Class 2 if listed as such; if the amp is unlabeled, default to Class 1 wiring methods and confirm with the equipment's listing documentation.</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="ph"><div class="pd" style="background:var(--muted)"></div><div class="pt">Formulas Used</div></div>
+        <div class="formulafoot">
+          <div><b>Total Load</b> = Σ (tap W × qty) across all zones</div>
+          <div><b>Amp Power</b> = Total Load × Headroom Factor</div>
+          <div><b>Headroom</b> — Paging 1.25× · Speech 1.5× · Music 2.0×</div>
+          <div><b>Line current</b> I = P<sub>zone</sub> / V<sub>line</sub> (constant-voltage: 25V/70V/100V)</div>
+          <div><b>Cable ΔV</b> = I × 2L × (ρ/A), ρ<sub>copper</sub> = 0.0175 Ω·mm²/m</div>
+          <div><b>dB loss</b> = 20·log₁₀(V<sub>line</sub> / (V<sub>line</sub> − ΔV))</div>
+          <div>Cable auto-sized to smallest standard c.s.a. meeting loss threshold (music ≤5% · paging/speech ≤10%)</div>
+          <div>Amp power always rounds up to the next real commercial amplifier size.</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+  </div>
+</div>
+<script>
+(function(){
+// Real commercial 70V/100V amplifier power lineup, drawn from published
+// product ranges (TOA 900 Series, Crown CDi/DCi, QSC CX-Q, Yamaha XMV, Bogen, Bosch Plena).
+const STD_SIZES = [60,80,100,120,125,150,160,180,200,240,250,300,320,350,400,500,600,650,750,800,1000,1200,1500,2000,2500,3000];
+
+// Constant-voltage distribution standards
+const LINE_VOLTAGES = [
+  {v:25, label:'25V', sub:'Legacy / code-restricted'},
+  {v:70, label:'70V', sub:'North America standard'},
+  {v:100, label:'100V', sub:'Intl. / lower current'}
+];
+let lineVoltage = 70;
+
+// Copper resistivity for round-trip voltage-drop calc: ρ ≈ 0.0175 Ω·mm²/m (1.724×10⁻⁸ Ω·m)
+const COPPER_RHO = 0.0175;
+// Standard cable cross-sections (mm²) with approximate AWG equivalents
+const CABLE_SIZES = [
+  {mm2:0.75, awg:'18'},{mm2:1.0, awg:'17'},{mm2:1.5, awg:'16'},
+  {mm2:2.5, awg:'14'},{mm2:4, awg:'12'},{mm2:6, awg:'10'},
+  {mm2:10, awg:'8'},{mm2:16, awg:'6'}
+];
+
+// Amplifier operating class — typical continuous efficiency (installed commercial amps)
+const AMP_CLASSES = [
+  {id:'classD', name:'Class D', eff:0.90, sub:'~90% · std. in modern 70V amps'},
+  {id:'classAB', name:'Class AB', eff:0.60, sub:'~60% · legacy analog amps'}
+];
+let ampClass = 'classD';
+let mainsVoltage = 120;
+// NEC 240.6(A) standard overcurrent device (breaker) sizes
+const BREAKER_SIZES = [15,20,25,30,35,40,45,50,60,70,80,90,100,110,125,150,175,200];
+
+// NFPA 72 §10.6.7.2 secondary (battery) power requirements
+const STANDBY_HOURS = 24;
+const NOTIF_DURATIONS = [
+  {id:'general', label:'General Alarm', min:5, sub:'5 min · non-voice systems'},
+  {id:'voice', label:'Voice Evacuation', min:15, sub:'15 min · voice/mass notification'}
+];
+let notifType = 'voice';
+let dcVoltage = 24;
+let standbyCurrent = 0.5;
+const BATTERY_SAFETY_FACTOR = 1.25; // 25% aging/derating margin, standard industry practice
+const STD_BATTERY_AH = [7,12,18,26,33,40,55,80,100,150,200];
+
+const APP_TYPES = [
+  {id:'paging', name:'Paging', factor:1.25, sub:'×1.25 · 6 dB HR', lossMax:10},
+  {id:'speech', name:'Speech Reinforcement', factor:1.5, sub:'×1.5 · 10 dB HR', lossMax:10},
+  {id:'emergency', name:'Emergency / Life-Safety', factor:1.5, sub:'×1.5 · NFPA 72 audibility', lossMax:10},
+  {id:'music', name:'Music System', factor:2.0, sub:'×2.0 · 10–20 dB HR', lossMax:5},
+  {id:'custom', name:'Custom', factor:null, sub:'Set manually', lossMax:5}
+];
+
+const PRESETS = {
+  meeting: {
+    label:'Meeting Room', sub:'8×6m, 4 spk',
+    app:'speech',
+    zones:[{name:'Ceiling grid (2×2)', tap:6, qty:4, dist:20}]
+  },
+  warehouse: {
+    label:'Warehouse Paging', sub:'50×40m, 12 horns',
+    app:'paging',
+    zones:[{name:'Horn speakers', tap:30, qty:12, dist:70}]
+  },
+  hotel: {
+    label:'Hotel BGM', sub:'Multi-zone',
+    app:'music',
+    zones:[
+      {name:'Corridors', tap:3, qty:10, dist:45},
+      {name:'Lobby', tap:6, qty:4, dist:25},
+      {name:'Restaurant', tap:10, qty:8, dist:35},
+      {name:'Reception', tap:6, qty:2, dist:15}
+    ]
+  },
+  lecture: {
+    label:'Lecture Hall', sub:'20×12m + delays + sub',
+    app:'speech',
+    zones:[
+      {name:'Main wall speakers', tap:100, qty:4, dist:25},
+      {name:'Delay ceiling speakers', tap:30, qty:2, dist:40},
+      {name:'Subwoofer', tap:300, qty:1, dist:15}
+    ]
+  },
+  fitness: {
+    label:'Fitness Center', sub:'90–95 dB, +25 dB margin',
+    app:'music',
+    zones:[
+      {name:'Main floor ceiling spk.', tap:15, qty:10, dist:30},
+      {name:'Studio room', tap:15, qty:4, dist:20},
+      {name:'Subwoofer', tap:200, qty:1, dist:20}
+    ]
+  },
+  bar: {
+    label:'Bar / Night Lounge', sub:'95–105 dB, +25 dB margin',
+    app:'music',
+    zones:[
+      {name:'Wall/pendant speakers', tap:30, qty:8, dist:25},
+      {name:'Subwoofer', tap:300, qty:2, dist:20}
+    ]
+  },
+  emergency: {
+    label:'Emergency Voice Evac', sub:'NFPA 72 — battery-backed',
+    app:'emergency',
+    zones:[
+      {name:'Corridor evac speakers', tap:2, qty:20, dist:60},
+      {name:'Stairwell horns', tap:15, qty:6, dist:80}
+    ]
+  }
+};
+
+let zones = [];
+let appType = 'speech';
+let customFactor = 1.25;
+let zoneCounter = 0;
+
+function uid(){ return 'z'+(zoneCounter++); }
+
+function loadPreset(key){
+  const p = PRESETS[key];
+  appType = p.app;
+  zones = p.zones.map(z=>({id:uid(), name:z.name, tap:z.tap, qty:z.qty, dist:z.dist}));
+  renderAppTypes();
+  renderZones();
+  renderAll();
+  document.querySelectorAll('.pbtn').forEach(b=>b.classList.toggle('active', b.dataset.key===key));
+}
+
+function addZone(prefill){
+  zones.push({id:uid(), name:prefill?.name||'New zone', tap:prefill?.tap??6, qty:prefill?.qty??1, dist:prefill?.dist??20});
+  renderZones();
+  renderAll();
+}
+
+function removeZone(id){
+  zones = zones.filter(z=>z.id!==id);
+  renderZones();
+  renderAll();
+}
+
+function renderZones(){
+  const wrap = document.getElementById('zoneRows');
+  wrap.innerHTML='';
+  zones.forEach(z=>{
+    const row = document.createElement('div');
+    row.className='zt-row';
+    row.innerHTML = `
+      <input type="text" value="${z.name}" data-field="name" data-id="${z.id}">
+      <input type="number" min="0" step="0.5" value="${z.tap}" data-field="tap" data-id="${z.id}">
+      <input type="number" min="1" step="1" value="${z.qty}" data-field="qty" data-id="${z.id}">
+      <input type="number" min="0" step="1" value="${z.dist}" data-field="dist" data-id="${z.id}">
+      <button class="rmv" data-id="${z.id}" type="button">×</button>
+    `;
+    wrap.appendChild(row);
+  });
+  wrap.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const id=e.target.dataset.id, field=e.target.dataset.field;
+      const z = zones.find(zz=>zz.id===id);
+      if(!z) return;
+      z[field] = field==='name' ? e.target.value : parseFloat(e.target.value)||0;
+      renderAll();
+    });
+  });
+  wrap.querySelectorAll('.rmv').forEach(btn=>{
+    btn.addEventListener('click', e=>removeZone(e.target.dataset.id));
+  });
+}
+
+function renderAppTypes(){
+  const row = document.getElementById('appTypeRow');
+  row.innerHTML='';
+  APP_TYPES.forEach(t=>{
+    const b = document.createElement('button');
+    b.className = 'atbtn' + (t.id===appType?' active':'');
+    b.type='button';
+    b.innerHTML = `${t.name}<small>${t.sub}</small>`;
+    b.addEventListener('click', ()=>{
+      appType = t.id;
+      renderAppTypes();
+      document.getElementById('customHrRow').style.display = (t.id==='custom') ? 'block' : 'none';
+      renderAll();
+    });
+    row.appendChild(b);
+  });
+  document.getElementById('customHrRow').style.display = (appType==='custom') ? 'block' : 'none';
+}
+
+function currentFactor(){
+  if(appType==='custom') return customFactor;
+  return APP_TYPES.find(t=>t.id===appType).factor;
+}
+
+// Real voltage-drop engineering per zone: I = P/V, ΔV = I × 2L × ρ/A
+function cableCalc(zoneWatts, distM, thresholdPct){
+  const I = zoneWatts / lineVoltage; // amps
+  const results = CABLE_SIZES.map(c=>{
+    const R = COPPER_RHO * (2*distM) / c.mm2; // round-trip resistance, ohms
+    const vdrop = I * R;
+    const pctLoss = (vdrop/lineVoltage)*100;
+    const dbLoss = 20*Math.log10(lineVoltage/Math.max(lineVoltage-vdrop, 0.001));
+    return {...c, I, vdrop, pctLoss, dbLoss};
+  });
+  const fit = results.find(r=>r.pctLoss<=thresholdPct) || results[results.length-1];
+  return {I, options:results, chosen:fit, pass: fit.pctLoss<=thresholdPct};
+}
+
+function renderCableTable(){
+  const tbl = document.getElementById('cableTable');
+  const threshold = (appType==='custom') ? 5 : APP_TYPES.find(t=>t.id===appType).lossMax;
+  let rows = zones.map(z=>{
+    const zw = z.tap*z.qty;
+    const c = cableCalc(zw, z.dist, threshold);
+    const passColor = c.pass ? 'var(--green2)' : 'var(--red2)';
+    const passBg = c.pass ? 'var(--green-l)' : 'var(--red-l)';
+    return `<tr>
+      <td>${z.name||'—'}<br><span style="font-family:var(--mono);font-size:9px;color:var(--muted2)">${zw}W · ${c.I.toFixed(2)}A @ ${lineVoltage}V</span></td>
+      <td style="font-family:var(--mono)">${z.dist} m</td>
+      <td><span class="tag" style="color:${passColor};background:${passBg}">${c.chosen.mm2} mm² (AWG ${c.chosen.awg})</span></td>
+      <td style="font-family:var(--mono)">${c.chosen.pctLoss.toFixed(1)}%</td>
+      <td style="font-family:var(--mono)">${c.chosen.dbLoss.toFixed(2)} dB</td>
+    </tr>`;
+  }).join('');
+  tbl.innerHTML = `<tr><th>Zone</th><th>Run dist.</th><th>Cable (min. fit)</th><th>Loss (≤${threshold}%)</th><th>dB loss</th></tr>${rows || '<tr><td colspan=5 style="color:var(--muted2);font-style:italic">No zones yet</td></tr>'}`;
+}
+
+function renderLineVoltage(){
+  const row = document.getElementById('lineVoltRow');
+  row.innerHTML='';
+  LINE_VOLTAGES.forEach(lv=>{
+    const b=document.createElement('button');
+    b.className='vlbtn'+(lv.v===lineVoltage?' active':'');
+    b.type='button';
+    b.innerHTML=`${lv.label}<small>${lv.sub}</small>`;
+    b.addEventListener('click',()=>{ lineVoltage=lv.v; renderLineVoltage(); renderAll(); });
+    row.appendChild(b);
+  });
+}
+
+function renderSizeStrip(reqPower, stdSize){
+  const strip = document.getElementById('szStrip');
+  strip.innerHTML = STD_SIZES.map(s=>{
+    const hit = s===stdSize;
+    return `<span class="szchip${hit?' hit':''}">${s}W${hit?' ✓':''}</span>`;
+  }).join('');
+}
+
+function renderAll(){
+  const total = zones.reduce((s,z)=> s + (z.tap*z.qty), 0);
+  const factor = currentFactor();
+  const req = total * factor;
+  const stdSize = STD_SIZES.find(s=>s>=req) || (STD_SIZES[STD_SIZES.length-1]);
+  const margin = stdSize - req;
+
+  document.getElementById('ampReq').textContent = req.toFixed(1);
+  document.getElementById('bTotal').textContent = total.toFixed(1)+' W';
+  document.getElementById('bFactor').textContent = factor.toFixed(2)+'×';
+  document.getElementById('bReq').textContent = req.toFixed(1)+' W';
+  document.getElementById('bStd').textContent = stdSize+' W';
+  document.getElementById('bMargin').textContent = '+'+margin.toFixed(1)+' W ('+((margin/Math.max(req,0.0001))*100).toFixed(0)+'%)';
+
+  // headroom bar: scale to stdSize, mark req position
+  const fillPct = Math.min(100, (req/stdSize)*100);
+  const fill = document.getElementById('hrFill');
+  fill.style.width = fillPct+'%';
+  let barColor = 'var(--green2)';
+  let badgeText='OPTIMAL FIT', badgeBg='var(--green-l)', badgeColor='var(--green)';
+  if(fillPct>90){ barColor='var(--amber2)'; badgeText='TIGHT — CONSIDER NEXT SIZE'; badgeBg='var(--amber-l)'; badgeColor='var(--amber)'; }
+  if(fillPct>=100){ barColor='var(--red2)'; badgeText='UNDERSIZED'; badgeBg='var(--red-l)'; badgeColor='var(--red)'; }
+  if(total===0){ badgeText='ADD A ZONE TO BEGIN'; badgeBg='var(--bg3)'; badgeColor='var(--muted)'; barColor='var(--bg4)'; }
+  fill.style.background = barColor;
+  const badge = document.getElementById('fitBadge');
+  badge.textContent = badgeText;
+  badge.style.background = badgeBg;
+  badge.style.color = badgeColor;
+  document.getElementById('hrScaleMax').textContent = stdSize+' W';
+  document.getElementById('hrLoadMark').style.left = fillPct+'%';
+
+  renderSizeStrip(req, stdSize);
+  renderCableTable();
+  renderElectrical(stdSize);
+  renderBattery(stdSize);
+}
+
+function renderAmpClass(){
+  const row = document.getElementById('ampClassRow');
+  row.innerHTML='';
+  AMP_CLASSES.forEach(c=>{
+    const b=document.createElement('button');
+    b.className='vlbtn'+(c.id===ampClass?' active':'');
+    b.type='button';
+    b.innerHTML=`${c.name}<small>${c.sub}</small>`;
+    b.addEventListener('click',()=>{ ampClass=c.id; renderAmpClass(); renderAll(); });
+    row.appendChild(b);
+  });
+}
+
+const MAINS_OPTIONS = [
+  {v:120, label:'120V', sub:'NA single-phase'},
+  {v:230, label:'230V', sub:'Intl. single-phase'}
+];
+function renderMains(){
+  const row = document.getElementById('mainsRow');
+  row.innerHTML='';
+  MAINS_OPTIONS.forEach(m=>{
+    const b=document.createElement('button');
+    b.className='vlbtn'+(m.v===mainsVoltage?' active':'');
+    b.type='button';
+    b.innerHTML=`${m.label}<small>${m.sub}</small>`;
+    b.addEventListener('click',()=>{ mainsVoltage=m.v; renderMains(); renderAll(); });
+    row.appendChild(b);
+  });
+}
+
+function renderElectrical(stdSize){
+  const eff = AMP_CLASSES.find(c=>c.id===ampClass).eff;
+  const acPower = stdSize / eff;
+  const acCurrent = acPower / mainsVoltage;
+  const rawBreaker = acCurrent / 0.8; // NEC 210.19(A)(1): continuous load <= 80% of breaker rating
+  const breaker = BREAKER_SIZES.find(b=>b>=rawBreaker) || BREAKER_SIZES[BREAKER_SIZES.length-1];
+  const heat = acPower - stdSize;
+  const btu = heat * 3.412;
+
+  document.getElementById('effPct').textContent = Math.round(eff*100);
+  document.getElementById('bAcPower').textContent = acPower.toFixed(0)+' W';
+  document.getElementById('bAcCurrent').textContent = acCurrent.toFixed(2)+' A';
+  document.getElementById('bBreaker').textContent = breaker+' A';
+  document.getElementById('bHeat').textContent = heat.toFixed(0)+' W ('+btu.toFixed(0)+' BTU/hr)';
+}
+
+function renderNotifRow(){
+  const row = document.getElementById('notifRow');
+  row.innerHTML='';
+  NOTIF_DURATIONS.forEach(n=>{
+    const b=document.createElement('button');
+    b.className='vlbtn'+(n.id===notifType?' active':'');
+    b.type='button';
+    b.innerHTML=`${n.label}<small>${n.sub}</small>`;
+    b.addEventListener('click',()=>{ notifType=n.id; renderNotifRow(); renderAll(); });
+    row.appendChild(b);
+  });
+}
+
+function renderDcVoltRow(){
+  const row = document.getElementById('dcVoltRow');
+  row.innerHTML='';
+  [24,48].forEach(v=>{
+    const b=document.createElement('button');
+    b.className='vlbtn'+(v===dcVoltage?' active':'');
+    b.type='button';
+    b.innerHTML=`${v}VDC`;
+    b.addEventListener('click',()=>{ dcVoltage=v; renderDcVoltRow(); renderAll(); });
+    row.appendChild(b);
+  });
+}
+
+function renderBattery(stdSize){
+  document.getElementById('batteryPanel').style.display = (appType==='emergency') ? 'block' : 'none';
+  if(appType!=='emergency') return;
+  const eff = AMP_CLASSES.find(c=>c.id===ampClass).eff;
+  const alarmPowerDC = stdSize / eff; // power the DC bus must deliver at full alarm
+  const alarmI = alarmPowerDC / dcVoltage;
+  const notif = NOTIF_DURATIONS.find(n=>n.id===notifType);
+  const standbyAh = standbyCurrent * STANDBY_HOURS;
+  const alarmAh = alarmI * (notif.min/60);
+  const reqAh = (standbyAh + alarmAh) * BATTERY_SAFETY_FACTOR;
+  const stdAh = STD_BATTERY_AH.find(a=>a>=reqAh) || STD_BATTERY_AH[STD_BATTERY_AH.length-1];
+
+  document.getElementById('bAlarmI').textContent = alarmI.toFixed(2)+' A';
+  document.getElementById('bAlarmMinLbl').textContent = notif.min;
+  document.getElementById('bStandbyAh').textContent = standbyAh.toFixed(1)+' Ah';
+  document.getElementById('bAlarmAh').textContent = alarmAh.toFixed(2)+' Ah';
+  document.getElementById('bReqAh').textContent = reqAh.toFixed(1)+' Ah';
+  document.getElementById('bStdAh').textContent = stdAh+' Ah';
+}
+
+// preset bar
+function buildPresetBar(){
+  const bar = document.getElementById('presetBar');
+  Object.keys(PRESETS).forEach(key=>{
+    const p = PRESETS[key];
+    const b = document.createElement('button');
+    b.className='pbtn';
+    b.dataset.key=key;
+    b.type='button';
+    b.innerHTML = `${p.label}<small>${p.sub}</small>`;
+    b.addEventListener('click', ()=>loadPreset(key));
+    bar.appendChild(b);
+  });
+}
+
+document.getElementById('addZoneBtn').addEventListener('click', ()=>addZone());
+document.getElementById('hrCustomSlider').addEventListener('input', e=>{
+  customFactor = parseFloat(e.target.value);
+  document.getElementById('hrCustomVal').innerHTML = customFactor.toFixed(2)+'<span class="su">×</span>';
+  renderAll();
+});
+document.getElementById('standbyISlider').addEventListener('input', e=>{
+  standbyCurrent = parseFloat(e.target.value);
+  document.getElementById('standbyIVal').innerHTML = standbyCurrent.toFixed(2)+'<span class="su">A</span>';
+  renderAll();
+});
+
+buildPresetBar();
+renderLineVoltage();
+renderAmpClass();
+renderMains();
+renderNotifRow();
+renderDcVoltRow();
+loadPreset('meeting');
+})();
+</script>
 
 <!-- ═══════════════ TAB 5: REPORT ═══════════════ -->
 <div id="tab-report" class="tp">
@@ -2593,7 +3199,6 @@ function calcCov(){
   document.getElementById('cv-area').textContent=area.toFixed(1)+' m²';
   document.getElementById('cv-formula').textContent=h.toFixed(1)+' × tan('+half.toFixed(0)+'°) = '+r.toFixed(2)+' m';
   drawCovDiag(h,ang,r);
-  buildAngleTable(ang);
   renderCovMap();
   // if follow active, update room map
   if(followCovActive)applyFollowCovGrid();
@@ -2649,16 +3254,6 @@ function drawCovDiag(h,ang,r){
 function resizeCov(){
   const W=covCvs.parentElement.clientWidth||300;
   covCvs.width=W;covCvs.height=Math.round(W*.75);
-}
-
-// Angle table
-const ANGUSES={30:'Narrow horn',45:'Spot/beam',60:'Wall speaker',90:'Standard wall',100:'Wide wall',110:'Wide wall',120:'Ceiling standard',130:'Wide ceiling',140:'Wide ceiling',150:'Very wide',160:'Very wide',170:'Near-omni',180:'Omni'};
-function buildAngleTable(cur){
-  const angs=[30,45,60,90,100,110,120,130,140,150,160,170];
-  document.getElementById('ang-tbody').innerHTML=angs.map(a=>{
-    const h=a/2,tv=Math.tan(h*Math.PI/180);
-    return`<tr class="${a===cur?'ar':''}"><td>${a}°</td><td>${h}°</td><td>${tv.toFixed(3)}</td><td>${(1.8*tv).toFixed(2)} m</td><td>${(3.0*tv).toFixed(2)} m</td><td>${(5.0*tv).toFixed(2)} m</td><td>${ANGUSES[a]||''}</td></tr>`;
-  }).join('');
 }
 
 // ══════════════════════════════════════════════════════════
@@ -2734,17 +3329,6 @@ function applyCatalogItem(cat,idx){
   document.getElementById('catalog-panel').classList.remove('open');
   renderRoom();renderCatalogList(cat);
 }
-
-// ══════════════════════════════════════════════════════════
-//  REFERENCE TABLES
-// ══════════════════════════════════════════════════════════
-(function(){
-  const taps=[1,2,3,6,10,15,20,25,30,50,60,100];
-  document.getElementById('tap-grid').innerHTML=taps.map(w=>`<div class="tap-c"><div class="tap-w">${w} W</div><div class="tap-d">+${(10*Math.log10(w)).toFixed(1)} dB</div></div>`).join('');
-  const dists=[0.5,1,1.5,2,3,4,5,6,8,10,15,20,30,50];
-  const pairs=[];for(let i=0;i<dists.length;i+=2)pairs.push([dists[i],dists[i+1]]);
-  document.getElementById('dist-tbody').innerHTML=pairs.map(([a,b])=>`<tr><td>${a} m</td><td>${(20*Math.log10(a)).toFixed(1)} dB</td><td>${b||'—'} m</td><td>${b?(20*Math.log10(b)).toFixed(1)+' dB':'—'}</td></tr>`).join('');
-})();
 
 // ══════════════════════════════════════════════════════════
 //  FREE-SHAPE ROOM POLYGON SYSTEM
@@ -5305,7 +5889,6 @@ renderCovMap = function(){
 //  INIT & RESIZE
 // ══════════════════════════════════════════════════════════
 calcSPL();
-buildAngleTable(120);
 loadActiveRoom();
 syncCompatInputs();
 
