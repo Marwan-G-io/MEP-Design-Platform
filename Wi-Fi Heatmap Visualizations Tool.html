@@ -149,7 +149,13 @@ input[type=range]{flex:1;accent-color:var(--brand);cursor:pointer}
 .vtx-tbl{width:100%;font-size:10px;border-collapse:collapse;margin-top:4px}
 .vtx-tbl th{text-align:left;padding:3px 5px;background:#f4f6f8;font-weight:600;color:var(--mu)}
 .vtx-tbl td{padding:2px 4px}
-.vtx-tbl input{width:56px;font-size:10px;padding:2px 3px;border:1px solid var(--br2);border-radius:3px}
+.vtx-stepper{display:flex;align-items:stretch;border:1px solid var(--br2);border-radius:5px;overflow:hidden;background:#fff;width:78px}
+.vtx-stepper button{border:none;background:#f4f6f8;color:var(--mu);width:16px;flex-shrink:0;font-size:11px;font-weight:700;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center}
+.vtx-stepper button:hover{background:var(--brand);color:#fff}
+.vtx-stepper input{width:100%;min-width:0;border:none;text-align:center;font-size:10px;padding:2px 1px;background:transparent;color:var(--tx)}
+.vtx-stepper input:focus{outline:none;background:#f0f8ff}
+.vtx-stepper input::-webkit-outer-spin-button,.vtx-stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.vtx-stepper input[type=number]{-moz-appearance:textfield;appearance:textfield}
 .meas-item{background:#f4f6f8;border:1px solid var(--br);border-radius:5px;padding:4px 7px;margin-bottom:3px;font-size:10px;display:flex;align-items:center;gap:5px}
 .meas-del{border:none;background:none;cursor:pointer;color:var(--etx);font-size:12px;margin-left:auto}
 
@@ -163,7 +169,9 @@ input[type=range]{flex:1;accent-color:var(--brand);cursor:pointer}
 .dm-header-r{display:flex;align-items:center;gap:5px}
 
 /* Ruler + canvas grid */
-.ruler-grid{flex:1;display:grid;grid-template-columns:22px 1fr;grid-template-rows:20px 1fr;position:relative;overflow:hidden;background:#c8cdd2}
+.ruler-grid{flex:1;display:grid;grid-template-columns:22px 1fr;grid-template-rows:20px 1fr;position:relative;overflow:hidden;background:#c8cdd2;transition:grid-template-columns .12s,grid-template-rows .12s}
+.ruler-grid.rulers-off{grid-template-columns:0 1fr;grid-template-rows:0 1fr}
+.ruler-grid.rulers-off .ruler-corner,.ruler-grid.rulers-off #ruler-h,.ruler-grid.rulers-off #ruler-v{display:none}
 .ruler-corner{grid-column:1;grid-row:1;background:#eef1f4;border-right:1px solid var(--br2);border-bottom:1px solid var(--br2);z-index:15}
 #ruler-h{grid-column:2;grid-row:1;background:#eef1f4;border-bottom:1px solid var(--br2);z-index:14;display:block}
 #ruler-v{grid-column:1;grid-row:2;background:#eef1f4;border-right:1px solid var(--br2);z-index:14;display:block}
@@ -254,6 +262,26 @@ body.panning .dm-canvas-scroller{cursor:grabbing!important}
 .mode-switch-opt.on{background:var(--brand);color:#fff}
 .mode-switch-opt:not(.on):hover{background:var(--bg2);color:var(--brand)}
 kbd{font-family:monospace;background:rgba(0,0,0,.06);border-radius:3px;padding:0 4px}
+
+/* Set Real-World Scale modal (matches PlotScale Navigator style) */
+.scale-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:8000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.scale-modal-overlay.show{display:flex}
+.scale-modal{background:#0f1526;border:1px solid #262e47;border-radius:14px;padding:1.5rem 1.6rem;width:320px;max-width:90vw;box-shadow:0 24px 70px rgba(0,0,0,.55);color:#e7eaf5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif}
+.scale-modal-title{display:flex;align-items:center;gap:9px;font-size:15px;font-weight:700;margin-bottom:1.1rem;color:#fff}
+.scale-modal-title i{color:#f5a623;font-size:19px}
+.scale-modal-measured{background:#171f36;border:1px solid #262e47;border-radius:9px;padding:.65rem .85rem;font-size:12px;color:#8b93b3;margin-bottom:1.1rem}
+.scale-modal-label{font-size:9.5px;font-weight:700;letter-spacing:.08em;color:#6f7898;text-transform:uppercase;display:block;margin-bottom:.4rem}
+.scale-modal-input,.scale-modal-select{width:100%;background:#171f36;border:1px solid #262e47;border-radius:9px;padding:.6rem .75rem;color:#fff;font-size:13px;margin-bottom:1.1rem;font-family:inherit}
+.scale-modal-input::placeholder{color:#57608a}
+.scale-modal-input:focus,.scale-modal-select:focus{outline:none;border-color:#f5a623}
+.scale-modal-input.err{border-color:#ef4444;animation:scaleShake .3s}
+@keyframes scaleShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.scale-modal-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238b93b3' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .7rem center}
+.scale-modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:.2rem}
+.scale-modal-cancel{background:transparent;border:1px solid #2c3554;color:#c7cee3;padding:.55rem 1.15rem;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+.scale-modal-cancel:hover{border-color:#4a5578;background:#171f36}
+.scale-modal-set{background:transparent;border:1.5px solid #f5a623;color:#f5a623;padding:.55rem 1.15rem;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+.scale-modal-set:hover{background:#f5a623;color:#0f1526}
 @media(max-width:700px){.tc{grid-template-columns:1fr}.rpt-grid2,.rpt-grid3,.rpt-stat-grid{grid-template-columns:1fr}}
 @media print{body{background:#fff}.topbar,.nav-wrap,.dm-toolbar,.dm-cats,.dm-cat-panel,.dm-canvas-header,.dm-statusbar,.design-chk,.roam-box,.dm-legend,.no-print{display:none!important}#sec-report{display:block!important}.rpt-card{page-break-inside:avoid;border:1px solid #ccc}.rpt-header{background:#1a3a5c!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style>
@@ -502,6 +530,8 @@ kbd{font-family:monospace;background:rgba(0,0,0,.06);border-radius:3px;padding:0
         </div>
         <div id="custom-loss-row" style="display:none" class="dp-row"><span class="dp-lbl">Custom loss:</span><input type="range" min="1" max="40" value="10" id="wall-loss-sl" oninput="document.getElementById('wall-loss-o').textContent=this.value+' dB'"><span class="dp-val" id="wall-loss-o">10 dB</span></div>
         <button class="btn" onclick="setMode('draw-wall')" style="width:100%;justify-content:center;font-size:10px;margin-top:4px"><i class="ti ti-pencil"></i>Draw Wall</button>
+        <div class="tgr" style="margin-top:8px"><div class="tgl"><i class="ti ti-eye"></i>Show walls on map</div><label class="tw"><input type="checkbox" id="walls-visible-tgl" checked onchange="toggleWallsVisible()"><span class="tsl"></span></label></div>
+        <div style="font-size:9px;color:var(--mu);margin-top:2px">Hiding only affects the drawing — attenuation (dB loss) still applies to the RF calculation either way.</div>
       </div>
       <div class="dm-cat-col">
         <div class="dm-cat-col-h"><i class="ti ti-list"></i>Wall List</div>
@@ -620,10 +650,10 @@ kbd{font-family:monospace;background:rgba(0,0,0,.06);border-radius:3px;padding:0
       <div class="dm-cat-col">
         <div class="dm-cat-col-h"><i class="ti ti-ruler-3"></i>More overlays</div>
         <div class="tgr"><div class="tgl"><i class="ti ti-ruler"></i>Dimensions</div><label class="tw"><input type="checkbox" id="o-dims" onchange="dmR()"><span class="tsl"></span></label></div>
-        <div class="tgr"><div class="tgl"><i class="ti ti-scale"></i>Scale bar</div><label class="tw"><input type="checkbox" id="o-sb" onchange="dmR()" checked><span class="tsl"></span></label></div>
+        <div class="tgr"><div class="tgl"><i class="ti ti-scale"></i>Scale bar</div><label class="tw"><input type="checkbox" id="o-sb" onchange="toggleScaleBar()" checked><span class="tsl"></span></label></div>
         <div class="tgr"><div class="tgl"><i class="ti ti-point"></i>Vertices</div><label class="tw"><input type="checkbox" id="o-vtx" onchange="dmR()"><span class="tsl"></span></label></div>
         <div class="tgr"><div class="tgl"><i class="ti ti-arrows-shuffle"></i>Roam links</div><label class="tw"><input type="checkbox" id="o-roam" onchange="dmR()"><span class="tsl"></span></label></div>
-        <div class="tgr"><div class="tgl"><i class="ti ti-ruler-2"></i>Rulers</div><label class="tw"><input type="checkbox" id="o-rulers" onchange="dmR()" checked><span class="tsl"></span></label></div>
+        <div class="tgr"><div class="tgl"><i class="ti ti-ruler-2"></i>Rulers</div><label class="tw"><input type="checkbox" id="o-rulers" onchange="toggleRulersVisible()" checked><span class="tsl"></span></label></div>
       </div>
       <div class="dm-cat-col">
         <div class="dm-cat-col-h"><i class="ti ti-palette"></i>Rendering</div>
@@ -689,6 +719,7 @@ kbd{font-family:monospace;background:rgba(0,0,0,.06);border-radius:3px;padding:0
         <button class="btn" onclick="setMode('measure')" style="width:100%;justify-content:center;margin-bottom:4px;font-size:10px"><i class="ti ti-ruler-2"></i>Measure Distance <kbd style="font-size:9px;opacity:.6">[M]</kbd></button>
         <button class="btn" onclick="setMode('area')" style="width:100%;justify-content:center;font-size:10px"><i class="ti ti-shape"></i>Measure Area <kbd style="font-size:9px;opacity:.6">[A]</kbd></button>
         <div class="ic" style="font-size:10px;padding:.4rem .6rem;margin-top:6px">Click points to measure · <kbd>Enter</kbd> finish · <kbd>Backspace</kbd> undo point · <kbd>Esc</kbd> cancel</div>
+        <div class="tgr" style="margin-top:8px"><div class="tgl"><i class="ti ti-eye"></i>Show measurements on map</div><label class="tw"><input type="checkbox" id="meas-visible-tgl" checked onchange="toggleMeasurementsVisible()"><span class="tsl"></span></label></div>
       </div>
       <div class="dm-cat-col" style="min-width:220px">
         <div class="dm-cat-col-h"><i class="ti ti-list"></i>Measurement List</div>
@@ -865,6 +896,26 @@ kbd{font-family:monospace;background:rgba(0,0,0,.06);border-radius:3px;padding:0
 </div></div></div>
 
 <div id="tip"></div>
+
+<!-- Set Real-World Scale modal (replaces native browser prompt) -->
+<div class="scale-modal-overlay" id="scale-modal-overlay" onclick="if(event.target===this)cancelScaleModal();">
+  <div class="scale-modal">
+    <div class="scale-modal-title"><i class="ti ti-ruler-2"></i> Set Real-World Scale</div>
+    <div class="scale-modal-measured" id="scale-modal-measured">Measured: 0.0 px on screen</div>
+    <label class="scale-modal-label">This line represents</label>
+    <input type="number" id="scale-modal-input" class="scale-modal-input" placeholder="e.g. 5" min="0.01" step="0.1" onkeydown="if(event.key==='Enter')confirmScaleModal();if(event.key==='Escape')cancelScaleModal();">
+    <label class="scale-modal-label">Unit</label>
+    <select id="scale-modal-unit" class="scale-modal-select">
+      <option value="m">Meters</option>
+      <option value="ft">Feet</option>
+    </select>
+    <div class="scale-modal-actions">
+      <button class="scale-modal-cancel" onclick="cancelScaleModal()">Cancel</button>
+      <button class="scale-modal-set" onclick="confirmScaleModal()">Set Scale</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ═══ NAV ═══ */
 function showTab(id,btn){
@@ -1106,6 +1157,7 @@ const DM={
   fpImg:null,fpNatW:0,fpNatH:0,fpScale:1,
   hmVisible:true,units:'m',snap:false,
   legend:{ex:-55,gd:-67,mg:-75,pr:-85},legendAdjustable:false,greyout:true,
+  wallsVisible:true,measurementsVisible:true,
   distMode:'manual',liveSync:false,
 };
 const view={x:0,y:0,scale:1};
@@ -1216,6 +1268,14 @@ function resizeCanvas(){
   DM.CW=Math.max(300,Math.floor(r.width));DM.CH=Math.max(200,Math.floor(r.height));
   dmR();
 }
+function toggleRulersVisible(){
+  const show=document.getElementById('o-rulers').checked;
+  const grid=document.querySelector('.ruler-grid');
+  if(grid)grid.classList.toggle('rulers-off',!show);
+  // The ruler tracks changing size changes canvas-scroller's actual pixel size — re-measure it.
+  setTimeout(()=>{resizeCanvas();},130);
+}
+function toggleScaleBar(){ dmR(); }
 
 /* ───── World <-> Screen ───── */
 function w2s(x,y){return {x:x*view.scale+view.x, y:y*view.scale+view.y};}
@@ -1346,6 +1406,17 @@ function toggleHeatmap(){
   DM.hmVisible=!DM.hmVisible;const btn=document.getElementById('hm-toggle');
   if(DM.hmVisible){btn.innerHTML='<i class="ti ti-flame"></i>Heatmap ON';btn.classList.add('on');}
   else{btn.innerHTML='<i class="ti ti-flame-off"></i>Heatmap OFF';btn.classList.remove('on');}
+  dmR();
+}
+function toggleWallsVisible(){
+  // Point 1: hides ALL walls from the drawing in one click. Their dB attenuation still
+  // applies to the RF calculation (wallLossAt is untouched) — this only affects rendering.
+  DM.wallsVisible=document.getElementById('walls-visible-tgl').checked;
+  dmR();
+}
+function toggleMeasurementsVisible(){
+  // Point 1: hides ALL measurement lines/labels in one click without deleting them.
+  DM.measurementsVisible=document.getElementById('meas-visible-tgl').checked;
   dmR();
 }
 
@@ -1561,17 +1632,19 @@ function dmR(){
   });
 
   // interior walls
-  const WTYPES={'3':{n:'Drywall',c:'#f59e0b'},'3.5':{n:'Glass',c:'#06b6d4'},'6':{n:'Lt.Brick',c:'#f97316'},'10':{n:'Brick',c:'#ef4444'},'15':{n:'Concrete',c:'#7c3aed'},'22':{n:'Metal',c:'#1f2937'},'custom':{n:'Custom',c:'#22c55e'}};
-  DM.walls.forEach(w=>{
-    const wt=WTYPES[String(w.type)]||WTYPES['10'];
-    ctx.beginPath();ctx.moveTo(w.x1,w.y1);ctx.lineTo(w.x2,w.y2);
-    ctx.strokeStyle=wt.c;ctx.lineWidth=3/view.scale;ctx.setLineDash(w.type==='3.5'?[6/view.scale,3/view.scale]:[]);ctx.stroke();ctx.setLineDash([]);
-    const mx=(w.x1+w.x2)/2,my=(w.y1+w.y2)/2,lbl=wt.n+' '+w.loss+'dB';
-    ctx.font='bold '+(7/view.scale)+'px sans-serif';const lw=ctx.measureText(lbl).width+6/view.scale;
-    ctx.fillStyle=wt.c+'ee';ctx.fillRect(mx-lw/2,my-7/view.scale,lw,14/view.scale);
-    ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(lbl,mx,my+.5/view.scale);
-    [[w.x1,w.y1],[w.x2,w.y2]].forEach(([px,py])=>{ctx.beginPath();ctx.arc(px,py,3/view.scale,0,Math.PI*2);ctx.fillStyle=wt.c;ctx.fill();});
-  });
+  if(DM.wallsVisible){
+    const WTYPES={'3':{n:'Drywall',c:'#f59e0b'},'3.5':{n:'Glass',c:'#06b6d4'},'6':{n:'Lt.Brick',c:'#f97316'},'10':{n:'Brick',c:'#ef4444'},'15':{n:'Concrete',c:'#7c3aed'},'22':{n:'Metal',c:'#1f2937'},'custom':{n:'Custom',c:'#22c55e'}};
+    DM.walls.forEach(w=>{
+      const wt=WTYPES[String(w.type)]||WTYPES['10'];
+      ctx.beginPath();ctx.moveTo(w.x1,w.y1);ctx.lineTo(w.x2,w.y2);
+      ctx.strokeStyle=wt.c;ctx.lineWidth=3/view.scale;ctx.setLineDash(w.type==='3.5'?[6/view.scale,3/view.scale]:[]);ctx.stroke();ctx.setLineDash([]);
+      const mx=(w.x1+w.x2)/2,my=(w.y1+w.y2)/2,lbl=wt.n+' '+w.loss+'dB';
+      ctx.font='bold '+(7/view.scale)+'px sans-serif';const lw=ctx.measureText(lbl).width+6/view.scale;
+      ctx.fillStyle=wt.c+'ee';ctx.fillRect(mx-lw/2,my-7/view.scale,lw,14/view.scale);
+      ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(lbl,mx,my+.5/view.scale);
+      [[w.x1,w.y1],[w.x2,w.y2]].forEach(([px,py])=>{ctx.beginPath();ctx.arc(px,py,3/view.scale,0,Math.PI*2);ctx.fillStyle=wt.c;ctx.fill();});
+    });
+  }
 
   // APs
   const showLbl=document.getElementById('o-lbl').checked;
@@ -1604,17 +1677,19 @@ function dmR(){
   }
 
   // measurements (world space)
-  DM.measurements.forEach(m=>{
-    ctx.beginPath();m.pts.forEach((p,i)=>i===0?ctx.moveTo(p[0],p[1]):ctx.lineTo(p[0],p[1]));
-    if(m.type==='area')ctx.closePath();
-    ctx.strokeStyle=m.type==='area'?'rgba(168,85,247,.85)':'rgba(249,115,22,.85)';ctx.lineWidth=2/view.scale;ctx.stroke();
-    if(m.type==='area'){ctx.fillStyle='rgba(168,85,247,.12)';ctx.fill();}
-    m.pts.forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],3.5/view.scale,0,Math.PI*2);ctx.fillStyle=m.type==='area'?'#a855f7':'#f97316';ctx.fill();});
-    const lp=m.pts[m.pts.length-1]||m.pts[0];
-    if(lp){ctx.font='bold '+(9/view.scale)+'px sans-serif';const txt=m.type==='area'?fmtArea(m.value):fmtLen(m.value);const tw=ctx.measureText(txt).width+8/view.scale;
-      ctx.fillStyle=m.type==='area'?'rgba(168,85,247,.9)':'rgba(249,115,22,.9)';ctx.fillRect(lp[0]+6/view.scale,lp[1]-16/view.scale,tw,14/view.scale);
-      ctx.fillStyle='#fff';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(txt,lp[0]+10/view.scale,lp[1]-9/view.scale);}
-  });
+  if(DM.measurementsVisible){
+    DM.measurements.forEach(m=>{
+      ctx.beginPath();m.pts.forEach((p,i)=>i===0?ctx.moveTo(p[0],p[1]):ctx.lineTo(p[0],p[1]));
+      if(m.type==='area')ctx.closePath();
+      ctx.strokeStyle=m.type==='area'?'rgba(168,85,247,.85)':'rgba(249,115,22,.85)';ctx.lineWidth=2/view.scale;ctx.stroke();
+      if(m.type==='area'){ctx.fillStyle='rgba(168,85,247,.12)';ctx.fill();}
+      m.pts.forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],3.5/view.scale,0,Math.PI*2);ctx.fillStyle=m.type==='area'?'#a855f7':'#f97316';ctx.fill();});
+      const lp=m.pts[m.pts.length-1]||m.pts[0];
+      if(lp){ctx.font='bold '+(9/view.scale)+'px sans-serif';const txt=m.type==='area'?fmtArea(m.value):fmtLen(m.value);const tw=ctx.measureText(txt).width+8/view.scale;
+        ctx.fillStyle=m.type==='area'?'rgba(168,85,247,.9)':'rgba(249,115,22,.9)';ctx.fillRect(lp[0]+6/view.scale,lp[1]-16/view.scale,tw,14/view.scale);
+        ctx.fillStyle='#fff';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(txt,lp[0]+10/view.scale,lp[1]-9/view.scale);}
+    });
+  }
 
   // live drawing previews (in world space, need current mouse world pos)
   let mw=s2w(mousePos.sx||0,mousePos.sy||0);
@@ -1660,7 +1735,12 @@ function dmR(){
   }
 
   // Scale bar (screen space, DOM overlay updated below)
-  const sbl=document.getElementById('scale-bar-el');if(sbl)sbl.textContent=`Scale: ${DM.sf.toFixed(4)} m/px · ${(1/DM.sf).toFixed(0)} px/m`;
+  const sbl=document.getElementById('scale-bar-el');
+  if(sbl){
+    const showSB=document.getElementById('o-sb').checked;
+    sbl.style.display=showSB?'block':'none';
+    if(showSB)sbl.textContent=`Scale: ${DM.sf.toFixed(4)} m/px · ${(1/DM.sf).toFixed(0)} px/m`;
+  }
   document.getElementById('zoom-lbl').textContent=Math.round(view.scale*100)+'%';
 
   drawRulers();
@@ -1810,9 +1890,20 @@ function buildVertexTable(){
   const room=DM.rooms.find(r=>r.id===selRoomId);
   const tb=document.getElementById('vtx-tbody'),geo=document.getElementById('vtx-geo');
   if(!room){if(tb)tb.innerHTML='<tr><td colspan="4" style="color:var(--mu);font-size:10px">No room selected</td></tr>';if(geo)geo.textContent='';return;}
-  if(tb)tb.innerHTML=room.verts.map((v,i)=>`<tr><td>${i+1}</td><td><input type="number" value="${(v[0]*DM.sf).toFixed(2)}" step="0.1" onchange="editVertex(${i},'x',this.value)"></td><td><input type="number" value="${(v[1]*DM.sf).toFixed(2)}" step="0.1" onchange="editVertex(${i},'y',this.value)"></td><td><button class="room-del" onclick="deleteVertex(${i})">×</button></td></tr>`).join('');
+  const stepper=(i,axis,valM)=>`<div class="vtx-stepper">
+      <button type="button" onclick="stepVertex(${i},'${axis}',-0.1)" title="−0.1 m">−</button>
+      <input type="number" value="${valM.toFixed(2)}" step="0.1" onchange="editVertex(${i},'${axis}',this.value)">
+      <button type="button" onclick="stepVertex(${i},'${axis}',0.1)" title="+0.1 m">+</button>
+    </div>`;
+  if(tb)tb.innerHTML=room.verts.map((v,i)=>`<tr><td>${i+1}</td><td>${stepper(i,'x',v[0]*DM.sf)}</td><td>${stepper(i,'y',v[1]*DM.sf)}</td><td><button class="room-del" onclick="deleteVertex(${i})">×</button></td></tr>`).join('');
   const area=shoelaceArea(room.verts)*DM.sf*DM.sf, per=perimeter(room.verts)*DM.sf;
   if(geo)geo.textContent=`Area: ${fmtArea(area)}  ·  Perimeter: ${fmtLen(per)}  ·  ${room.verts.length} vertices`;
+}
+function stepVertex(i,axis,deltaM){
+  const room=DM.rooms.find(r=>r.id===selRoomId);if(!room)return;
+  const idx=axis==='x'?0:1;
+  const newM=(room.verts[i][idx]*DM.sf)+deltaM;
+  editVertex(i,axis,newM);
 }
 function editVertex(i,axis,valStr){
   const room=DM.rooms.find(r=>r.id===selRoomId);if(!room)return;
@@ -1909,24 +2000,36 @@ function clearAPs(){DM.aps=[];buildAPList();dmR();}
 function removeAP(id){DM.aps=DM.aps.filter(a=>a.id!==id);buildAPList();dmR();}
 
 /* Scale apply */
-function applyScale(){
-  if(scalePoints.length<2)return;
-  const dist=+val('scale-dist');if(!dist||dist<=0)return;
-  const dx=scalePoints[1][0]-scalePoints[0][0],dy=scalePoints[1][1]-scalePoints[0][1];
-  const pxDist=Math.hypot(dx,dy);if(pxDist<2){scalePoints=[];return;}
-  DM.sf=dist/pxDist;DM.scaleSet=true;
-  document.getElementById('scale-chip').textContent=`Scale: ${DM.sf.toFixed(4)} m/px (${(1/DM.sf).toFixed(0)} px/m)`;
+let pendingScalePx=0;
+function openScaleModal(pxDist){
+  pendingScalePx=pxDist;
+  document.getElementById('scale-modal-measured').textContent=`Measured: ${pxDist.toFixed(1)} px on screen`;
+  const inp=document.getElementById('scale-modal-input');
+  inp.value='';inp.classList.remove('err');
+  document.getElementById('scale-modal-unit').value=DM.units==='ft'?'ft':'m';
+  document.getElementById('scale-modal-overlay').classList.add('show');
+  setTimeout(()=>inp.focus(),60);
+}
+function closeScaleUI(applied){
+  document.getElementById('scale-modal-overlay').classList.remove('show');
   scalePoints=[];curMode='';document.body.className='';
   document.querySelectorAll('.ctb').forEach(b=>b.classList.remove('on'));
   document.getElementById('draw-hint-float').classList.remove('show');
-  buildRoomList();buildVertexTable();dmR();scheduleAutoSync();
+  dmR();
+  if(applied)scheduleAutoSync();
 }
-
-/* This is a hidden input we need for scale-dist since toolbar no longer shows the field inline;
-   create it via prompt instead for simplicity in v6 flow */
-function askScaleDistance(){
-  const d=prompt('Enter the real-world distance (in metres) between the two points you just clicked:','10');
-  return d;
+function cancelScaleModal(){ closeScaleUI(false); }
+function confirmScaleModal(){
+  const inp=document.getElementById('scale-modal-input');
+  const raw=+inp.value;
+  if(!raw||raw<=0){inp.classList.add('err');inp.focus();setTimeout(()=>inp.classList.remove('err'),350);return;}
+  const unit=val('scale-modal-unit');
+  const meters=unit==='ft'?raw*M_PER_FT:raw;
+  if(pendingScalePx<2){closeScaleUI(false);return;}
+  DM.sf=meters/pendingScalePx;DM.scaleSet=true;
+  document.getElementById('scale-chip').textContent=`Scale: ${DM.sf.toFixed(4)} m/px (${(1/DM.sf).toFixed(0)} px/m)`;
+  buildRoomList();buildVertexTable();
+  closeScaleUI(true);
 }
 
 /* Auto AP — now room-aware (point 2 fix, respects total-blocking) */
@@ -2057,6 +2160,7 @@ function exportPNG(){
   const cv=document.getElementById('dmc'),scroller=document.getElementById('canvas-scroller'),tip=document.getElementById('tip');
   let altHeld=false, spaceHeld=false;
   window.addEventListener('keydown',e=>{
+    if(e.key==='Escape'&&document.getElementById('scale-modal-overlay').classList.contains('show')){cancelScaleModal();return;}
     if(e.key==='Alt'){altHeld=true;}
     if(e.key==='Shift'){shiftHeld=true;if(['draw-room','draw-wall','measure','area'].includes(curMode))dmR();}
     if(e.code==='Space'&&document.getElementById('sec-distmap').classList.contains('on')){spaceHeld=true;e.preventDefault();}
@@ -2153,13 +2257,10 @@ function exportPNG(){
     if(curMode==='scale'){
       scalePoints.push([x,y]);
       if(scalePoints.length===2){
-        const d=askScaleDistance();
-        if(d && !isNaN(parseFloat(d))){
-          document.getElementById('scale-dist')?.remove(); // noop safety
-          const tmp=document.createElement('input');tmp.id='scale-dist';tmp.value=d;tmp.style.display='none';document.body.appendChild(tmp);
-          applyScale();
-          tmp.remove();
-        } else scalePoints=[];
+        const dx=scalePoints[1][0]-scalePoints[0][0],dy=scalePoints[1][1]-scalePoints[0][1];
+        const pxDist=Math.hypot(dx,dy);
+        if(pxDist<2){scalePoints=[];dmR();return;}
+        openScaleModal(pxDist);
       }
       dmR();return;
     }
