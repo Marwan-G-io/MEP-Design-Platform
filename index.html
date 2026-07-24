@@ -2845,8 +2845,8 @@ renderHome();
 
   var DUR_MATRIX  = 1 * 60 * 1000;   // Phase 1: 1 minute
   var MATRIX_HOLD = 10 * 1000;       // extra time to stay on 00:00:00 before switching
-  var DUR_SESSION = 5 * 60 * 1000;   // Phase 2: 5 minutes
-  var DUR_MARIO   = 30 * 1000;       // Phase 3: 30 seconds
+  var DUR_SESSION = 15 * 60 * 1000;   // Phase 2: 5 minutes
+  var DUR_MARIO   = 60 * 1000;       // Phase 3: 30 seconds
 
   /* ── DOM REFS ── */
   var views = {
@@ -3008,7 +3008,7 @@ renderHome();
     e.preventDefault();
     var user = document.getElementById('loginUser').value.trim();
     var pass = document.getElementById('loginPass').value;
-    if (user === 'admin' && pass === 'mep2024'){
+    if (user === 'admin' && pass === 'mep'){
       var endTime = now() + DUR_SESSION;
       localStorage.setItem(K_SESSION, String(endTime));
       setPhase('mep_session');
